@@ -1,18 +1,19 @@
 # Baukasten-Paket 4 – Bedingte Fragen
 
-Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0724` **(ENTWURF: Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export neu erzeugen)**.
+Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0909`.
 
 ## Kurzfassung
 
 - Zwei neue Spalten am Prüfpunkt B: **BedingungPunkt** (Id von Punkt A, gleiche Kategorie) und **BedingungWert** (z. B. NIO, IO, ein Auswahlwert, oder * = irgendeine Antwort).
 - B erscheint und wird verlangt nur, wenn A den Wert hat. Sonst ist B unsichtbar, zählt nicht als offen und bekommt keine Fotos hochgeladen.
-- Beim Speichern leert die App ausgeblendete Punkte und merkt sie im JSON als `Ausgeblendet` – keine Mängel, im Protokoll und in der Nur-Ansicht nicht sichtbar.
-- Fehlkonfiguration fällt sicher aus: A fehlt, A ist selbst bedingt (Kette) oder BedingungWert ist leer → B wird immer gezeigt.
+- Beim Speichern leert die App ausgeblendete Punkte (Werte, Kommentar, Foto-Links) und merkt sie im JSON als `Ausgeblendet` – keine Mängel, im Protokoll und in der Nur-Ansicht nicht sichtbar. Neue Fotos eines ausgeblendeten Punkts werden nicht hochgeladen.
+- Fehlkonfiguration fällt sicher aus: A fehlt, A ist selbst bedingt (Kette), BedingungWert ist leer oder passt nicht zu A (z. B. Tippfehler, Wert, den es in A nicht gibt) → B wird immer gezeigt. Schreibweisen „i.O.“/„n.i.O.“, Groß-/Kleinschreibung und Leerzeichen sind egal.
 - Zähler (x von y ausgefüllt, Balken, n.i.O.-Zahl, Noch offen, Sprung) zählen nur sichtbare Punkte.
 
 ## Voraussetzungen
 
 - Pakete 1–3 eingefügt und getestet.
+- Die Blöcke sind aus dem Export 27.10.2026 09:09 (`frischerexport_20261027090933.zip`) erzeugt. Hat sich die App seitdem geändert, erst einen neuen Export schicken; der Generator bricht ab, wenn ein Vorher-Stand nicht mehr passt.
 
 ## Schritte
 
@@ -25,7 +26,8 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 RG_Pruefpunkte:
 - **BedingungPunkt** – Zahl, 0 Dezimalstellen, Standardwert **0** (0 = keine Bedingung)
 - **BedingungWert** – Einzelne Textzeile, Standardwert leer
-Für den Test in Kategorie 1: neuer Prüfpunkt „ZZ Test Folgefrage Ursache“ (IONIO oder TEXT, Pflicht = Ja), BedingungPunkt = Id eines i.O./n.i.O.-Punkts derselben Kategorie (Punkt A), BedingungWert = **NIO**.
+Gültige Bedingungswerte: bei A = i.O./n.i.O. oder Zahl: **IO** oder **NIO**; bei A = Auswahl/Mehrfachauswahl: einer der Auswahlwerte von A; bei jedem Typ: `*` (irgendeine Antwort). Bei Zahl-Punkten mit Grenzmodus Warnen ist ein Wert außerhalb „IO“ – dort Bedingungen auf NIO vermeiden.
+Für den Test in K1: **A** = PX (i.O./n.i.O., Pflicht = Ja). Neuer Prüfpunkt **B** „ZZ Test Folgefrage Ursache“: TEXT, Pflicht = Ja, Aktiv = Ja, Foto = Optional, RgReihenfolge direkt hinter A, BedingungPunkt = Id von A, BedingungWert = **NIO**.
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
 
 ### Schritt 4.3 – App.Formulas
@@ -50,7 +52,6 @@ clrFehlerHell = ColorValue("#FCE8E6");;
 clrGesperrt = ColorValue("#9AA0A6");;
 clrGesperrtHell = ColorValue("#EEF0F3");;
 clrWarnung = ColorValue("#9A5B00");;
-clrWarnungHell = ColorValue("#FFF3E0");;
 stInArbeit = "InArbeit";;
 stAbschluss = "Abschluss";;
 stAbgeschlossen = "Abgeschlossen";;
@@ -132,26 +133,30 @@ fnPlanPasst(start: DateTime; bis: DateTime; wt: Number; zyklus: Number; d: Date)
 );;
 fnZahlBewertung(z: Number; mi: Number; ma: Number; gmodus: Text): Text = If(
     fnAusserhalb(z; mi; ma);
-    Switch(gmodus; "Warnen"; "IO"; "Sperren"; ""; "NIO");
+    Switch(If(gmodus = "Sperren" && !fnSperreGilt(mi; ma); "Mangel"; gmodus); "Warnen"; "IO"; "Sperren"; ""; "NIO");
     "IO"
 );;
 fnGrenzmodus(g: Text): Text = If(g = "Warnen" || g = "Sperren"; g; "Mangel");;
+fnSperreGilt(mi: Number; ma: Number): Boolean = IsBlank(mi) || IsBlank(ma) || mi <= ma;;
 fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t; "&"; "&amp;"); "<"; "&lt;"); ">"; "&gt;"); """"; "&quot;"); "'"; "&#39;");;
 cfgAdmins = Coalesce(LookUp(RG_Konfiguration; Title = "Admins").Wert; "");;
 fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t; ""); " | ") As s; Trim(s.Value) <> ""));;
 fnFotoModus(f: Text; alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht"; f; alt; "Optional"; "Aus");;
+fnFotoNeuErlaubt(bew: Text; foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";;
 fnBeantwortet(bew: Text; wt: Text; wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);;
 fnAusserhalb(z: Number; mi: Number; ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));;
 fnKommentarNoetig(typ: Text; bew: Text; wt: Text; wz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew; wt; wz)) || (typ = "ZAHL" && gmodus = "Warnen" && fnAusserhalb(wz; mi; ma));;
 fnFehltGrund(typ: Text; pflicht: Boolean; bew: Text; wt: Text; wz: Number; kom: Text; foto: Text; fanz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Text = If(
     pflicht && ((typ = "IONIO" && bew = "") || (typ = "AUSWAHL" && wt = "") || (typ = "ZAHL" && IsBlank(wz)) || (typ = "TEXT" && Trim(wt) = "")); "Wert";
-    typ = "ZAHL" && gmodus = "Sperren" && fnAusserhalb(wz; mi; ma); "Bereich";
+    typ = "ZAHL" && gmodus = "Sperren" && fnSperreGilt(mi; ma) && fnAusserhalb(wz; mi; ma); "Bereich";
     fnKommentarNoetig(typ; bew; wt; wz; kpfl; gmodus; mi; ma) && Trim(kom) = ""; "Kommentar";
     foto = "Pflicht" && fanz < 1; "Foto";
     ""
 );;
-fnBedPasst(w: Text; bew: Text; wt: Text; wz: Number): Boolean = With({w2: Lower(Trim(w))}; If(w2 = "*"; fnBeantwortet(bew; wt; wz); w2 = Lower(bew) || w2 = Lower(Trim(wt)) || CountRows(Filter(Split(wt; ";") As s; Lower(Trim(s.Value)) = w2)) > 0));;
-fnSichtbar(bid: Number; w: Text; gef: Boolean; bBid: Number; bInaktiv: Boolean; bBew: Text; bWt: Text; bWz: Number): Boolean = bid = 0 || Trim(w) = "" || !gef || bInaktiv || bBid <> 0 || fnBedPasst(w; bBew; bWt; bWz);;
+fnBedNorm(w: Text): Text = Lower(Substitute(Substitute(Trim(Coalesce(w; "")); "."; ""); " "; ""));;
+fnBedGueltig(w: Text; typ: Text; auswahl: Text): Boolean = With({n: fnBedNorm(w)}; n = "*" || ((typ = "IONIO" || typ = "ZAHL") && (n = "io" || n = "nio")) || ((typ = "AUSWAHL" || typ = "MEHRFACH") && CountRows(Filter(Split(auswahl; ";") As s; fnBedNorm(s.Value) = n)) > 0));;
+fnBedPasst(w: Text; bew: Text; wt: Text; wz: Number): Boolean = With({n: fnBedNorm(w)}; If(n = "*"; fnBeantwortet(bew; wt; wz); n = fnBedNorm(bew) || n = fnBedNorm(wt) || CountRows(Filter(Split(wt; ";") As s; fnBedNorm(s.Value) = n)) > 0));;
+fnSichtbar(bid: Number; w: Text; gef: Boolean; bBid: Number; bInaktiv: Boolean; bTyp: Text; bAuswahl: Text; bBew: Text; bWt: Text; bWz: Number): Boolean = bid = 0 || Trim(w) = "" || !gef || bInaktiv || bBid <> 0 || !fnBedGueltig(w; bTyp; bAuswahl) || fnBedPasst(w; bBew; bWt; bWz);;
 fnFehlt(typ: Text; pflicht: Boolean; bew: Text; wt: Text; wz: Number; kom: Text; foto: Text; fanz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = fnFehltGrund(typ; pflicht; bew; wt; wz; kom; foto; fanz; kpfl; gmodus; mi; ma) <> "";;
 fnDateiname(t: Text): Text = Trim(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(t; "\"; "-"); "/"; "-"); ":"; "-"); "*"; ""); "?"; ""); """"; ""); "<"; ""); ">"; ""); "|"; "-"); "#"; ""); "%"; ""); "'"; ""));;
 fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(tag; 4) & "/" & Mid(tag; 6; 2);;fnSpUrl(bib: Text; pfad: Text): Text = "https://technoformgroup.sharepoint.com/sites/IMSKonzept/" & bib & "/" & Substitute(pfad; " "; "%20");;
@@ -218,52 +223,54 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         )
     )
 );;
-Set(varSprungRec; First(Sort(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)));;
+Set(varSprungRec; First(Sort(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)));;
 Reset(galKaPruefpunkte);;
 Set(varIsLoading; false)
 ```
 
 ### Schritt 4.5 – Galerie und Zähler
 
+Pfade: `galKaPruefpunkte` (Items) und die unsichtbaren `lblKaFehlendAnzahl`, `lblKaFehlend` liegen direkt auf `scrKategorie`; `lblKaUnter` in `conKaKopf`; `conKaBalkenWert` in `conKaBalken`; `lblKaStand` in `conKaFuss`.
+
 **`galKaPruefpunkte.Items`**
 
 ```
-Sort(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)
+Sort(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)
 ```
 
 **`lblKaFehlendAnzahl.Text`**
 
 ```
-CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert)))
+CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert)))
 ```
 
 **`lblKaFehlend.Text`**
 
 ```
-Concat(Filter(Sort(colAntworten; Reihenfolge) As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert)) As z; z.Frage & Switch(fnFehltGrund(z.Typ; z.Pflicht; z.Bewertung; z.WertText; z.WertZahl; z.Kommentar; z.FotoModus; CountRows(Filter(colFotos; PruefpunktID = z.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(z.Fotos); z.KommentarPflicht; z.Grenzmodus; z.MinWert; z.MaxWert); "Kommentar"; " (Kommentar)"; "Foto"; " (Foto)"; "Bereich"; " (unzulässiger Wert)"; "Uhrzeit"; " (Uhrzeit)"; ""); "; ")
+Concat(Filter(Sort(colAntworten; Reihenfolge) As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert)) As z; z.Frage & Switch(fnFehltGrund(z.Typ; z.Pflicht; z.Bewertung; z.WertText; z.WertZahl; z.Kommentar; z.FotoModus; CountRows(Filter(colFotos; PruefpunktID = z.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(z.Fotos); z.KommentarPflicht; z.Grenzmodus; z.MinWert; z.MaxWert); "Kommentar"; " (Kommentar)"; "Foto"; " (Foto)"; "Bereich"; " (unzulässiger Wert)"; "Uhrzeit"; " (Uhrzeit)"; ""); "; ")
 ```
 
 **`lblKaUnter.Text`**
 
 ```
-varBereichName & "  ·  Kategorie " & varKatPos & " von " & CountRows(colKatListe) & If(varNurLesen; "  ·  nur Ansicht"; "  ·  " & (CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))))) - Value(lblKaFehlendAnzahl.Text)) & " von " & CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))))) & " ausgefüllt")
+varBereichName & "  ·  Kategorie " & varKatPos & " von " & CountRows(colKatListe) & If(varNurLesen; "  ·  nur Ansicht"; "  ·  " & (CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))))) - Value(lblKaFehlendAnzahl.Text)) & " von " & CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))))) & " ausgefüllt")
 ```
 
 **`conKaBalkenWert.Width`**
 
 ```
-Parent.Width * With({n: CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl)))))}; If(n = 0; 0; (n - Value(lblKaFehlendAnzahl.Text)) / n))
+Parent.Width * With({n: CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl)))))}; If(n = 0; 0; (n - Value(lblKaFehlendAnzahl.Text)) / n))
 ```
 
 **`lblKaStand.Text`**
 
 ```
-If(varNurLesen; "Nur Ansicht – der Rundgang ist nicht mehr in Arbeit."; Value(lblKaFehlendAnzahl.Text) = 0; "✓  Alles ausgefüllt" & With({n: CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))) && a.Bewertung = "NIO"))}; If(n > 0; " · " & n & " n.i.O."; "")); "Noch offen (" & lblKaFehlendAnzahl.Text & "): " & lblKaFehlend.Text)
+If(varNurLesen; "Nur Ansicht – der Rundgang ist nicht mehr in Arbeit."; Value(lblKaFehlendAnzahl.Text) = 0; "✓  Alles ausgefüllt" & With({n: CountRows(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))) && a.Bewertung = "NIO"))}; If(n > 0; " · " & n & " n.i.O."; "")); "Noch offen (" & lblKaFehlendAnzahl.Text & "): " & lblKaFehlend.Text)
 ```
 
 ### Schritt 4.6 – Speichern
 
-`btnKaSpeichern.OnSelect`: Ausgeblendete leeren und markieren (vor dem Foto-Upload), Upload nur sichtbare, JSON mit `Ausgeblendet`.
+`btnKaSpeichern.OnSelect`: Ausgeblendete leeren (inkl. Foto-Links) und markieren, vor dem Foto-Upload; Upload und Anhängen von Links nur für sichtbare Punkte; JSON mit `Ausgeblendet`.
 
 **`btnKaSpeichern.OnSelect`**
 
@@ -271,7 +278,7 @@ If(varNurLesen; "Nur Ansicht – der Rundgang ist nicht mehr in Arbeit."; Value(
 If(
     Value(lblKaFehlendAnzahl.Text) > 0;
         Set(varZeigeFehlend; true);;
-        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert))));;
+        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert))));;
         Reset(galKaPruefpunkte);
     !varIsLoading && Now() >= varSperreBis;
         Set(varIsLoading; true);;
@@ -293,23 +300,23 @@ If(
                     Notify("Diese Kategorie wurde inzwischen von " & erg.PrueferName & " gespeichert. Bitte zurück und neu öffnen."; NotificationType.Error);
                 IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
                     Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
-                ClearCollect(colVersteckt; ShowColumns(Filter(colAntworten As a; !a.Inaktiv && !(If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Bewertung; b.WertText; b.WertZahl))))); PruefpunktID));;
-                UpdateIf(colAntworten; PruefpunktID in colVersteckt.PruefpunktID; {Bewertung: ""; WertText: ""; WertZahl: Blank(); Kommentar: ""; Ausgeblendet: true}; !Inaktiv && !(PruefpunktID in colVersteckt.PruefpunktID); {Ausgeblendet: false});;
-                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; !a.Ausgeblendet && (a.Bewertung = "NIO" || a.FotoModus <> "Aus"))));;
+                ClearCollect(colVersteckt; ShowColumns(Filter(colAntworten As a; !a.Inaktiv && !(If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))))); PruefpunktID));;
+                UpdateIf(colAntworten; PruefpunktID in colVersteckt.PruefpunktID; {Bewertung: ""; WertText: ""; WertZahl: Blank(); Kommentar: ""; Fotos: ""; Ausgeblendet: true}; !Inaktiv && !(PruefpunktID in colVersteckt.PruefpunktID); {Ausgeblendet: false});;
+                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
                 ForAll(colFotoNeu As f;
                     Patch(colFotos; LookUp(colFotos; Nr = f.Nr);
                         {Url: With({ordner: fnArchivOrdner(durch.TagText; durch.TestDatensatz) & "/" & durch.Title}; If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild; name: f.Datei}; f.Datei; ordner; varDurchID; f.PruefpunktID; durch.TestDatensatz)); ""; fnSpUrl("RG_Fotos"; ordner & "/" & f.Datei)))})
                 );;
-                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; !a.Ausgeblendet && (a.Bewertung = "NIO" || a.FotoModus <> "Aus")))) > 0;
-                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; !a.Ausgeblendet && (a.Bewertung = "NIO" || a.FotoModus <> "Aus")))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
-                    ForAll(Distinct(Filter(colFotos; !Uebernommen && !IsBlank(Url)); PruefpunktID) As d;
+                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) > 0;
+                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
+                    ForAll(Distinct(Filter(colFotos; !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)); PruefpunktID) As d;
                         Patch(colAntworten; LookUp(colAntworten; PruefpunktID = d.Value);
                             {Fotos: With({alt: LookUp(colAntworten; PruefpunktID = d.Value).Fotos; neu: Concat(Filter(colFotos; PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)); Url; " | ")};
                                 If(IsBlank(alt); neu; alt & " | " & neu))})
                     );;
                     UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
-                    UpdateIf(colAntworten; !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
-                    Set(varAntwortJSON; JSON(ShowColumns(colAntworten; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Ausgeblendet); JSONFormat.Compact));;
+                    UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
+                    Set(varAntwortJSON; JSON(ShowColumns(AddColumns(colAntworten; Warnung; Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)); PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
                             {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colAntworten; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
@@ -352,11 +359,11 @@ With({d: varDurch};
         " <span style='font-weight:400;color:#5F6370;font-size:13px'>" & fnHtml(e.BereichName) & " · " & fnHtml(e.PrueferName) & " · " & Text(e.GespeichertAm; "hh:mm") & "</span></h3>" &
         "<table style='width:100%;border-collapse:collapse;table-layout:fixed'>" &
         Concat(Filter(Table(ParseJSON(e.Antworten)); !Coalesce(IfError(Boolean(ThisRecord.Value.Ausgeblendet); false); false)) As a;
-            With({b: Text(a.Value.Bewertung); k: Text(a.Value.Kommentar); fo: Text(a.Value.Fotos)};
+            With({b: Text(a.Value.Bewertung); k: Text(a.Value.Kommentar); fo: Text(a.Value.Fotos); w: Coalesce(IfError(Boolean(a.Value.Warnung); false); false)};
                 "<tr style='border-bottom:1px solid #DADCE5;" & If(b = "NIO"; "background:#FCE8E6;"; "") & "'>" &
                 "<td style='padding:6px 8px;width:46%'>" & fnHtml(Text(a.Value.Frage)) & "</td>" &
-                "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO"; "#B3261E"; "#0F7B3F") & "'>" & Switch(b; "IO"; "i.O."; "NIO"; "n.i.O."; "") & "</td>" &
-                "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl); ""; Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) &
+                "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO"; "#B3261E"; w; "#9A5B00"; "#0F7B3F") & "'>" & Switch(b; "IO"; "i.O."; "NIO"; "n.i.O."; "") & "</td>" &
+                "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl); ""; Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) & If(w; " <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>"; "") &
                 If(IsBlank(k) || k = ""; ""; "<br><i style='color:" & If(b = "NIO"; "#B3261E"; "#5F6370") & "'>" & fnHtml(k) & "</i>") &
                 If(IsBlank(fo) || fo = ""; ""; "<br>" & Concat(Split(fo; " | ") As s; "<a href='" & Trim(s.Value) & "'>Foto ›</a> ")) &
                 "</td></tr>"
@@ -375,17 +382,23 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
+Vorschau neu starten. Neue Durchführung (K1 noch nicht gespeichert) – sonst ist A schon gespeichert.
+
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T4.1 | Kategorie 1 öffnen | Folgefrage ist **nicht** zu sehen; Kopf „… von N ausgefüllt“ zählt sie nicht |
-| T4.2 | Punkt A auf n.i.O. | Folgefrage erscheint (unter ihrer Reihenfolge), Fuß zählt sie als offen |
-| T4.3 | Folgefrage beantworten, A zurück auf i.O. | Folgefrage verschwindet, Fuß „✓ Alles ausgefüllt“ (wenn sonst alles da) |
-| T4.4 | A wieder n.i.O. | Folgefrage kommt mit der eingegebenen Antwort zurück (noch nicht gespeichert, also nicht verloren) |
-| T4.5 | A auf i.O., Speichern, Kategorie wieder öffnen, A auf n.i.O. | Folgefrage leer (beim Speichern geleert) |
-| T4.6 | A n.i.O. + Kommentar, Folgefrage beantworten, Speichern | gespeichert, Folgefrage im JSON mit `Ausgeblendet:false` |
-| T4.7 | Abschluss → Protokoll | Folgefrage steht bei T4.6-Stand drin; bei ausgeblendeter Folgefrage fehlt die Zeile |
-| T4.8 | BedingungWert leeren | Folgefrage immer sichtbar (sicherer Ausfall) |
-| T4.9 | Alte gespeicherte Kategorie (vor Paket 4) ansehen | unverändert (JSON ohne `Ausgeblendet` gilt als sichtbar) |
+| T4.1 | K1 öffnen | B ist nicht zu sehen; Kopf „… von N ausgefüllt“ zählt B nicht |
+| T4.2 | A auf n.i.O. | B erscheint direkt unter A; Fuß nennt A (Kommentar) und B |
+| T4.3 | B Text „Leck“, an B ein Foto-Knopf (Optional) sichtbar | B nicht mehr offen |
+| T4.4 | A zurück auf i.O. | B verschwindet, Liste rückt nach; Fuß ohne B |
+| T4.5 | A wieder n.i.O. | B kommt mit „Leck“ zurück (noch nicht gespeichert, also nicht verloren) |
+| T4.6 | A auf i.O., übrige Punkte ausfüllen, Speichern | „Gespeichert.“ |
+| T4.7 | Zurück, K1 „Bearbeiten“, A auf n.i.O. | B erscheint **leer** (beim Speichern geleert) |
+| T4.8 | A Kommentar „tropft“, B „Leck“, Speichern | „Gespeichert.“ |
+| T4.9 | SharePoint: BedingungWert von B = **n.i.O.**; Vorschau neu starten, K1 „Bearbeiten“, A auf i.O. | B verschwindet (Schreibweise egal) |
+| T4.10 | BedingungWert = **Rot**; Vorschau neu starten, K1 „Bearbeiten“ | B ist immer sichtbar (ungültiger Wert → sicherer Ausfall). Danach BedingungWert wieder **NIO** |
+| T4.11 | Nur mit Abschluss (siehe Paket 1, B7), Stand T4.8: RG_Maengel, Protokoll, „Ansehen“ | Mangel nur für A; Protokoll und Nur-Ansicht zeigen B mit „Leck“ |
+| T4.12 | Zweite Durchführung (anderer Tag, Nachholtag oder Testplan): K1 mit A = i.O. speichern, abschließen | Protokoll und Nur-Ansicht ohne B; kein Mangel |
+| T4.13 | Eine vor Paket 4 gespeicherte Kategorie „Ansehen“ | unverändert (JSON ohne `Ausgeblendet` gilt als sichtbar) |
 
 ## Rückweg
 
@@ -414,7 +427,6 @@ clrFehlerHell = ColorValue("#FCE8E6");;
 clrGesperrt = ColorValue("#9AA0A6");;
 clrGesperrtHell = ColorValue("#EEF0F3");;
 clrWarnung = ColorValue("#9A5B00");;
-clrWarnungHell = ColorValue("#FFF3E0");;
 stInArbeit = "InArbeit";;
 stAbschluss = "Abschluss";;
 stAbgeschlossen = "Abgeschlossen";;
@@ -496,20 +508,22 @@ fnPlanPasst(start: DateTime; bis: DateTime; wt: Number; zyklus: Number; d: Date)
 );;
 fnZahlBewertung(z: Number; mi: Number; ma: Number; gmodus: Text): Text = If(
     fnAusserhalb(z; mi; ma);
-    Switch(gmodus; "Warnen"; "IO"; "Sperren"; ""; "NIO");
+    Switch(If(gmodus = "Sperren" && !fnSperreGilt(mi; ma); "Mangel"; gmodus); "Warnen"; "IO"; "Sperren"; ""; "NIO");
     "IO"
 );;
 fnGrenzmodus(g: Text): Text = If(g = "Warnen" || g = "Sperren"; g; "Mangel");;
+fnSperreGilt(mi: Number; ma: Number): Boolean = IsBlank(mi) || IsBlank(ma) || mi <= ma;;
 fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t; "&"; "&amp;"); "<"; "&lt;"); ">"; "&gt;"); """"; "&quot;"); "'"; "&#39;");;
 cfgAdmins = Coalesce(LookUp(RG_Konfiguration; Title = "Admins").Wert; "");;
 fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t; ""); " | ") As s; Trim(s.Value) <> ""));;
 fnFotoModus(f: Text; alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht"; f; alt; "Optional"; "Aus");;
+fnFotoNeuErlaubt(bew: Text; foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";;
 fnBeantwortet(bew: Text; wt: Text; wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);;
 fnAusserhalb(z: Number; mi: Number; ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));;
 fnKommentarNoetig(typ: Text; bew: Text; wt: Text; wz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew; wt; wz)) || (typ = "ZAHL" && gmodus = "Warnen" && fnAusserhalb(wz; mi; ma));;
 fnFehltGrund(typ: Text; pflicht: Boolean; bew: Text; wt: Text; wz: Number; kom: Text; foto: Text; fanz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Text = If(
     pflicht && ((typ = "IONIO" && bew = "") || (typ = "AUSWAHL" && wt = "") || (typ = "ZAHL" && IsBlank(wz)) || (typ = "TEXT" && Trim(wt) = "")); "Wert";
-    typ = "ZAHL" && gmodus = "Sperren" && fnAusserhalb(wz; mi; ma); "Bereich";
+    typ = "ZAHL" && gmodus = "Sperren" && fnSperreGilt(mi; ma) && fnAusserhalb(wz; mi; ma); "Bereich";
     fnKommentarNoetig(typ; bew; wt; wz; kpfl; gmodus; mi; ma) && Trim(kom) = ""; "Kommentar";
     foto = "Pflicht" && fanz < 1; "Foto";
     ""
@@ -642,21 +656,21 @@ If(
                     Notify("Diese Kategorie wurde inzwischen von " & erg.PrueferName & " gespeichert. Bitte zurück und neu öffnen."; NotificationType.Error);
                 IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
                     Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
-                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus")));;
+                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
                 ForAll(colFotoNeu As f;
                     Patch(colFotos; LookUp(colFotos; Nr = f.Nr);
                         {Url: With({ordner: fnArchivOrdner(durch.TagText; durch.TestDatensatz) & "/" & durch.Title}; If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild; name: f.Datei}; f.Datei; ordner; varDurchID; f.PruefpunktID; durch.TestDatensatz)); ""; fnSpUrl("RG_Fotos"; ordner & "/" & f.Datei)))})
                 );;
-                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus"))) > 0;
-                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus"))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
+                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) > 0;
+                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
                     ForAll(Distinct(Filter(colFotos; !Uebernommen && !IsBlank(Url)); PruefpunktID) As d;
                         Patch(colAntworten; LookUp(colAntworten; PruefpunktID = d.Value);
                             {Fotos: With({alt: LookUp(colAntworten; PruefpunktID = d.Value).Fotos; neu: Concat(Filter(colFotos; PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)); Url; " | ")};
                                 If(IsBlank(alt); neu; alt & " | " & neu))})
                     );;
                     UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
-                    UpdateIf(colAntworten; !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
-                    Set(varAntwortJSON; JSON(ShowColumns(colAntworten; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos); JSONFormat.Compact));;
+                    UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
+                    Set(varAntwortJSON; JSON(ShowColumns(AddColumns(colAntworten; Warnung; Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)); PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
                             {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colAntworten; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
@@ -695,11 +709,11 @@ With({d: varDurch};
         " <span style='font-weight:400;color:#5F6370;font-size:13px'>" & fnHtml(e.BereichName) & " · " & fnHtml(e.PrueferName) & " · " & Text(e.GespeichertAm; "hh:mm") & "</span></h3>" &
         "<table style='width:100%;border-collapse:collapse;table-layout:fixed'>" &
         Concat(Table(ParseJSON(e.Antworten)) As a;
-            With({b: Text(a.Value.Bewertung); k: Text(a.Value.Kommentar); fo: Text(a.Value.Fotos)};
+            With({b: Text(a.Value.Bewertung); k: Text(a.Value.Kommentar); fo: Text(a.Value.Fotos); w: Coalesce(IfError(Boolean(a.Value.Warnung); false); false)};
                 "<tr style='border-bottom:1px solid #DADCE5;" & If(b = "NIO"; "background:#FCE8E6;"; "") & "'>" &
                 "<td style='padding:6px 8px;width:46%'>" & fnHtml(Text(a.Value.Frage)) & "</td>" &
-                "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO"; "#B3261E"; "#0F7B3F") & "'>" & Switch(b; "IO"; "i.O."; "NIO"; "n.i.O."; "") & "</td>" &
-                "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl); ""; Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) &
+                "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO"; "#B3261E"; w; "#9A5B00"; "#0F7B3F") & "'>" & Switch(b; "IO"; "i.O."; "NIO"; "n.i.O."; "") & "</td>" &
+                "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl); ""; Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) & If(w; " <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>"; "") &
                 If(IsBlank(k) || k = ""; ""; "<br><i style='color:" & If(b = "NIO"; "#B3261E"; "#5F6370") & "'>" & fnHtml(k) & "</i>") &
                 If(IsBlank(fo) || fo = ""; ""; "<br>" & Concat(Split(fo; " | ") As s; "<a href='" & Trim(s.Value) & "'>Foto ›</a> ")) &
                 "</td></tr>"

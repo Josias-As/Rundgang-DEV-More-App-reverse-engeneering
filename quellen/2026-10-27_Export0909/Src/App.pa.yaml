@@ -1,0 +1,147 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+App:
+  Properties:
+    Formulas: |
+      =clrPrimaer = ColorValue("#171496");
+      clrPrimaerHell = ColorValue("#E8E8F7");
+      clrHintergrund = ColorValue("#F4F5F9");
+      clrKarte = Color.White;
+      clrRahmen = ColorValue("#DADCE5");
+      clrText = ColorValue("#1B1B1F");
+      clrTextGrau = ColorValue("#5F6370");
+      clrErfolg = ColorValue("#0F7B3F");
+      clrErfolgHell = ColorValue("#E3F4EA");
+      clrFehler = ColorValue("#B3261E");
+      clrFehlerHell = ColorValue("#FCE8E6");
+      clrGesperrt = ColorValue("#9AA0A6");
+      clrGesperrtHell = ColorValue("#EEF0F3");
+      stInArbeit = "InArbeit";
+      stAbschluss = "Abschluss";
+      stAbgeschlossen = "Abgeschlossen";
+      cfgNachholTage = Max(
+          0,
+          Coalesce(
+              Value(
+                  LookUp(
+                      RG_Konfiguration,
+                      Title = "NachholTage"
+                  ).Wert
+              ),
+              0
+          )
+      );
+      cfgTestmodus = Coalesce(
+          LookUp(
+              RG_Konfiguration,
+              Title = "Testmodus"
+          ).Wert,
+          "Ja"
+      ) <> "Nein";
+      cfgTestadresse = Coalesce(
+          LookUp(
+              RG_Konfiguration,
+              Title = "Testadresse"
+          ).Wert,
+          ""
+      );
+      cfgEmpfaenger = Coalesce(
+          LookUp(
+              RG_Konfiguration,
+              Title = "Empfaenger"
+          ).Wert,
+          ""
+      );
+      fnTagAnzeige(d: Date): Text = Text(
+          d,
+          "dddd, dd.mm.yyyy",
+          "de-DE"
+      ) & " · KW " & ISOWeekNum(d);
+      fnTagLabel(d: Date, heute: Date): Text = Switch(
+          DateDiff(
+              d,
+              heute,
+              TimeUnit.Days
+          ),
+          0,
+          "Heute – ",
+          1,
+          "Gestern – ",
+          ""
+      ) & fnTagAnzeige(d);
+      fnPlanPasst(start: DateTime, bis: DateTime, wt: Number, zyklus: Number, d: Date): Boolean = With(
+          {
+              t: DateDiff(
+                  start,
+                  d,
+                  TimeUnit.Days
+              )
+          },
+          !IsBlank(start) && Weekday(
+              d,
+              StartOfWeek.Monday
+          ) = wt && t >= 0 && (IsBlank(bis) || DateDiff(
+              d,
+              bis,
+              TimeUnit.Days
+          ) >= 0) && Mod(
+              RoundDown(
+                  t / 7,
+                  0
+              ),
+              Max(
+                  1,
+                  zyklus
+              )
+          ) = 0
+      );
+      fnZahlBewertung(z: Number, mi: Number, ma: Number): Text = If(
+          (!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma),
+          "NIO",
+          "IO"
+      );
+      fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t, "&", "&amp;"), "<", "&lt;"), ">", "&gt;"), """", "&quot;"), "'", "&#39;");
+      cfgAdmins = Coalesce(LookUp(RG_Konfiguration, Title = "Admins").Wert, "");
+      fnFehlt(typ: Text, pflicht: Boolean, bew: Text, wt: Text, wz: Number, kom: Text): Boolean = (pflicht && ((typ = "IONIO" && bew = "") || (typ = "AUSWAHL" && wt = "") || (typ = "ZAHL" && IsBlank(wz)) || (typ = "TEXT" && Trim(wt) = ""))) || (bew = "NIO" && Trim(kom) = "");
+      fnDateiname(t: Text): Text = Trim(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(t, "\", "-"), "/", "-"), ":", "-"), "*", ""), "?", ""), """", ""), "<", ""), ">", ""), "|", "-"), "#", ""), "%", ""), "'", ""));
+      fnArchivOrdner(tag: Text, test: Boolean): Text = If(test, "TEST/", "") & Left(tag, 4) & "/" & Mid(tag, 6, 2);fnSpUrl(bib: Text, pfad: Text): Text = "https://technoformgroup.sharepoint.com/sites/IMSKonzept/" & bib & "/" & Substitute(pfad, " ", "%20");
+    OnStart: |+
+      =Set(varHeute, Today());
+      Set(varTag, Today());
+      Set(varTagText, Text(Today(), "yyyy-mm-dd"));
+      Set(varIsLoading, false);
+      Set(varSperreBis, Now());
+      Set(varPatchFehler, false);
+      Set(varRgID, 0);
+      Set(varSchluessel, "");
+      Set(varDurchID, 0);
+      Set(varDurch, Defaults(RG_Durchfuehrungen));
+      Set(varKatID, 0);
+      Set(varKatPos, 0);
+      Set(varKatName, "");
+      Set(varBereichName, "");
+      Set(varSchluesselK, "");
+      Set(varErgebnis, Defaults(RG_KategorieErgebnisse));
+      Set(varNachlese, Defaults(RG_KategorieErgebnisse));
+      Set(varGespeichertBeimOeffnen, Defaults(RG_KategorieErgebnisse).GespeichertAm);
+      Set(varAntwortJSON, "");
+      Set(varNurLesen, false);
+      Set(varAbschlussFrage, false);
+      Set(varZurueckFrage, false);
+      Set(varGeaendert, false);
+      Set(varAlleIOFrage, false);
+      Set(varProtokollZeit, Now());
+      Set(varIstAdmin, CountRows(Filter(Split(Lower(cfgAdmins), ";") As a, Trim(a.Value) = Lower(User().Email))) > 0);
+      Set(varZuruecksetzenFrage, false);
+      Set(varWeiter, false);
+      Set(varZeigeFehlend, false);
+      Set(varFotoPP, 0);
+      Set(varArchivStart, false)
+    StartScreen: =scrStart
+    Theme: =PowerAppsTheme

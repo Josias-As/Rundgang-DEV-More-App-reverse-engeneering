@@ -1,0 +1,497 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrRundgang:
+    Properties:
+      Fill: =clrHintergrund
+      LoadingSpinner: =LoadingSpinner.Data
+      LoadingSpinnerColor: =clrPrimaer
+      OnVisible: |-
+        =If(!varWeiter,
+            Set(varIsLoading, true);
+            Set(varAbschlussFrage, false);
+            Set(varZuruecksetzenFrage, false);
+            Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));
+            Concurrent(
+                Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),
+                ClearCollect(colErledigt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, KategorieID, AnzahlNIO, GespeichertAm, PrueferName))
+            );
+            IfError(ClearCollect(colKatListe, ForAll(Table(ParseJSON(varDurch.KategorieListe)) As j, {KategorieID: Value(j.Value.KategorieID), Position: Value(j.Value.Position), BereichName: Text(j.Value.BereichName), KategorieName: Text(j.Value.KategorieName)})), Clear(colKatListe));
+            If(CountRows(colKatListe) = 0 || CountRows(colKatListe) <> varDurch.AnzahlKategorien, Notify("Die Kategorienliste dieses Rundgangs konnte nicht geladen werden. Bitte zurück und erneut öffnen.", NotificationType.Error));
+            Set(varIsLoading, false)
+        )
+    Children:
+      - conRuKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaer
+            Height: =136
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - btnRuZurueck:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Left
+                  BorderThickness: =0
+                  Color: =Color.White
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: =Navigate(scrStart, ScreenTransition.None)
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  Text: ="‹  Übersicht"
+                  Width: =180
+                  X: =8
+                  Y: =8
+            - lblRuTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =24
+                  Text: =varDurch.RundgangName
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =56
+            - lblRuUnter:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(255, 255, 255, 0.85)
+                  Font: =Font.'Segoe UI'
+                  Height: =28
+                  Size: =14
+                  Text: =fnTagAnzeige(DateValue(varDurch.TagText)) & "  ·  " & CountRows(colErledigt) & " von " & CountRows(colKatListe) & " Kategorien erledigt"
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =96
+            - btnRuProtokoll:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Right
+                  BorderThickness: =0
+                  Color: =Color.White
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: =Navigate(scrProtokoll, ScreenTransition.None)
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  Text: ="Protokoll" & If(IsBlank(varDurch.ProtokollUrl), "  ⚠", "") & "  ›"
+                  Visible: =varDurch.Status = stAbgeschlossen
+                  Width: =180
+                  X: =Parent.Width - 196
+                  Y: =8
+            - btnRuZuruecksetzen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =Color.White
+                  BorderThickness: =1
+                  Color: =Color.White
+                  Fill: =If(varZuruecksetzenFrage, clrFehler, RGBA(0, 0, 0, 0))
+                  Font: =Font.'Segoe UI'
+                  Height: =44
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis,
+                        If(!varZuruecksetzenFrage,
+                            Set(varZuruecksetzenFrage, true);
+                            Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),
+                            Set(varZuruecksetzenFrage, false);
+                            Set(varIsLoading, true);
+                            Set(varPatchFehler, false);
+                            Refresh(RG_Durchfuehrungen);
+                            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));
+                            If(!varIstAdmin || varDurch.Status <> stAbschluss,
+                                Notify("Der Rundgang ist nicht (mehr) im Status „Abschluss“ – nichts zu tun.", NotificationType.Information),
+                                DateDiff(varDurch.Geändert, Now(), TimeUnit.Minutes) < 5,
+                                Notify("Der Abschluss wurde vor weniger als 5 Minuten begonnen und läuft evtl. noch auf einem anderen Gerät. Bitte später erneut versuchen.", NotificationType.Warning),
+                                If(IsError(Remove(RG_Maengel, Filter(RG_Maengel, DurchfuehrungID = varDurchID && Status.Value = "Offen"))), Set(varPatchFehler, true));
+                                If(IsError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stInArbeit})), Set(varPatchFehler, true));
+                                Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_Maengel));
+                                Concurrent(
+                                    Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),
+                                    ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID && Status.Value = "Offen"), Title))
+                                );
+                                If(varDurch.Status = stInArbeit && IsEmpty(colMaengelIst),
+                                    Notify("Zurückgesetzt – der Rundgang ist wieder in Arbeit. Kategorien können korrigiert und der Abschluss neu gestartet werden.", NotificationType.Success),
+                                    Notify("Zurücksetzen nicht vollständig bestätigt. Bitte erneut versuchen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error)
+                                )
+                            );
+                            Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));
+                            Set(varIsLoading, false)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Size: =14
+                  Text: =If(varZuruecksetzenFrage, "Wirklich zurücksetzen?", "↺  Zurück auf „In Arbeit“")
+                  Visible: =varIstAdmin && varDurch.Status = stAbschluss
+                  Width: =260
+                  X: =Parent.Width - 276
+                  Y: =10
+      - conRuBalken:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaerHell
+            Height: =6
+            Width: =Parent.Width
+            Y: =136
+          Children:
+            - conRuBalkenWert:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =If(varDurch.Status = stAbgeschlossen, clrErfolg, clrPrimaer)
+                  Height: =Parent.Height
+                  Width: =Parent.Width * If(CountRows(colKatListe) = 0, 0, CountRows(colErledigt) / CountRows(colKatListe))
+      - lblRuBanner:
+          Control: Label@2.5.1
+          Properties:
+            Color: =If(varDurch.Status = stAbgeschlossen, clrErfolg, clrFehler)
+            Fill: =If(varDurch.Status = stAbgeschlossen, clrErfolgHell, clrFehlerHell)
+            Font: =Font.'Segoe UI'
+            Height: =If(varDurch.Status = stAbgeschlossen || varDurch.Status = stAbschluss, 56, 0)
+            PaddingLeft: =24
+            PaddingRight: =24
+            Size: =14
+            Text: |-
+              =If(varDurch.Status = stAbgeschlossen,
+                  "✓  Abgeschlossen" & If(IsBlank(varDurch.EndeZeit), "", " am " & Text(varDurch.EndeZeit, "dd.mm.yyyy hh:mm")) & " · " & Coalesce(varDurch.AnzahlNIO, 0) & " Mängel erfasst. Kategorien können nur noch angesehen werden. Support: Josias.Assefaw@technoform.com",
+                  "⚠  Abschluss wurde begonnen, aber nicht beendet. Bitte „Rundgang abschließen“ erneut tippen.")
+            Visible: =varDurch.Status = stAbgeschlossen || varDurch.Status = stAbschluss
+            Width: =Parent.Width
+            Y: =142
+      - galRuKategorien:
+          Control: Gallery@2.15.0
+          Variant: VariableHeight
+          Properties:
+            AccessibleLabel: ="Kategorien des Rundgangs " & varDurch.RundgangName
+            Height: =Parent.Height - 150 - If(varDurch.Status = stAbgeschlossen || varDurch.Status = stAbschluss, 56, 0) - If(varDurch.Status = stInArbeit || varDurch.Status = stAbschluss, 104, 0)
+            Items: |-
+              =With({liste: AddColumns(colKatListe, Erledigt, !IsBlank(LookUp(colErledigt As e, e.KategorieID = KategorieID)))},
+                  Sort(
+                      AddColumns(liste,
+                          Zustand, If(Erledigt, "erledigt", Position = Min(Filter(liste As l, !l.Erledigt), Position), "naechste", "gesperrt"),
+                          ErsteImBereich, Position = Min(Filter(liste As l2, l2.BereichName = BereichName), Position),
+                          NIO, Coalesce(LookUp(colErledigt As e2, e2.KategorieID = KategorieID).AnzahlNIO, 0)
+                      ),
+                      Position
+                  )
+              )
+            ShowScrollbar: =false
+            TemplatePadding: =0
+            TemplateSize: =100
+            Width: =Parent.Width
+            Y: =150 + If(varDurch.Status = stAbgeschlossen || varDurch.Status = stAbschluss, 56, 0)
+          Children:
+            - lblRuBereich:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =If(ThisItem.ErsteImBereich, 44, 0)
+                  Text: =Upper(ThisItem.BereichName)
+                  VerticalAlign: =VerticalAlign.Bottom
+                  Visible: =ThisItem.ErsteImBereich
+                  Width: =Parent.TemplateWidth - 56
+                  X: =28
+            - conRuKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =Switch(ThisItem.Zustand, "erledigt", clrErfolg, "naechste", clrPrimaer, clrRahmen)
+                  BorderThickness: =If(ThisItem.Zustand = "naechste", 2, 1)
+                  DropShadow: =If(ThisItem.Zustand = "gesperrt", DropShadow.None, DropShadow.Light)
+                  Fill: =If(ThisItem.Zustand = "gesperrt", clrGesperrtHell, clrKarte)
+                  Height: =84
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =Parent.TemplateWidth - 48
+                  X: =24
+                  Y: =If(ThisItem.ErsteImBereich, 44, 0) + 8
+                Children:
+                  - lblRuSymbol:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =Switch(ThisItem.Zustand, "erledigt", clrErfolg, "naechste", clrPrimaer, clrGesperrt)
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.Height
+                        Size: =22
+                        Text: |-
+                          =Switch(ThisItem.Zustand, "erledigt", "✓", "naechste", "▶", "🔒")
+                        Width: =48
+                        X: =8
+                  - lblRuKatName:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.Zustand = "gesperrt", clrGesperrt, clrText)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        Size: =18
+                        Text: =ThisItem.Position & ". " & ThisItem.KategorieName
+                        Width: =Parent.Width - 260
+                        X: =60
+                        Y: =12
+                  - lblRuKatZustand:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.Zustand = "erledigt" && ThisItem.NIO > 0, clrFehler, clrTextGrau)
+                        Font: =Font.'Segoe UI'
+                        Height: =26
+                        Text: |-
+                          =Switch(ThisItem.Zustand,
+                              "erledigt", "Erledigt" & If(ThisItem.NIO > 0, " · " & ThisItem.NIO & " n.i.O.", " · alles i.O."),
+                              "naechste", "Als Nächstes",
+                              "Gesperrt – erst die vorherige Kategorie abschließen")
+                        Width: =Parent.Width - 260
+                        X: =60
+                        Y: =44
+                  - btnRuOeffnen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =If(ThisItem.Zustand = "naechste", 0, 2)
+                        Color: =If(ThisItem.Zustand = "naechste", Color.White, clrPrimaer)
+                        DisabledBorderColor: =clrRahmen
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(ThisItem.Zustand = "gesperrt" || varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(ThisItem.Zustand = "naechste", clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =52
+                        HoverColor: =Self.Color
+                        HoverFill: =If(ThisItem.Zustand = "naechste", ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: |-
+                          =If(ThisItem.Zustand = "gesperrt",
+                              Notify("Bitte zuerst die vorherige Kategorie abschließen.", NotificationType.Warning),
+                              Set(varKatID, ThisItem.KategorieID);
+                              Set(varKatPos, ThisItem.Position);
+                              Set(varKatName, ThisItem.KategorieName);
+                              Set(varBereichName, ThisItem.BereichName);
+                              Navigate(scrKategorie, ScreenTransition.None)
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Text: =Switch(ThisItem.Zustand, "erledigt", If(varDurch.Status = stInArbeit, "Bearbeiten", "Ansehen"), "naechste", "Öffnen", "Gesperrt")
+                        Width: =168
+                        X: =Parent.Width - 184
+                        Y: =(Parent.Height - 52) / 2
+            - lblRuAbstand:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =8
+                  Text: =""
+                  Width: =10
+                  Y: =If(ThisItem.ErsteImBereich, 44, 0) + 100
+      - conRuFuss:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            Fill: =clrKarte
+            Height: =If(varDurch.Status = stInArbeit || varDurch.Status = stAbschluss, 104, 0)
+            Visible: =varDurch.Status = stInArbeit || varDurch.Status = stAbschluss
+            Width: =Parent.Width
+            Y: =Parent.Height - If(varDurch.Status = stInArbeit || varDurch.Status = stAbschluss, 104, 0)
+          Children:
+            - btnRuAbschluss:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading || CountRows(colKatListe) = 0 || CountRows(colErledigt) < CountRows(colKatListe), DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =If(varAbschlussFrage, clrFehler, clrErfolg)
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(Self.Fill, -15%)
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis,
+                        If(!varAbschlussFrage,
+                            Set(varAbschlussFrage, true);
+                            Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),
+                            Set(varAbschlussFrage, false);
+                            Set(varIsLoading, true);
+                            Set(varPatchFehler, false);
+                            Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));
+                            Concurrent(
+                                Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),
+                                ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID))
+                            );
+                            If(IsError(ClearCollect(colKatListe, ForAll(Table(ParseJSON(varDurch.KategorieListe)) As j, {KategorieID: Value(j.Value.KategorieID), Position: Value(j.Value.Position), BereichName: Text(j.Value.BereichName), KategorieName: Text(j.Value.KategorieName)}))), Clear(colKatListe));
+                            If(
+                                !(varDurch.Status in [stInArbeit, stAbschluss]),
+                                    Notify("Dieser Rundgang ist bereits abgeschlossen.", NotificationType.Information),
+                                CountRows(colKatListe) = 0 || CountRows(colKatListe) <> varDurch.AnzahlKategorien,
+                                    Notify("Die Kategorienliste dieses Rundgangs ist unvollständig. Bitte zurück und erneut öffnen.", NotificationType.Error),
+                                CountRows(Filter(colKatListe As kl, IsBlank(LookUp(colErgAlle As e, e.KategorieID = kl.KategorieID)))) > 0,
+                                    Notify("Es sind noch nicht alle Kategorien gespeichert.", NotificationType.Warning),
+                                // (0) Status Abschluss setzen und bestätigen – ab jetzt lehnt SS2 Änderungen ab
+                                If(varDurch.Status = stInArbeit && IsError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbschluss})), Set(varPatchFehler, true));
+                                Refresh(RG_Durchfuehrungen);
+                                Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));
+                                If(varDurch.Status <> stAbschluss,
+                                    Notify("Der Rundgang konnte nicht in den Abschluss gesetzt werden. Bitte erneut tippen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error),
+                                    // (a) Ergebnisse nach dem Statuswechsel lesen: maßgeblicher Stand
+                                    Refresh(RG_KategorieErgebnisse);
+                                    ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID));
+                                    If(IsError(
+                                        ClearCollect(colMaengelSoll,
+                                            Filter(Ungroup(
+                                                ForAll(Filter(colErgAlle, AnzahlNIO > 0) As e3,
+                                                    {Zeilen: ForAll(Filter(Table(ParseJSON(e3.Antworten)) As a, Text(a.Value.Bewertung) = "NIO") As n,
+                                                        {Title: "D" & varDurchID & "-P" & Value(n.Value.PruefpunktID),
+                                                         PruefpunktID: Value(n.Value.PruefpunktID),
+                                                         BereichName: e3.BereichName,
+                                                         KategorieName: e3.KategorieName,
+                                                         Frage: Left(Text(n.Value.Frage), 255),
+                                                         Wert: Left(Coalesce(Text(n.Value.WertText), "") & If(IsBlank(n.Value.WertZahl), "", Text(Value(n.Value.WertZahl)) & " " & Coalesce(Text(n.Value.Einheit), "")), 255),
+                                                         Kommentar: Coalesce(Text(n.Value.Kommentar), ""),
+                                                 FotoUrls: Coalesce(Text(n.Value.Fotos), "")})}
+                                                ),
+                                                Zeilen
+                                            ), !IsBlank(PruefpunktID))
+                                        )),
+                                        Clear(colMaengelSoll)
+                                    );
+                                    If(Sum(colErgAlle, AnzahlNIO) <> CountRows(colMaengelSoll),
+                                        Notify("Die Mängel ließen sich nicht vollständig aus den Antworten ermitteln (" & CountRows(colMaengelSoll) & " von " & Sum(colErgAlle, AnzahlNIO) & "). Bitte den Rundgang melden.", NotificationType.Error),
+                                        // (b) fehlende Mängel anlegen (Schlüssel D…-P…, wiederholbar)
+                                        Refresh(RG_Maengel);
+                                        ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title));
+                                        IfError(
+                                            Collect(RG_Maengel,
+                                                ForAll(Filter(colMaengelSoll As s, IsBlank(LookUp(colMaengelIst As i, i.Title = s.Title))) As m,
+                                                    {Title: m.Title, DurchfuehrungID: varDurchID, PruefpunktID: m.PruefpunktID, RundgangName: varDurch.RundgangName, BereichName: m.BereichName, KategorieName: m.KategorieName, Frage: m.Frage, Wert: m.Wert, Kommentar: m.Kommentar, FotoUrls: m.FotoUrls, FestgestelltAm: Now(), FestgestelltVon: User().Email, Status: {Value: "Offen"}, TestDatensatz: varDurch.TestDatensatz})
+                                            ),
+                                            Set(varPatchFehler, true)
+                                        );
+                                        // Nachlese: Mängel vollständig? Ergebnisse unverändert seit (a)?
+                                        Concurrent(Refresh(RG_Maengel), Refresh(RG_KategorieErgebnisse), Refresh(RG_Durchfuehrungen));
+                                        Concurrent(
+                                            ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title)),
+                                            ClearCollect(colErgJetzt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, GespeichertAm))
+                                        );
+                                        If(
+                                            CountRows(Filter(colMaengelSoll As s2, IsBlank(LookUp(colMaengelIst As i2, i2.Title = s2.Title)))) > 0,
+                                                Notify("Die Mängel konnten nicht vollständig gespeichert werden. Bitte „Rundgang abschließen“ erneut tippen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error),
+                                            Concat(Sort(colErgJetzt, ID), ID & "@" & Text(GespeichertAm, "yyyy-mm-dd hh:mm:ss"), ";") <> Concat(Sort(colErgAlle, ID), ID & "@" & Text(GespeichertAm, "yyyy-mm-dd hh:mm:ss"), ";"),
+                                                Notify("Während des Abschlusses wurde eine Kategorie gespeichert. Bitte „Rundgang abschließen“ erneut tippen.", NotificationType.Warning),
+                                            LookUp(RG_Durchfuehrungen, ID = varDurchID).Status <> stAbschluss,
+                                        Notify("Der Abschluss wurde inzwischen zurückgesetzt. Bitte die Übersicht neu öffnen.", NotificationType.Warning),
+                                    // (c) Abgeschlossen + Nachlese
+                                            IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll)}), Set(varPatchFehler, true));
+                                            Refresh(RG_Durchfuehrungen);
+                                            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));
+                                            If(varDurch.Status = stAbgeschlossen,
+                                                Notify("Rundgang abgeschlossen · " & CountRows(colMaengelSoll) & " Mängel erfasst. Protokoll wird archiviert …", NotificationType.Success);
+                                                    Set(varArchivStart, false);
+                                                    Navigate(scrProtokoll, ScreenTransition.None),
+                                                Notify("Der Abschluss wurde nicht bestätigt. Bitte erneut versuchen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error)
+                                            )
+                                        )
+                                    )
+                                )
+                            );
+                            Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));
+                            Set(varIsLoading, false)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(Self.Fill, -30%)
+                  Size: =18
+                  Text: |-
+                    =If(varAbschlussFrage, "Wirklich abschließen? Zum Bestätigen erneut tippen",
+                        CountRows(colErledigt) < CountRows(colKatListe), "Rundgang abschließen (noch " & (CountRows(colKatListe) - CountRows(colErledigt)) & " offen)",
+                        "Rundgang abschließen")
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =20
+      - conRuLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =If(varWeiter, RGBA(244, 245, 249, 1), RGBA(244, 245, 249, 0.75))
+            Height: =Parent.Height
+            Visible: =varIsLoading || varWeiter
+            Width: =Parent.Width
+          Children:
+            - btnRuLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  Text: =""
+                  Width: =Parent.Width
+            - lblRuLaden:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =18
+                  Text: =If(varWeiter, "Nächste Kategorie wird geöffnet …", "Bitte warten …")
+                  Width: =Parent.Width
+                  Y: =(Parent.Height - 40) / 2
+      - tmrWeiter:
+          Control: Timer@2.1.0
+          Properties:
+            Duration: =100
+            Height: =10
+            OnTimerEnd: |-
+              =If(varWeiter,
+                  Refresh(RG_KategorieErgebnisse);
+                  ClearCollect(colErledigt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, KategorieID, AnzahlNIO, GespeichertAm, PrueferName));
+                  With({nx: First(Sort(Filter(colKatListe As k, IsBlank(LookUp(colErledigt As e, e.KategorieID = k.KategorieID))), Position))},
+                      If(!IsBlank(nx) && varDurch.Status = stInArbeit,
+                          Set(varKatID, nx.KategorieID);
+                          Set(varKatPos, nx.Position);
+                          Set(varKatName, nx.KategorieName);
+                          Set(varBereichName, nx.BereichName);
+                          Set(varIsLoading, true);
+                          Set(varWeiter, false);
+                          Navigate(scrKategorie, ScreenTransition.None),
+                          Set(varWeiter, false)
+                      )
+                  )
+              )
+            Start: =varWeiter
+            Visible: =false
+            Width: =10

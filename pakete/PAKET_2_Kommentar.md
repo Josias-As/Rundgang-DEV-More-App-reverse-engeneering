@@ -1,6 +1,6 @@
 # Baukasten-Paket 2 – Pflicht-Kommentar auch bei i.O. (pro Prüfpunkt)
 
-Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0724` **(ENTWURF: Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export neu erzeugen)**.
+Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0909`.
 
 ## Kurzfassung
 
@@ -13,6 +13,7 @@ Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-1
 ## Voraussetzungen
 
 - Paket 1 ist eingefügt, getestet und gespeichert.
+- Die Blöcke sind aus dem Export 27.10.2026 09:09 (`frischerexport_20261027090933.zip`) erzeugt. Hat sich die App seitdem geändert, erst einen neuen Export schicken; der Generator bricht ab, wenn ein Vorher-Stand nicht mehr passt.
 
 ## Schritte
 
@@ -135,6 +136,7 @@ fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t
 cfgAdmins = Coalesce(LookUp(RG_Konfiguration; Title = "Admins").Wert; "");;
 fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t; ""); " | ") As s; Trim(s.Value) <> ""));;
 fnFotoModus(f: Text; alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht"; f; alt; "Optional"; "Aus");;
+fnFotoNeuErlaubt(bew: Text; foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";;
 fnBeantwortet(bew: Text; wt: Text; wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);;
 fnAusserhalb(z: Number; mi: Number; ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));;
 fnKommentarNoetig(typ: Text; bew: Text; wt: Text; wz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew; wt; wz));;
@@ -270,21 +272,25 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
+Vorbereitung in RG_Pruefpunkte, danach Vorschau neu starten: P10 Foto = **Optional** (sonst blockiert die Foto-Pflicht das Speichern in der Vorschau). In der zweiten Kategorie **K2**: **PK** (i.O./n.i.O., Pflicht = Ja) KommentarPflicht = **Ja**; **PN** (i.O./n.i.O., Pflicht = **Nein**) KommentarPflicht = **Ja**; **PM** = ein anderer Punkt ohne KommentarPflicht.
+
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T2.1 | Kategorie 2 öffnen, KommentarPflicht-Punkt auf i.O. | Kommentarfeld erscheint mit „Kommentar (Pflicht)“, rot umrandet; Fuß „Noch offen (1): … (Kommentar)“ |
-| T2.2 | Kommentar „sauber“ eintragen | Fuß „✓ Alles ausgefüllt“ |
-| T2.3 | Auf n.i.O. wechseln | Hinweis „Kommentar zum Mangel (Pflicht)“, Kommentar bleibt stehen |
-| T2.4 | Zurück auf i.O., Speichern | „Gespeichert.“ |
-| T2.5 | Kategorie 2 wieder öffnen | i.O. + Kommentar „sauber“ ist da |
-| T2.6 | Anderer Punkt ohne KommentarPflicht: n.i.O. + Kommentar → i.O. → Speichern → wieder öffnen | Kommentar ist weg (Verhalten 08:44 bleibt) |
-| T2.7 | Abschluss → Protokoll | „sauber“ grau kursiv beim i.O.-Punkt; Mängel nur für n.i.O. |
-| T2.8 | Optionaler Punkt mit KommentarPflicht unbeantwortet lassen | kein Kommentar verlangt |
+| T2.1 | Neue Durchführung starten (oder eine, in der K1 noch offen ist). K1: alles i.O., Speichern | K2 öffnet sich automatisch |
+| T2.2 | PK auf i.O. | Kommentarfeld „Kommentar (Pflicht)“, rot umrandet; Fuß nennt „<PK> (Kommentar)“ |
+| T2.3 | PN unbeantwortet lassen | PN steht nicht in „Noch offen“ |
+| T2.4 | PK Kommentar „sauber“ | PK nicht mehr offen |
+| T2.5 | PK auf n.i.O. | Hinweis wird „Kommentar zum Mangel (Pflicht)“, „sauber“ bleibt stehen |
+| T2.6 | PK zurück auf i.O. | Hinweis „Kommentar (Pflicht)“, „sauber“ steht noch |
+| T2.7 | PM: n.i.O. + Kommentar „weg“, dann i.O. | Kommentarfeld von PM verschwindet |
+| T2.8 | Übrige Punkte ausfüllen, Speichern | „Gespeichert.“, K3 öffnet sich |
+| T2.9 | Zurück zur Übersicht, K2 „Bearbeiten“ | PK i.O. mit „sauber“; PM ohne Kommentar |
+| T2.10 | Nur mit Abschluss (siehe Paket 1, B7): Protokoll | „sauber“ grau kursiv beim i.O.-Punkt; kein Mangel für PK |
 
 ## Rückweg
 
 - Version wiederherstellen oder die Vorher-Blöcke einfügen (App.Formulas zuletzt).
-- Die Spalte darf bleiben. Gespeicherte i.O.-Kommentare bleiben im JSON und erscheinen nach dem Rückweg im Protokoll rot (alte Darstellung).
+- Die Spalte darf bleiben. Gespeicherte i.O.-Kommentare bleiben im JSON und erscheinen nach dem Rückweg im Protokoll rot (alte Darstellung). **Achtung:** Wird eine solche Kategorie nach dem Rückweg erneut gespeichert, löscht „Kommentar leeren“ die i.O.-Kommentare (die Kommentarpflicht ist dann ja weg).
 
 ## Anhang – Vorher-Fassungen (für den Rückweg)
 
@@ -394,6 +400,7 @@ fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t
 cfgAdmins = Coalesce(LookUp(RG_Konfiguration; Title = "Admins").Wert; "");;
 fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t; ""); " | ") As s; Trim(s.Value) <> ""));;
 fnFotoModus(f: Text; alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht"; f; alt; "Optional"; "Aus");;
+fnFotoNeuErlaubt(bew: Text; foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";;
 fnBeantwortet(bew: Text; wt: Text; wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);;
 fnAusserhalb(z: Number; mi: Number; ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));;
 fnKommentarNoetig(typ: Text; bew: Text; wt: Text; wz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = bew = "NIO";;

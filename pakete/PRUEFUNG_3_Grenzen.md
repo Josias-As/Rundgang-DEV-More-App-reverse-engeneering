@@ -1,18 +1,20 @@
 # Prüfung Baukasten-Paket 3 – Zahlengrenzen pro Prüfpunkt: Mangel, Warnen oder Sperren
 
-Export: `2026-10-27_0724` – **Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export wiederholen**. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
+Export: `2026-10-27_0909`. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
 
 ## a) Namenscheck (maschinell, belegt)
 
 Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Bezeichner ist Steuerelement, Variable, Sammlung, Funktion, Liste, Spalte, Feld oder Alias der App bzw. wird im Paket angelegt.
 
 ```
-== Paket 3: 5 Properties, neue Steuerelemente: -
+== Paket 3: 7 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   lblKaZahlInfo.Text               ok
   lblKaZahlInfo.Color              ok
   txtKaZahl.BorderColor            ok
+  btnKaSpeichern.OnSelect          ok
+  htmProtokoll.HtmlText            ok
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 19 Felder
 ```
 
@@ -25,7 +27,8 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 ## c) Reihenfolge
 
 1. Spalte + aktualisieren vor OnVisible.
-2. App.Formulas vor/mit OnVisible (fnGrenzmodus neu). Paket 1 (4. Parameter, Feld Grenzmodus) und Paket 2 (Hinweistext „Kommentar (Pflicht)“) müssen drin sein.
+2. App.Formulas vor/mit OnVisible (fnGrenzmodus, fnSperreGilt neu). Paket 1 (4. Parameter, Feld Grenzmodus) und Paket 2 (Hinweistext „Kommentar (Pflicht)“) müssen drin sein.
+3. Speichern (JSON mit Warnung) und Protokoll (liest Warnung) sind unabhängig voneinander; altes JSON ohne Warnung wird als false gelesen.
 
 ## d) Auswirkungsliste
 
@@ -35,11 +38,11 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | fnFehlt / fnFehltGrund | ja | „Bereich“ bei Sperren außerhalb |
 | btnKaSpeichern: Prüfung und Sprung | ja (indirekt) | Sperren blockiert, Sprung zum Punkt |
 | Kommentar leeren (08:44) | ja (indirekt) | Warnen außerhalb behält den Kommentar |
-| JSON-Aufbau (varAntwortJSON) | nein | Bewertung IO/NIO/"" wie bisher; Sperren außerhalb wird nie gespeichert |
+| JSON-Aufbau (varAntwortJSON) | ja | neues Feld `Warnung` (per AddColumns, nur im JSON, nicht in colAntworten); Sperren außerhalb wird nie gespeichert |
 | Mängel bei Abschluss (btnRuAbschluss) | nein | nur NIO; Warnen speichert IO → kein Mangel (gewollt) |
-| htmProtokoll | nein | Warnen: i.O. + grauer Kommentar (Paket 2) |
+| htmProtokoll | ja | Warnung: i.O. orange + „(außerhalb Soll, begründet)“; Kommentar grau (Paket 2); altes JSON ohne Warnung → false |
 | Foto-Upload | nein | Bedingung NIO/FotoModus; Warnen ohne NIO lädt nur bei FotoModus ≠ Aus |
-| Lesemodus nach Abschluss | ja | Hinweistext nach Grenzmodus der heutigen Stammdaten; bei gespeichertem NIO immer „außerhalb des Sollbereichs“ |
+| Lesemodus nach Abschluss | ja | kein Aufforderungstext mehr: NIO „außerhalb des Sollbereichs“, i.O. außerhalb „außerhalb, begründet“ (orange), unabhängig vom heutigen Grenzmodus; Min/Max aus den heutigen Stammdaten |
 | Nachlese-Vergleich | nein |  |
 | Zahlenfeld-Anzeige | ja | Text/Farbe Label, Rahmenfarbe |
 
@@ -57,6 +60,9 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | Netzfehler | unverändert | Code |
 | zwei Prüfer gleichzeitig | unverändert | Code |
 | Grenze genau auf Min/Max | im Bereich | Logik-Probe |
+| Sperren mit Min > Max (Fehleinstellung) | wie Mangel (n.i.O., Kommentar), Rundgang bleibt abschließbar | Logik-Probe, T3.11 |
+| Sperren und echter Wert außerhalb | Speichern unmöglich – deshalb Pflegeregel „Sperren nur für Tippfehler-Grenzen“ (Schritt 3.2) | Regel |
+| Grenzmodus nach dem Speichern umgestellt | beim Öffnen neu bewertet (wie bisher bei Min/Max); die Karte kann dann vom gespeicherten Stand abweichen, ohne als Änderung zu zählen (vorhandenes Verhalten) | Code |
 
 Logik-Gegenprobe der Funktionen (`werkzeuge/logik_probe.py`, Python-Nachbildung der Formeln, keine Ausführung von Power Fx):
 
@@ -73,6 +79,11 @@ P3  ok    Sperren im Bereich: vollständig                                      
 P3  ok    Grenze genau auf Min (6) ist im Bereich                                erwartet 'IO'         ist 'IO'
 P3  ok    fnGrenzmodus: leere Spalte -> Mangel                                   erwartet 'Mangel'     ist 'Mangel'
 P3  ok    fnGrenzmodus: unbekannter Wert -> Mangel                               erwartet 'Mangel'     ist 'Mangel'
+P3  ok    Sperren mit Min > Max: wie Mangel (n.i.O.), nicht gesperrt             erwartet 'NIO'        ist 'NIO'
+P3  ok    Sperren mit Min > Max: kein Bereich-Fehler, Kommentar verlangt         erwartet 'Kommentar'  ist 'Kommentar'
+P3  ok    Sperren nur Max gesetzt, Wert darüber                                  erwartet 'Bereich'    ist 'Bereich'
+P3  ok    Dezimalzahl 16,01 bei Max 16 -> außerhalb                              erwartet 'NIO'        ist 'NIO'
+P3  ok    Warnen ohne Min/Max: nie außerhalb                                     erwartet ''           ist ''
 ```
 
 ## f) Studio-Fallen
@@ -85,6 +96,18 @@ P3  ok    fnGrenzmodus: unbekannter Wert -> Mangel                              
 ## g) Lauffähigkeit
 
 - T3.1–T3.8 in der Vorschau.
+
+## Unabhängige Prüfung – Runde 1 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B2 mittel: Warnen nicht von normalem i.O. zu unterscheiden | behoben: JSON-Feld Warnung, Protokoll orange mit Hinweis, Nur-Ansicht „außerhalb, begründet“ |
+| B3 mittel: Sperren ohne Ausweg / Min > Max | Pflegeregel „nur Tippfehler-Grenzen“ in Schritt 3.2 und Kurzfassung; Min > Max → wie Mangel (fnSperreGilt) |
+| B7 mittel: Testbogen nicht der Reihe nach ausführbar | neu: Z1/Z2/Z3 gleichzeitig, Kommentare in der Folge, Abschluss getrennt |
+| B4: „Soll“ bei Sperren | behoben: „zulässig ab … bis …“ |
+| B5: Neubewertung beim Öffnen zählt nicht als Änderung | vorhandenes Verhalten, als Szenario dokumentiert |
+| B6: Nur-Ansicht zeigt Aufforderungen | behoben |
+| B11: clrWarnungHell unbenutzt | entfernt |
 
 ## Offene Befunde
 

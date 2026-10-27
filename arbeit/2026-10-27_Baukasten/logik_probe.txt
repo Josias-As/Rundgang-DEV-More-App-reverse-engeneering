@@ -44,6 +44,21 @@ P4  ok    Fehlkonfiguration: A selbst bedingt (Kette) -> B sichtbar             
 P4  ok    Fehlkonfiguration: Bedingungswert leer -> B sichtbar                   erwartet True         ist True
 P4  ok    A deaktiviert (mitgeführt) -> B sichtbar                               erwartet True         ist True
 P4  ok    keine Bedingung (0) -> sichtbar                                        erwartet True         ist True
+P4  ok    Schreibweise n.i.O. wie NIO                                            erwartet True         ist True
+P4  ok    Schreibweise i.O. bei A n.i.O. -> ausgeblendet                         erwartet False        ist False
+P4  ok    Tippfehler im Bedingungswert (Rot bei i.O./n.i.O.) -> B sichtbar       erwartet True         ist True
+P4  ok    Liste als Bedingungswert (Rot;Gelb) -> B sichtbar                      erwartet True         ist True
+P4  ok    Auswahlwert, den es in A nicht gibt -> B sichtbar                      erwartet True         ist True
+P4  ok    Auswahlwert passt nicht (A = ok) -> ausgeblendet                       erwartet False        ist False
+P4  ok    Bedingung NIO bei Text-Punkt A (ungültig) -> B sichtbar                erwartet True         ist True
+P1  ok    fnFotoNeuErlaubt: i.O. und Aus -> nein                                 erwartet False        ist False
+P1  ok    fnFotoNeuErlaubt: n.i.O. und Aus -> ja                                 erwartet True         ist True
+P1  ok    fnFotoNeuErlaubt: i.O. und Optional -> ja                              erwartet True         ist True
+P3  ok    Sperren mit Min > Max: wie Mangel (n.i.O.), nicht gesperrt             erwartet 'NIO'        ist 'NIO'
+P3  ok    Sperren mit Min > Max: kein Bereich-Fehler, Kommentar verlangt         erwartet 'Kommentar'  ist 'Kommentar'
+P3  ok    Sperren nur Max gesetzt, Wert darüber                                  erwartet 'Bereich'    ist 'Bereich'
+P3  ok    Dezimalzahl 16,01 bei Max 16 -> außerhalb                              erwartet 'NIO'        ist 'NIO'
+P3  ok    Warnen ohne Min/Max: nie außerhalb                                     erwartet ''           ist ''
 P5  ok    Mehrfach Pflicht leer                                                  erwartet 'Wert'       ist 'Wert'
 P5  ok    Mehrfach Pflicht zwei Werte                                            erwartet ''           ist ''
 P5  ok    Datum Pflicht leer                                                     erwartet 'Wert'       ist 'Wert'
@@ -57,4 +72,4 @@ P5  ok    fnDatumText Datum + Zeit                                              
 P5  ok    fnDatumText Zeit ohne Minute                                           erwartet '27.10.2026' ist '27.10.2026'
 P5  ok    fnDatumText ohne Datum                                                 erwartet ''           ist ''
 
-Szenarien: 56, Fehler: 0
+Szenarien: 71, Fehler: 0

@@ -1,5 +1,4 @@
-SIMULATION: UpdateIf von 08:44 vor Set(varAntwortJSON eingefügt (nur Entwurf).
-== Paket 1: 24 Properties, neue Steuerelemente: -
+== Paket 1: 25 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   txtKaZahl.OnChange               ok
@@ -21,6 +20,7 @@ SIMULATION: UpdateIf von 08:44 vor Set(varAntwortJSON eingefügt (nur Entwurf).
   lblKaFehlend.Text                ok
   btnKaSpeichern.OnSelect          ok
   lblKaFotoHinweis.Text            ok
+  addKaFoto.Visible                ok
   addKaFoto.Size                   ok
   imgKaFotoNeu.Y                   ok
   imgKaFotoNeu.Height              ok
@@ -30,12 +30,14 @@ SIMULATION: UpdateIf von 08:44 vor Set(varAntwortJSON eingefügt (nur Entwurf).
   txtKaKommentar.HintText          ok
   txtKaKommentar.AccessibleLabel   ok
   htmProtokoll.HtmlText            ok
-== Paket 3: 5 Properties, neue Steuerelemente: -
+== Paket 3: 7 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   lblKaZahlInfo.Text               ok
   lblKaZahlInfo.Color              ok
   txtKaZahl.BorderColor            ok
+  btnKaSpeichern.OnSelect          ok
+  htmProtokoll.HtmlText            ok
 == Paket 4: 10 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok

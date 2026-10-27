@@ -1,6 +1,6 @@
 # Baukasten-Paket 1 – Foto-Modus pro Prüfpunkt (Aus / Optional / Pflicht)
 
-Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0724` **(ENTWURF: Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export neu erzeugen)**.
+Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-10-27_0909`.
 
 ## Kurzfassung
 
@@ -12,7 +12,7 @@ Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-1
 
 ## Voraussetzungen
 
-- Frischer Export nach dem Stand von 27.10. 08:44 eingelesen (dieses Dokument wurde daraus erzeugt, siehe Kopfzeile).
+- Die Blöcke sind aus dem Export 27.10.2026 09:09 (`frischerexport_20261027090933.zip`) erzeugt. Hat sich die App seitdem geändert, erst einen neuen Export schicken; der Generator bricht ab, wenn ein Vorher-Stand nicht mehr passt.
 - Die App ist gespeichert, nichts halb eingefügt.
 
 ## Schritte
@@ -27,8 +27,9 @@ IMS+ → Liste **RG_Pruefpunkte** → **+ Spalte hinzufügen → Auswahl**:
 - Name: **Foto** (genau so)
 - Auswahlmöglichkeiten (je eine Zeile): **Aus**, **Optional**, **Pflicht**
 - Standardwert: **Aus** · Mehrfachauswahl: **Nein** · Werte erforderlich: **Nein**
-- **FotoMoeglich nicht löschen und nicht umbenennen.** Vorhandene Zeilen bleiben leer, die App liest leer wie bisher.
-Für den Test: Prüfpunkt **Id 10** (Thermometer) → Foto = **Pflicht**. Einen zweiten i.O./n.i.O.-Punkt derselben Kategorie → Foto = **Optional**.
+- **FotoMoeglich nicht löschen und nicht umbenennen.** Die App liest eine leere Foto-Spalte wie bisher (FotoMoeglich Ja → Optional). Neue Prüfpunkte ab jetzt nur noch über **Foto** steuern; der Standardwert „Aus“ gilt für neu angelegte Zeilen.
+- **Danach prüfen (UNSICHER, wie SharePoint vorhandene Zeilen füllt):** Rasteransicht von RG_Pruefpunkte, Spalte Foto. Stehen die vorhandenen Zeilen leer → gut. Steht überall „Aus“, bei allen Zeilen mit FotoMoeglich = Ja Foto = **Optional** setzen (heute nur Id 10).
+- Für den Test noch **nichts** umstellen; Test-Teil A beginnt mit dem Ist-Zustand.
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
 
 ### Schritt 1.3 – App.Formulas
@@ -140,6 +141,7 @@ fnHtml(t: Text): Text = Substitute(Substitute(Substitute(Substitute(Substitute(t
 cfgAdmins = Coalesce(LookUp(RG_Konfiguration; Title = "Admins").Wert; "");;
 fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t; ""); " | ") As s; Trim(s.Value) <> ""));;
 fnFotoModus(f: Text; alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht"; f; alt; "Optional"; "Aus");;
+fnFotoNeuErlaubt(bew: Text; foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";;
 fnBeantwortet(bew: Text; wt: Text; wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);;
 fnAusserhalb(z: Number; mi: Number; ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));;
 fnKommentarNoetig(typ: Text; bew: Text; wt: Text; wz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number): Boolean = bew = "NIO";;
@@ -265,7 +267,7 @@ If(varNurLesen; Trim(ThisItem.Kommentar) <> "" || ThisItem.Bewertung = "NIO"; fn
 **`btnKaFoto.Visible`**
 
 ```
-If(varNurLesen; fnLinkAnzahl(ThisItem.Fotos) > 0; ThisItem.Bewertung = "NIO" || ThisItem.FotoModus <> "Aus")
+fnLinkAnzahl(ThisItem.Fotos) > 0 || (!varNurLesen && (ThisItem.Bewertung = "NIO" || ThisItem.FotoModus <> "Aus"))
 ```
 
 **`btnKaFoto.Y`**
@@ -370,20 +372,20 @@ If(
                     Notify("Diese Kategorie wurde inzwischen von " & erg.PrueferName & " gespeichert. Bitte zurück und neu öffnen."; NotificationType.Error);
                 IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
                     Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
-                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus")));;
+                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
                 ForAll(colFotoNeu As f;
                     Patch(colFotos; LookUp(colFotos; Nr = f.Nr);
                         {Url: With({ordner: fnArchivOrdner(durch.TagText; durch.TestDatensatz) & "/" & durch.Title}; If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild; name: f.Datei}; f.Datei; ordner; varDurchID; f.PruefpunktID; durch.TestDatensatz)); ""; fnSpUrl("RG_Fotos"; ordner & "/" & f.Datei)))})
                 );;
-                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus"))) > 0;
-                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; a.Bewertung = "NIO" || a.FotoModus <> "Aus"))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
+                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) > 0;
+                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
                     ForAll(Distinct(Filter(colFotos; !Uebernommen && !IsBlank(Url)); PruefpunktID) As d;
                         Patch(colAntworten; LookUp(colAntworten; PruefpunktID = d.Value);
                             {Fotos: With({alt: LookUp(colAntworten; PruefpunktID = d.Value).Fotos; neu: Concat(Filter(colFotos; PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)); Url; " | ")};
                                 If(IsBlank(alt); neu; alt & " | " & neu))})
                     );;
                     UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
-                    UpdateIf(colAntworten; !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
+                    UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
                     Set(varAntwortJSON; JSON(ShowColumns(colAntworten; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
@@ -410,12 +412,18 @@ If(
 
 ### Schritt 1.9 – Foto-Fenster
 
-`conKaFoto` → `conKaFotoKarte` → `lblKaFotoHinweis`, `addKaFoto`, und in `galKaFotoNeu` das Bild `imgKaFotoNeu` (Bild beginnt unter dem ✕-Knopf, damit das ✕ immer tippbar ist, egal wie die Ebenen liegen).
+`conKaFoto` → `conKaFotoKarte` → `lblKaFotoHinweis`, `addKaFoto`, und in `galKaFotoNeu` das Bild `imgKaFotoNeu` (Bild beginnt unter dem ✕-Knopf, damit das ✕ immer tippbar ist, egal wie die Ebenen liegen). `addKaFoto` ist nur sichtbar, wenn für den Punkt neue Fotos auch hochgeladen werden (n.i.O. oder Foto Optional/Pflicht) – sonst gingen sie beim Speichern still verloren.
 
 **`lblKaFotoHinweis.Text`**
 
 ```
-If(LookUp(colAntworten; PruefpunktID = varFotoPP).FotoModus = "Pflicht"; "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren."; "Keine Personen fotografieren. Fotos werden beim „Speichern“ hochgeladen.")
+If(varNurLesen; "Gespeicherte Fotos (nur Ansicht)."; LookUp(colAntworten; PruefpunktID = varFotoPP).FotoModus = "Pflicht"; "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren."; !fnFotoNeuErlaubt(LookUp(colAntworten; PruefpunktID = varFotoPP).Bewertung; LookUp(colAntworten; PruefpunktID = varFotoPP).FotoModus); "Neue Fotos nur bei n.i.O. oder Foto-Modus Optional/Pflicht."; "Keine Personen fotografieren. Fotos werden beim „Speichern“ hochgeladen.")
+```
+
+**`addKaFoto.Visible`**
+
+```
+!varNurLesen && With({a: LookUp(colAntworten; PruefpunktID = varFotoPP)}; fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))
 ```
 
 **`addKaFoto.Size`**
@@ -436,6 +444,9 @@ If(LookUp(colAntworten; PruefpunktID = varFotoPP).FotoModus = "Pflicht"; "Foto P
 Parent.TemplateHeight - 60
 ```
 
+Prüfen nach dem Schritt:
+- `conKaKarte.Height`, `lblKaAbstand.Y`, `imgKaFotoNeu.Height` und `btnKaFoto.Y` zeigen Formeln, keine festen Zahlen (E-05).
+
 ### Schritt 1.10 – App-Prüfung und Speichern
 
 Studio → **App-Prüfung → Formeln**: muss **0** sein (Barrierefreiheit/Leistung wie bisher, siehe E-07/E-08). Dann **Speichern** (noch nicht veröffentlichen) und den Test unten in der **Vorschau** machen.
@@ -443,24 +454,36 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
-Zeitachse in der Studio-Vorschau mit dem Test-Rundgang „ZZ Test Objektrundgang TCC“ (Tag mit Plan oder Nachholtag; laufende Durchführung D13 darf fortgesetzt werden). Foto-Auswahl selbst testet Josias am Tablet (die Datei-Auswahl der Vorschau ist für die Automation nicht bedienbar).
+Namen im Bogen: **K1** = Kategorie, in der Prüfpunkt Id 10 (Thermometer) liegt. **P10** = Id 10. **PO** = ein anderer i.O./n.i.O.-Punkt in K1. **PX** = ein dritter i.O./n.i.O.-Punkt in K1 mit FotoMoeglich = Nein.
+Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pruefpunkte die Vorschau schließen und neu starten.
+
+**Teil A – Studio-Vorschau (ohne Foto-Auswahl)**
 
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T1.1 | Kategorie 1 öffnen | Thermometer-Karte: „📷 Foto *“ blau umrandet, Karte höher. Optional-Punkt: „📷 Foto“. Übrige Punkte: kein Foto-Knopf. |
-| T1.2 | Alle Punkte ausfüllen, kein Foto | Fuß: „Noch offen (1): ZZ Test Thermometer … (Foto)“, Knopf „Offene Punkte ↓“ |
-| T1.3 | „Offene Punkte ↓“ tippen | Liste springt zur Thermometer-Karte, Karte rot umrandet |
-| T1.4 | Foto-Knopf tippen | Fenster: Hinweis „Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.“ einzeilig, Knopf „Foto aufnehmen / auswählen“ normal groß |
-| T1.5 | (Tablet) Foto wählen, ✕ antippen, erneut wählen, „Fertig“ | ✕ entfernt das Foto; danach Knopf „📷 Foto (1)“, Fuß „✓ Alles ausgefüllt“ |
-| T1.6 | Einen anderen Punkt auf n.i.O. | Kommentarfeld links, roter „📷 Foto“ rechts in einer Zeile; zurück auf i.O. → beides weg, Karte wieder niedrig |
-| T1.7 | n.i.O. + Kommentar „test“ → wieder i.O. → Speichern | „Gespeichert.“; nächste Kategorie öffnet sich. (08:44-Verhalten: Kommentar wird nicht gespeichert) |
-| T1.8 | (Tablet) Bibliothek RG_Fotos → TEST/2026/10/R…/ | Datei `D…-K…-P10-xxxxxxxx.jpg` vorhanden |
-| T1.9 | Kategorie 1 wieder öffnen (Bearbeiten) | Thermometer „📷 Foto (1)“ ohne „*“; Speichern ohne neues Foto möglich |
-| T1.10 | Prüfpunkt Id 10: Foto leer lassen, FotoMoeglich = Ja; Kategorie neu öffnen | verhält sich wie Optional (Knopf da, nicht Pflicht) |
-| T1.11 | Rundgang abschließen → Ansehen → Kategorie 1 | Nur-Ansicht: Thermometer zeigt „📷 Foto (1)“ (öffnet die gespeicherten Fotos); n.i.O.-Punkt ohne Foto zeigt keinen Foto-Knopf; Kommentar sichtbar, wo einer gespeichert ist |
-| T1.12 | Protokoll | wie bisher; T1.7-Punkt ohne Kommentar |
+| A1 | Ist-Zustand (Foto-Spalte leer, P10 FotoMoeglich = Ja): Rundgang starten oder fortsetzen, K1 öffnen | P10 zeigt „📷 Foto“ (blau, ohne *), Karte höher; PX ohne Foto-Knopf |
+| A2 | SharePoint: P10 Foto = **Pflicht**, PO Foto = **Optional**. Vorschau neu starten, K1 öffnen | P10 „📷 Foto *“ blau; PO „📷 Foto“; PX kein Foto-Knopf |
+| A3 | Alle Punkte in K1 beantworten (i.O.), kein Foto | Fuß: „Noch offen (1): <Frage P10> (Foto)“, Knopf „Offene Punkte ↓“ |
+| A4 | „Offene Punkte ↓“ tippen | Liste springt zu P10, Karte rot umrandet |
+| A5 | Foto-Knopf an P10 tippen | Fenster: „Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.“ in einer Zeile, Knopf „Foto aufnehmen / auswählen“ in normaler Größe; „Fertig“ |
+| A6 | PX auf n.i.O. | Kommentarfeld links, roter „📷 Foto“ rechts in einer Zeile |
+| A7 | PX zurück auf i.O. | Kommentarfeld und Foto-Knopf weg, Karte wieder niedrig |
+| A8 | PO auf n.i.O., dann i.O. | Foto-Knopf rot, dann wieder blau (Optional bleibt) |
+| A9 | Zurück („Verwerfen? Erneut tippen“) | Übersicht; nichts gespeichert (Speichern ist ohne Foto nicht möglich – gewollt) |
 
-Danach: Foto bei Id 10 wieder auf den gewünschten Wert setzen. Testdaten wie gewohnt aufräumen (Papierkorb, nur TestDatensatz = Ja).
+**Teil B – Tablet (Foto-Auswahl).** Entweder Studio im Browser des Tablets öffnen und dort die Vorschau nehmen, oder die App veröffentlichen (Josias entscheidet; die veröffentlichte DEV-App sehen alle mit Zugriff).
+
+| # | Klickfolge | erwartet |
+|---|---|---|
+| B1 | K1 öffnen, alle Punkte i.O., an P10 „📷 Foto *“ → Foto wählen | Bild erscheint im Fenster, ✕ oben rechts über dem Bild |
+| B2 | ✕ antippen, danach erneut ein Foto wählen, „Fertig“ | ✕ entfernt das Foto; Knopf jetzt „📷 Foto (1)“, Fuß „✓ Alles ausgefüllt“ |
+| B3 | PX: n.i.O. + Kommentar „test“, dann zurück auf i.O. | Kommentarfeld verschwindet |
+| B4 | Speichern | Meldung „Gespeichert.“, nächste Kategorie öffnet sich |
+| B5 | Bibliothek RG_Fotos → TEST/2026/10/<Title der Durchführung>/ | Datei `D<id>-K<kat>-P10-xxxxxxxx.jpg` |
+| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; PX ohne Kommentar (beim Speichern geleert, Verhalten 08:44); Speichern ohne neues Foto möglich |
+| B7 | Nur wenn der Testrundgang ohnehin abgeschlossen werden soll: vorher in einer Kategorie einen Punkt **n.i.O. + Kommentar, ohne Foto** speichern, dann alle Kategorien speichern und abschließen (legt Mängel in RG_Maengel und ein PDF in RG_Protokolle an) | Nach dem Abschluss „Ansehen“: P10 „📷 Foto (1)“, Fenster zeigt „Gespeicherte Fotos (nur Ansicht).“; der n.i.O.-Punkt ohne Foto hat keinen Foto-Knopf, Kommentar sichtbar |
+
+Aufräumen: Testdaten wie gewohnt in den Papierkorb (nur TestDatensatz = Ja). P10 Foto auf den gewünschten Wert lassen.
 
 ## Rückweg
 
@@ -812,6 +835,12 @@ If(
 
 ```
 "Bitte keine Personen fotografieren. Neue Fotos werden beim „Speichern“ hochgeladen."
+```
+
+**`addKaFoto.Visible` vorher**
+
+```
+!varNurLesen
 ```
 
 **`addKaFoto.Size` vorher**

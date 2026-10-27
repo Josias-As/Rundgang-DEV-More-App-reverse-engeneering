@@ -69,7 +69,7 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
         return "Wert"
     if paket >= 5 and typ == "DATUMZEIT" and not leer(wt) and len(wt) < 16:
         return "Uhrzeit"
-    if paket >= 3 and typ == "ZAHL" and gm == "Sperren" and fnAusserhalb(wz, mi, ma):
+    if paket >= 3 and typ == "ZAHL" and gm == "Sperren" and fnSperreGilt(mi, ma) and fnAusserhalb(wz, mi, ma):
         return "Bereich"
     if fnKommentarNoetig(paket, typ, bew, wt, wz, kpfl, gm, mi, ma) and trim(kom) == "":
         return "Kommentar"
@@ -82,11 +82,20 @@ def fnFehlt(paket, *args):
     return fnFehltGrund(paket, *args) != ""
 
 
+def fnSperreGilt(mi, ma):
+    return mi is None or ma is None or mi <= ma
+
+
+def fnFotoNeuErlaubt(bew, foto):
+    return bew == "NIO" or foto in ("Optional", "Pflicht")
+
+
 def fnZahlBewertung(paket, z, mi, ma, gm):
     if paket < 3:
         return alt_fnZahlBewertung(z, mi, ma)
     if fnAusserhalb(z, mi, ma):
-        return {"Warnen": "IO", "Sperren": ""}.get(gm, "NIO")
+        g = "Mangel" if (gm == "Sperren" and not fnSperreGilt(mi, ma)) else gm
+        return {"Warnen": "IO", "Sperren": ""}.get(g, "NIO")
     return "IO"
 
 
@@ -94,15 +103,26 @@ def fnGrenzmodus(g):
     return g if g in ("Warnen", "Sperren") else "Mangel"
 
 
+def fnBedNorm(w):
+    return trim(w).replace(".", "").replace(" ", "").lower()
+
+
+def fnBedGueltig(w, typ, auswahl):
+    n = fnBedNorm(w)
+    return n == "*" or (typ in ("IONIO", "ZAHL") and n in ("io", "nio")) or \
+        (typ in ("AUSWAHL", "MEHRFACH") and any(fnBedNorm(s) == n for s in (auswahl or "").split(";")))
+
+
 def fnBedPasst(w, bew, wt, wz):
-    w2 = trim(w).lower()
-    if w2 == "*":
+    n = fnBedNorm(w)
+    if n == "*":
         return fnBeantwortet(bew, wt, wz)
-    return w2 == (bew or "").lower() or w2 == trim(wt).lower() or any(trim(s).lower() == w2 for s in (wt or "").split(";"))
+    return n == fnBedNorm(bew) or n == fnBedNorm(wt) or any(fnBedNorm(s) == n for s in (wt or "").split(";"))
 
 
-def fnSichtbar(bid, w, gef, bbid, binaktiv, bbew, bwt, bwz):
-    return bid == 0 or trim(w) == "" or not gef or bool(binaktiv) or bbid != 0 or fnBedPasst(w, bbew, bwt, bwz)
+def fnSichtbar(bid, w, gef, bbid, binaktiv, btyp, bauswahl, bbew, bwt, bwz):
+    return bid == 0 or trim(w) == "" or not gef or bool(binaktiv) or bbid != 0 or not fnBedGueltig(w, btyp, bauswahl) \
+        or fnBedPasst(w, bbew, bwt, bwz)
 
 
 def fnDatumText(d, h, m, mit_zeit):
@@ -167,19 +187,34 @@ SZENARIEN = [
     (3, "Grenze genau auf Min (6) ist im Bereich", "zahl", (6, 6, 16, "Mangel"), "IO"),
     (3, "fnGrenzmodus: leere Spalte -> Mangel", "gm", ("",), "Mangel"),
     (3, "fnGrenzmodus: unbekannter Wert -> Mangel", "gm", ("warnen ",), "Mangel"),
-    (4, "Bedingung NIO, A ist n.i.O. -> B sichtbar", "sicht", (7, "NIO", True, 0, False, "NIO", "", None), True),
-    (4, "Bedingung NIO, A ist i.O. -> B ausgeblendet", "sicht", (7, "NIO", True, 0, False, "IO", "", None), False),
-    (4, "Bedingung NIO, A unbeantwortet -> B ausgeblendet", "sicht", (7, "NIO", True, 0, False, "", "", None), False),
-    (4, "Bedingung klein geschrieben (nio)", "sicht", (7, "nio", True, 0, False, "NIO", "", None), True),
-    (4, "Bedingung * und A hat Text", "sicht", (7, "*", True, 0, False, "", "abc", None), True),
-    (4, "Bedingung * und A leer", "sicht", (7, "*", True, 0, False, "", "", None), False),
-    (4, "Bedingung Auswahlwert", "sicht", (7, "defekt", True, 0, False, "", "defekt", None), True),
-    (4, "Bedingung Wert in Mehrfachauswahl", "sicht", (7, "Leck", True, 0, False, "", "Riss; Leck", None), True),
-    (4, "Fehlkonfiguration: Punkt A nicht in der Kategorie -> B sichtbar", "sicht", (99, "NIO", False, 0, False, "", "", None), True),
-    (4, "Fehlkonfiguration: A selbst bedingt (Kette) -> B sichtbar", "sicht", (7, "NIO", True, 3, False, "IO", "", None), True),
-    (4, "Fehlkonfiguration: Bedingungswert leer -> B sichtbar", "sicht", (7, "", True, 0, False, "IO", "", None), True),
-    (4, "A deaktiviert (mitgeführt) -> B sichtbar", "sicht", (7, "NIO", True, 0, True, "IO", "", None), True),
-    (4, "keine Bedingung (0) -> sichtbar", "sicht", (0, "", False, 0, False, "", "", None), True),
+    (4, "Bedingung NIO, A ist n.i.O. -> B sichtbar", "sicht", (7, "NIO", True, 0, False, "IONIO", "", "NIO", "", None), True),
+    (4, "Bedingung NIO, A ist i.O. -> B ausgeblendet", "sicht", (7, "NIO", True, 0, False, "IONIO", "", "IO", "", None), False),
+    (4, "Bedingung NIO, A unbeantwortet -> B ausgeblendet", "sicht", (7, "NIO", True, 0, False, "IONIO", "", "", "", None), False),
+    (4, "Bedingung klein geschrieben (nio)", "sicht", (7, "nio", True, 0, False, "IONIO", "", "NIO", "", None), True),
+    (4, "Bedingung * und A hat Text", "sicht", (7, "*", True, 0, False, "TEXT", "", "", "abc", None), True),
+    (4, "Bedingung * und A leer", "sicht", (7, "*", True, 0, False, "TEXT", "", "", "", None), False),
+    (4, "Bedingung Auswahlwert", "sicht", (7, "defekt", True, 0, False, "AUSWAHL", "ok;defekt", "", "defekt", None), True),
+    (4, "Bedingung Wert in Mehrfachauswahl", "sicht", (7, "Leck", True, 0, False, "MEHRFACH", "Riss;Leck;Korrosion", "", "Riss; Leck", None), True),
+    (4, "Fehlkonfiguration: Punkt A nicht in der Kategorie -> B sichtbar", "sicht", (99, "NIO", False, 0, False, "IONIO", "", "", "", None), True),
+    (4, "Fehlkonfiguration: A selbst bedingt (Kette) -> B sichtbar", "sicht", (7, "NIO", True, 3, False, "IONIO", "", "IO", "", None), True),
+    (4, "Fehlkonfiguration: Bedingungswert leer -> B sichtbar", "sicht", (7, "", True, 0, False, "IONIO", "", "IO", "", None), True),
+    (4, "A deaktiviert (mitgeführt) -> B sichtbar", "sicht", (7, "NIO", True, 0, True, "IONIO", "", "IO", "", None), True),
+    (4, "keine Bedingung (0) -> sichtbar", "sicht", (0, "", False, 0, False, "IONIO", "", "", "", None), True),
+    (4, "Schreibweise n.i.O. wie NIO", "sicht", (7, "n.i.O.", True, 0, False, "IONIO", "", "NIO", "", None), True),
+    (4, "Schreibweise i.O. bei A n.i.O. -> ausgeblendet", "sicht", (7, "i.O.", True, 0, False, "IONIO", "", "NIO", "", None), False),
+    (4, "Tippfehler im Bedingungswert (Rot bei i.O./n.i.O.) -> B sichtbar", "sicht", (7, "Rot", True, 0, False, "IONIO", "", "IO", "", None), True),
+    (4, "Liste als Bedingungswert (Rot;Gelb) -> B sichtbar", "sicht", (7, "Rot;Gelb", True, 0, False, "AUSWAHL", "Rot;Gelb;Grün", "", "Rot", None), True),
+    (4, "Auswahlwert, den es in A nicht gibt -> B sichtbar", "sicht", (7, "kaputt", True, 0, False, "AUSWAHL", "ok;defekt", "", "ok", None), True),
+    (4, "Auswahlwert passt nicht (A = ok) -> ausgeblendet", "sicht", (7, "defekt", True, 0, False, "AUSWAHL", "ok;defekt", "", "ok", None), False),
+    (4, "Bedingung NIO bei Text-Punkt A (ungültig) -> B sichtbar", "sicht", (7, "NIO", True, 0, False, "TEXT", "", "", "abc", None), True),
+    (1, "fnFotoNeuErlaubt: i.O. und Aus -> nein", "neu", ("IO", "Aus"), False),
+    (1, "fnFotoNeuErlaubt: n.i.O. und Aus -> ja", "neu", ("NIO", "Aus"), True),
+    (1, "fnFotoNeuErlaubt: i.O. und Optional -> ja", "neu", ("IO", "Optional"), True),
+    (3, "Sperren mit Min > Max: wie Mangel (n.i.O.), nicht gesperrt", "zahl", (12, 16, 6, "Sperren"), "NIO"),
+    (3, "Sperren mit Min > Max: kein Bereich-Fehler, Kommentar verlangt", "grund", ("ZAHL", True, "NIO", "", 12, "", "Aus", 0, False, "Sperren", 16, 6), "Kommentar"),
+    (3, "Sperren nur Max gesetzt, Wert darüber", "grund", ("ZAHL", True, "", "", 200, "", "Aus", 0, False, "Sperren", None, 150), "Bereich"),
+    (3, "Dezimalzahl 16,01 bei Max 16 -> außerhalb", "zahl", (16.01, 6, 16, "Mangel"), "NIO"),
+    (3, "Warnen ohne Min/Max: nie außerhalb", "grund", ("ZAHL", True, "IO", "", 999, "", "Aus", 0, False, "Warnen", None, None), ""),
     (5, "Mehrfach Pflicht leer", "grund", ("MEHRFACH", True, "", "", None, "", "Aus", 0, False, "Mangel", None, None), "Wert"),
     (5, "Mehrfach Pflicht zwei Werte", "grund", ("MEHRFACH", True, "", "a; b", None, "", "Aus", 0, False, "Mangel", None, None), ""),
     (5, "Datum Pflicht leer", "grund", ("DATUM", True, "", "", None, "", "Aus", 0, False, "Mangel", None, None), "Wert"),
@@ -213,6 +248,8 @@ def fuehre(paket, art, args):
         return fnSichtbar(*args)
     if art == "datum":
         return fnDatumText(*args)
+    if art == "neu":
+        return fnFotoNeuErlaubt(*args)
     raise ValueError(art)
 
 

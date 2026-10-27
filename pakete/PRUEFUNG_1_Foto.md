@@ -1,13 +1,13 @@
 # Prüfung Baukasten-Paket 1 – Foto-Modus pro Prüfpunkt (Aus / Optional / Pflicht)
 
-Export: `2026-10-27_0724` – **Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export wiederholen**. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
+Export: `2026-10-27_0909`. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
 
 ## a) Namenscheck (maschinell, belegt)
 
 Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Bezeichner ist Steuerelement, Variable, Sammlung, Funktion, Liste, Spalte, Feld oder Alias der App bzw. wird im Paket angelegt.
 
 ```
-== Paket 1: 24 Properties, neue Steuerelemente: -
+== Paket 1: 25 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   txtKaZahl.OnChange               ok
@@ -29,6 +29,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   lblKaFehlend.Text                ok
   btnKaSpeichern.OnSelect          ok
   lblKaFotoHinweis.Text            ok
+  addKaFoto.Visible                ok
   addKaFoto.Size                   ok
   imgKaFotoNeu.Y                   ok
   imgKaFotoNeu.Height              ok
@@ -57,15 +58,16 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | Stelle | betroffen | wie |
 |---|---|---|
 | scrKategorie.OnVisible | ja | FotoModus, KommentarPflicht, Grenzmodus in allen drei Zweigen; FotoMoeglich nur noch als Rückfall in fnFotoModus |
-| fnFehlt / fnFehltGrund | ja | neue Regel „Foto“ (nur bei FotoModus Pflicht und 0 Fotos); alte Regeln zeichengleich übernommen, Rückwärtsgleichheit für alle 1.296 alten Kombinationen belegt |
+| fnFehlt / fnFehltGrund | ja | neue Regel „Foto“ (nur bei FotoModus Pflicht und 0 Fotos); alte Regeln zeichengleich übernommen, Rückwärtsgleichheit für alle 648 alten Kombinationen je Paketstand belegt (Logik-Probe) |
 | btnKaSpeichern: Prüfung und Sprung | ja | Prüfung über lblKaFehlendAnzahl (enthält jetzt Foto-Pflicht), Sprung mit derselben Regel |
 | JSON-Aufbau (varAntwortJSON) | nein | ShowColumns unverändert, kein neues Feld im JSON |
 | Mängel bei Abschluss (btnRuAbschluss) | nein | liest nur NIO-Zeilen aus dem JSON, unverändert |
 | htmProtokoll | nein |  |
-| Foto-Upload (btnKaSpeichern F1/F2) | ja | Bedingung `a.Bewertung = "NIO" || a.FotoModus <> "Aus"` statt LookUp(colPP).FotoMoeglich, an allen 3 Stellen (Upload, Fehlerzählung, Meldung) |
-| Lesemodus nach Abschluss | ja | Foto-Knopf nur bei gespeicherten Fotos; Kommentar sichtbar, wenn gespeichert oder n.i.O. |
+| Foto-Upload (btnKaSpeichern F1/F2) | ja | Bedingung `fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)` statt LookUp(colPP).FotoMoeglich, an allen 3 Stellen (Upload, Fehlerzählung, Meldung); dieselbe Funktion steuert `addKaFoto.Visible`, damit nie ein Foto gewählt werden kann, das nicht hochgeladen würde |
+| Lesemodus nach Abschluss | ja | Foto-Knopf nur bei gespeicherten Fotos, Fenster-Hinweis „Gespeicherte Fotos (nur Ansicht).“; Kommentar sichtbar, wenn gespeichert oder n.i.O. |
+| Foto-Knopf beim Bearbeiten | ja | zusätzlich sichtbar, wenn alte Links da sind (vorher unsichtbar bei i.O. + Aus) |
 | Nachlese-Vergleich | nein | unverändert, JSON gleich aufgebaut |
-| Kommentar leeren (08:44) | ja | Bedingung über fnKommentarNoetig, in Paket 1 gleiches Ergebnis wie `Bewertung <> "NIO"` (Logik-Probe) |
+| Kommentar leeren (08:44) | ja | Bedingung über fnKommentarNoetig, für aktive Punkte gleiches Ergebnis wie `Bewertung <> "NIO"` (Logik-Probe); deaktivierte, mitgeführte Punkte (`Inaktiv`) bleiben jetzt unverändert (vorher wurde auch ihr Kommentar geleert) |
 | Kartenhöhe, lblKaAbstand | ja | Zeile unter der Eingabe erscheint, wenn Kommentar oder Foto-Knopf sichtbar ist; Abstand folgt der Kartenhöhe (vorher fehlte er bei Foto ohne n.i.O.) |
 | Foto-Zähler btnKaFoto.Text | ja | zählt neue Fotos ohne `Uebernommen` + gespeicherte Links; vorher doppelt gezählt nach fehlgeschlagenem Speichern |
 
@@ -73,17 +75,17 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 
 | Szenario | erwartetes Ergebnis | Beleg |
 |---|---|---|
-| neuer Punkt ohne Daten | FotoModus aus der Spalte; bei Pflicht „(Foto)“ offen, sonst wie bisher | Logik-Probe P1, T1.1–T1.3 |
+| neuer Punkt ohne Daten | FotoModus aus der Spalte; bei Pflicht „(Foto)“ offen, sonst wie bisher | Logik-Probe P1, A2–A4 |
 | alter gespeicherter Punkt (JSON ohne neues Feld) | JSON hat kein Foto-Feld, FotoModus kommt aus den Stammdaten; gespeicherte Links zählen als Fotos (Pflicht erfüllt) | OnVisible Bearbeiten-Zweig, fnLinkAnzahl, T1.9 |
-| inaktiver Punkt | FotoModus "Aus", ausgeblendet, zählt nicht (Filter `!Inaktiv`), Foto-Pflicht greift nicht | Code |
-| Rundgang abgeschlossen (Nur-Lesen) | keine Pflicht-Prüfung, Foto-Knopf nur mit gespeicherten Fotos, keine Uploads | Code, T1.11 |
-| Wechsel n.i.O. → i.O. → n.i.O. | Foto-Knopf rot → (bei Aus) verschwindet / (bei Optional/Pflicht) blau → rot; schon gewählte Fotos bleiben in colFotos; Upload nur, wenn beim Speichern n.i.O. oder Modus ≠ Aus | Code, T1.6 |
-| Kategorie zweimal speichern | zweites Mal: gespeicherte Links zählen, kein erneuter Upload (Uebernommen/Url), keine Doppelungen | Code F1/F2 unverändert, T1.9 |
+| inaktiver Punkt | FotoModus "Aus", ausgeblendet, zählt nicht (Filter `!Inaktiv`), Foto-Pflicht greift nicht; Kommentar bleibt beim Speichern unverändert | Code |
+| Rundgang abgeschlossen (Nur-Lesen) | keine Pflicht-Prüfung, Foto-Knopf nur mit gespeicherten Fotos, keine Uploads | Code, B7 |
+| Wechsel n.i.O. → i.O. → n.i.O. | Foto-Knopf rot → (bei Aus) verschwindet / (bei Optional/Pflicht) blau → rot; schon gewählte Fotos bleiben in colFotos; Upload nur, wenn beim Speichern n.i.O. oder Modus ≠ Aus | Code, A6–A8 |
+| Kategorie zweimal speichern | zweites Mal: gespeicherte Links zählen, kein erneuter Upload (Uebernommen/Url), keine Doppelungen | Code F1/F2 unverändert, B6 |
 | Abbruch mitten im Speichern | Upload fertig, Patch nicht: Links stehen schon in colAntworten, Fotos `Uebernommen` → erneutes Speichern lädt nicht doppelt hoch; Pflicht bleibt erfüllt | Code |
 | Netzfehler | Upload-Fehler → Meldung „x Foto(s) konnten nicht hochgeladen werden“, Kategorie nicht gespeichert; Pflicht zählt das nicht hochgeladene Foto, erneutes Tippen lädt nach. Grenze: Flow ohne Rückmeldung (siehe Offene Befunde) | Code |
 | zwei Prüfer gleichzeitig | unverändert: GespeichertAm-Vergleich lehnt das zweite Speichern ab; Fotos des zweiten bleiben unhochgeladen | Code |
 | Foto Pflicht + Punkt nicht Pflicht und unbeantwortet | Foto trotzdem verlangt (Pflicht = Nachweis) | Logik-Probe |
-| FotoMoeglich Ja, Foto leer | Optional | Logik-Probe, T1.10 |
+| FotoMoeglich Ja, Foto leer | Optional | Logik-Probe, A1 |
 
 Logik-Gegenprobe der Funktionen (`werkzeuge/logik_probe.py`, Python-Nachbildung der Formeln, keine Ausführung von Power Fx):
 
@@ -100,6 +102,9 @@ P1  ok    fnFotoModus: Spalte leer, FotoMoeglich Nein -> Aus                    
 P1  ok    fnFotoModus: Spalte Aus schlägt FotoMoeglich Ja                        erwartet 'Aus'        ist 'Aus'
 P1  ok    fnLinkAnzahl leer                                                      erwartet 0            ist 0
 P1  ok    fnLinkAnzahl zwei Links                                                erwartet 2            ist 2
+P1  ok    fnFotoNeuErlaubt: i.O. und Aus -> nein                                 erwartet False        ist False
+P1  ok    fnFotoNeuErlaubt: n.i.O. und Aus -> ja                                 erwartet True         ist True
+P1  ok    fnFotoNeuErlaubt: i.O. und Optional -> ja                              erwartet True         ist True
 ```
 
 ## f) Studio-Fallen
@@ -114,8 +119,22 @@ P1  ok    fnLinkAnzahl zwei Links                                               
 
 ## g) Lauffähigkeit
 
-- Nicht automatisch ausführbar: Formeln in Studio, Foto-Auswahl, Upload. Testfolge T1.1–T1.12 im Paket, Foto-Teil (T1.5, T1.8) am Tablet durch Josias.
+- Nicht automatisch ausführbar: Formeln in Studio, Foto-Auswahl, Upload. Testbogen Teil A (Vorschau) und Teil B (Tablet, Foto) im Paket.
 - Maschinell: Namen, Klammern, Rückübersetzung, Schema der drei Zweige, Anzahl Argumente, Textbreiten, Logik-Gegenprobe.
+
+## Unabhängige Prüfung – Runde 1 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B1 mittel: Standardwert „Aus“ widerspricht „leere Spalte = wie bisher“ | Standardwert bleibt „Aus“ (Vorgabe: neue Spalten immer mit Standardwert); FotoMoeglich gilt nur noch für alte Zeilen, neue Punkte über Foto. Prüfschritt, ob SharePoint vorhandene Zeilen füllt (UNSICHER) mit Abhilfe |
+| B2 mittel: Testbogen nicht ausführbar (Vorschau ohne Foto, Tablet zeigt veröffentlichte Fassung) | Testbogen in Teil A (Vorschau) und Teil B (Tablet: Studio im Browser oder veröffentlichen) geteilt |
+| B3: Foto-Pflicht auch bei unbeantworteten optionalen Punkten | bewusst (Nachweis), als Annahme in der Übersicht |
+| B4: Kopf/Voraussetzungen widersprüchlich | jetzt aus dem frischen Export 09:09 erzeugt, ohne Simulation; Voraussetzung nennt den Export |
+| B5: Hinweis im Foto-Fenster in der Nur-Ansicht irreführend | behoben: „Gespeicherte Fotos (nur Ansicht).“ |
+| B6: E-05-Prüfung nur bei btnKaFoto.Y | Prüfhinweis für alle Positions-/Höhenformeln ergänzt |
+| B7: Testerwartungen unklar | Testbogen mit benannten Punkten (K1, P10, PO, PX), Folgen des Abschlusses genannt |
+| B8: Kommentar inaktiver Antworten wird geleert | behoben: `!Inaktiv` in „Kommentar leeren“ |
+| B9: alte Foto-Links bei i.O. + Aus unsichtbar | behoben: Foto-Knopf auch bei vorhandenen Links; neue Fotos dort nicht wählbar (addKaFoto.Visible) |
 
 ## Offene Befunde
 

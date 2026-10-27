@@ -1,6 +1,6 @@
 # Prüfung Baukasten-Paket 5 – Neue Typen: Mehrfachauswahl, Datum, Datum + Uhrzeit
 
-Export: `2026-10-27_0724` – **Simulation der Änderung von 08:44, vor dem Einfügen mit dem frischen Export wiederholen**. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
+Export: `2026-10-27_0909`. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolgert**, **UNSICHER** (nur in Studio prüfbar).
 
 ## a) Namenscheck (maschinell, belegt)
 

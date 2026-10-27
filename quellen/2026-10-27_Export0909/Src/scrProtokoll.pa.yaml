@@ -1,0 +1,243 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrProtokoll:
+    Properties:
+      Fill: =clrHintergrund
+      LoadingSpinner: =LoadingSpinner.Data
+      LoadingSpinnerColor: =clrPrimaer
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        Set(varArchivStart, false);
+        Set(varProtokollZeit, Now());
+        Concurrent(Refresh(RG_KategorieErgebnisse), Refresh(RG_Durchfuehrungen));
+        Concurrent(
+            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),
+            ClearCollect(colErgProt, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID))
+        );
+        Set(varIsLoading, false);
+        // automatisch archivieren, wenn abgeschlossen und noch kein PDF (Timer gibt dem HTML-Text Zeit zum Aufbauen)
+        Set(varArchivStart, varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))
+    Children:
+      - conPrKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaer
+            Height: =136
+            Width: =Parent.Width
+          Children:
+            - btnPrZurueck:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Left
+                  BorderThickness: =0
+                  Color: =Color.White
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: =Navigate(scrRundgang, ScreenTransition.None)
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  Text: ="‹  Kategorien"
+                  Width: =180
+                  X: =8
+                  Y: =8
+            - lblPrTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =24
+                  Text: ="Protokoll"
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =56
+            - lblPrUnter:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(255, 255, 255, 0.85)
+                  Font: =Font.'Segoe UI'
+                  Height: =28
+                  Size: =14
+                  Text: =varDurch.RundgangName & "  ·  " & fnTagAnzeige(DateValue(varDurch.TagText))
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =96
+            - btnPrArchivieren:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Right
+                  BorderColor: =Color.White
+                  BorderThickness: =1
+                  Color: =Color.White
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =44
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: |
+                    =If(!IsBlank(varDurch.ProtokollUrl),
+                        Launch(varDurch.ProtokollUrl),
+                      !varIsLoading && Now() >= varSperreBis && varDurch.Status = stAbgeschlossen,
+                        Set(varIsLoading, true);
+                        Set(varPatchFehler, false);
+                        With({datei: fnDateiname(varDurch.Title & " " & varDurch.RundgangName) & " " & Text(Now(), "yyyymmdd-hhmmss") & ".pdf", ordner: fnArchivOrdner(varDurch.TagText, varDurch.TestDatensatz)},
+                            If(IsError(RG_Protokoll_archivieren.Run(Substitute(htmProtokoll.HtmlText, "background:#171496;color:#ffffff", "border-bottom:3px solid #171496;color:#171496"), datei, ordner, varDurchID, varDurch.TestDatensatz)),
+                                Notify("Das Protokoll konnte nicht archiviert werden. Bitte „Archivieren“ erneut tippen.", NotificationType.Error),
+                                If(IsError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {ProtokollUrl: fnSpUrl("RG_Protokolle", ordner & "/" & datei), ProtokollErstelltAm: Now()})), Set(varPatchFehler, true));
+                                Refresh(RG_Durchfuehrungen);
+                                Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));
+                                If(IsBlank(varDurch.ProtokollUrl),
+                                    Notify("PDF erstellt, aber der Link konnte nicht gespeichert werden. Bitte „Archivieren“ erneut tippen.", NotificationType.Error),
+                                    Notify("Protokoll als PDF archiviert.", NotificationType.Success)
+                                )
+                            )
+                        );
+                        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));
+                        Set(varIsLoading, false)
+                    )
+                  PaddingRight: =12
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Text: |-
+                    =If(!IsBlank(varDurch.ProtokollUrl), "✓  Archiv-PDF öffnen",
+                        varDurch.Status = stAbgeschlossen, "⚠  Archivieren",
+                        "Archiv nach Abschluss")
+                  Width: =240
+                  X: =Parent.Width - 256
+                  Y: =10
+            - tmrPrArchiv:
+                Control: Timer@2.1.0
+                Properties:
+                  Duration: =800
+                  Height: =10
+                  OnTimerEnd: |-
+                    =Set(varArchivStart, false);
+                    If(varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl) && CountRows(colErgProt) > 0,
+                        Set(varSperreBis, Now());
+                        Select(btnPrArchivieren)
+                    )
+                  Start: =varArchivStart
+                  Visible: =false
+                  Width: =10
+      - conPrInhalt:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            Fill: =clrKarte
+            Height: =Parent.Height - 136 - 104
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutOverflowY: =LayoutOverflow.Scroll
+            PaddingBottom: =16
+            PaddingLeft: =16
+            PaddingRight: =16
+            PaddingTop: =16
+            Width: =Parent.Width
+            Y: =136
+          Children:
+            - htmProtokoll:
+                Control: HtmlViewer@2.1.0
+                Properties:
+                  AutoHeight: =true
+                  Font: =Font.'Open Sans'
+                  HtmlText: |-
+                    =With({d: varDurch},
+                        "<div style='font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1B1B1F'>" &
+                        "<div style='background:#171496;color:#ffffff;padding:14px 16px'>" &
+                            "<div style='font-size:20px;font-weight:600'>" & fnHtml(d.RundgangName) & "</div>" &
+                            "<div>" & fnTagAnzeige(DateValue(d.TagText)) & " · Prüfer: " & fnHtml(d.PrueferName) & "</div>" &
+                            "<div>Status: " & d.Status & " · Beginn " & Text(d.StartZeit, "hh:mm") & If(IsBlank(d.EndeZeit), "", " · Ende " & Text(d.EndeZeit, "hh:mm")) & " · <b>" & Coalesce(d.AnzahlNIO, 0) & " n.i.O.</b></div>" &
+                        "</div>" &
+                        Concat(Sort(colErgProt, Position) As e,
+                            "<h3 style='margin:18px 0 6px 0;font-size:16px;color:#171496'>" & e.Position & ". " & fnHtml(e.KategorieName) &
+                            " <span style='font-weight:400;color:#5F6370;font-size:13px'>" & fnHtml(e.BereichName) & " · " & fnHtml(e.PrueferName) & " · " & Text(e.GespeichertAm, "hh:mm") & "</span></h3>" &
+                            "<table style='width:100%;border-collapse:collapse;table-layout:fixed'>" &
+                            Concat(Table(ParseJSON(e.Antworten)) As a,
+                                With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos)},
+                                    "<tr style='border-bottom:1px solid #DADCE5;" & If(b = "NIO", "background:#FCE8E6;", "") & "'>" &
+                                    "<td style='padding:6px 8px;width:46%'>" & fnHtml(Text(a.Value.Frage)) & "</td>" &
+                                    "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO", "#B3261E", "#0F7B3F") & "'>" & Switch(b, "IO", "i.O.", "NIO", "n.i.O.", "") & "</td>" &
+                                    "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl), "", Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) &
+                                    If(IsBlank(k) || k = "", "", "<br><i style='color:#B3261E'>" & fnHtml(k) & "</i>") &
+                                    If(IsBlank(fo) || fo = "", "", "<br>" & Concat(Split(fo, " | ") As s, "<a href='" & Trim(s.Value) & "'>Foto ›</a> ")) &
+                                    "</td></tr>"
+                                )
+                            ) & "</table>"
+                        ) &
+                        If(IsBlank(d.ProtokollUrl), "", "<p style='font-size:12px'>Archiv-PDF: <a href='" & d.ProtokollUrl & "'>" & fnHtml(d.Title) & ".pdf</a></p>") &
+                        "<p style='color:#5F6370;font-size:12px;margin-top:18px'>Erstellt mit der Rundgang-App · " & Text(varProtokollZeit, "dd.mm.yyyy hh:mm") & If(d.TestDatensatz, " · TESTDATEN", "") & "</p></div>"
+                    )
+                  LayoutMinHeight: =16
+                  LayoutMinWidth: =16
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  PaddingTop: =0
+                  Width: =Parent.Width - 32
+      - conPrFuss:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            Fill: =clrKarte
+            Height: =104
+            Width: =Parent.Width
+            Y: =Parent.Height - 104
+          Children:
+            - lblPrMailStatus:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(IsBlank(varDurch.MailGesendetAm), clrTextGrau, clrErfolg)
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  Size: =14
+                  Text: =If(IsBlank(varDurch.MailGesendetAm), "Protokoll noch nicht per Mail versendet", "✓  Versendet am " & Text(varDurch.MailGesendetAm, "dd.mm.yyyy hh:mm"))
+                  Width: =Parent.Width - 320
+                  X: =24
+                  Y: =20
+      - conPrLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(244, 245, 249, 0.75)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnPrLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  Text: =""
+                  Width: =Parent.Width
+            - lblPrLaden:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =18
+                  Text: ="Bitte warten …"
+                  Width: =Parent.Width
+                  Y: =(Parent.Height - 40) / 2

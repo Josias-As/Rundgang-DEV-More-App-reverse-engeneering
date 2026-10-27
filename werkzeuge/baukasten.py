@@ -50,7 +50,7 @@ def komm_args(p):
 
 def sicht(p):
     return ("If(varNurLesen, !{p}.Ausgeblendet, With({{b: LookUp(colAntworten As b0, b0.PruefpunktID = {p}.BedID)}}, "
-            "fnSichtbar({p}.BedID, {p}.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Bewertung, b.WertText, b.WertZahl)))"
+            "fnSichtbar({p}.BedID, {p}.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl)))"
             .format(p=p))
 
 
@@ -112,6 +112,7 @@ def neues_control(stand, paket, name, eltern, typ, props):
 
 UDF_P1 = r'''fnLinkAnzahl(t: Text): Number = CountRows(Filter(Split(Coalesce(t, ""), " | ") As s, Trim(s.Value) <> ""));
 fnFotoModus(f: Text, alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht", f, alt, "Optional", "Aus");
+fnFotoNeuErlaubt(bew: Text, foto: Text): Boolean = bew = "NIO" || foto = "Optional" || foto = "Pflicht";
 fnBeantwortet(bew: Text, wt: Text, wz: Number): Boolean = bew <> "" || Trim(wt) <> "" || !IsBlank(wz);
 fnAusserhalb(z: Number, mi: Number, ma: Number): Boolean = !IsBlank(z) && ((!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma));
 fnKommentarNoetig(typ: Text, bew: Text, wt: Text, wz: Number, kpfl: Boolean, gmodus: Text, mi: Number, ma: Number): Boolean = bew = "NIO";
@@ -167,7 +168,7 @@ def paket1(st):
     ganz(st, p, "1.6", "txtKaKommentar.Visible",
          'If(varNurLesen, Trim(ThisItem.Kommentar) <> "" || ThisItem.Bewertung = "NIO", fnKommentarNoetig(' + komm_args("ThisItem") + '))')
     ganz(st, p, "1.6", "btnKaFoto.Visible",
-         'If(varNurLesen, fnLinkAnzahl(ThisItem.Fotos) > 0, ThisItem.Bewertung = "NIO" || ThisItem.FotoModus <> "Aus")')
+         'fnLinkAnzahl(ThisItem.Fotos) > 0 || (!varNurLesen && (ThisItem.Bewertung = "NIO" || ThisItem.FotoModus <> "Aus"))')
     ganz(st, p, "1.6", "btnKaFoto.Y", '54 + If(ThisItem.Hinweis <> "", 24, 0) + 68')
     ganz(st, p, "1.6", "btnKaFoto.Text",
          'With({n: ' + fotoanz("ThisItem") + '},\n    "📷 Foto" & If(n > 0, " (" & n & ")", If(ThisItem.FotoModus = "Pflicht" && !varNurLesen, " *", ""))\n)')
@@ -188,16 +189,18 @@ def paket1(st):
         t = rep(t, "Set(varSprungRec, First(Filter(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge), fnFehlt(Typ, Pflicht, Bewertung, WertText, WertZahl, Kommentar))));",
                 "Set(varSprungRec, First(Filter(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge) As a, " + fehlt("a") + ")));",
                 wo="Sprung")
-        t = rep(t, "Coalesce(LookUp(colPP, ID = a.PruefpunktID).FotoMoeglich, false)", 'a.FotoModus <> "Aus"', n=3, wo="Upload")
+        t = rep(t, 'a.Bewertung = "NIO" || Coalesce(LookUp(colPP, ID = a.PruefpunktID).FotoMoeglich, false)', "fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", n=3, wo="Upload")
         t = rep(t, 'UpdateIf(colAntworten, Bewertung <> "NIO", {Kommentar: ""})',
-                'UpdateIf(colAntworten, !fnKommentarNoetig(Typ, Bewertung, WertText, WertZahl, KommentarPflicht, Grenzmodus, MinWert, MaxWert), {Kommentar: ""})',
+                'UpdateIf(colAntworten, !Inaktiv && !fnKommentarNoetig(Typ, Bewertung, WertText, WertZahl, KommentarPflicht, Grenzmodus, MinWert, MaxWert), {Kommentar: ""})',
                 wo="Kommentar leeren (08:44)")
         return t
     aendern(st, p, "1.8", "btnKaSpeichern.OnSelect", speichern)
 
     ganz(st, p, "1.9", "lblKaFotoHinweis.Text",
-         'If(LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus = "Pflicht", "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.", '
+         'If(varNurLesen, "Gespeicherte Fotos (nur Ansicht).", LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus = "Pflicht", "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.", '
+         '!fnFotoNeuErlaubt(LookUp(colAntworten, PruefpunktID = varFotoPP).Bewertung, LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus), "Neue Fotos nur bei n.i.O. oder Foto-Modus Optional/Pflicht.", '
          '"Keine Personen fotografieren. Fotos werden beim „Speichern“ hochgeladen.")')
+    aendern(st, p, "1.9", "addKaFoto.Visible", lambda _: '!varNurLesen && With({a: LookUp(colAntworten, PruefpunktID = varFotoPP)}, fnFotoNeuErlaubt(a.Bewertung, a.FotoModus))')
     ganz(st, p, "1.9", "addKaFoto.Size", "18")
     standard_ersetzen(st, p, "1.9", "imgKaFotoNeu.Y", "0", "52")
     ganz(st, p, "1.9", "imgKaFotoNeu.Height", "Parent.TemplateHeight - 60")
@@ -233,16 +236,17 @@ def paket3(st):
 
     def formulas(t):
         t = rep(t, 'clrGesperrtHell = ColorValue("#EEF0F3");',
-                'clrGesperrtHell = ColorValue("#EEF0F3");\nclrWarnung = ColorValue("#9A5B00");\nclrWarnungHell = ColorValue("#FFF3E0");')
+                'clrGesperrtHell = ColorValue("#EEF0F3");\nclrWarnung = ColorValue("#9A5B00");')
         t = rep(t, 'fnZahlBewertung(z: Number, mi: Number, ma: Number, gmodus: Text): Text = If(\n'
                    '    (!IsBlank(mi) && z < mi) || (!IsBlank(ma) && z > ma),\n    "NIO",\n    "IO"\n);',
                 'fnZahlBewertung(z: Number, mi: Number, ma: Number, gmodus: Text): Text = If(\n'
-                '    fnAusserhalb(z, mi, ma),\n    Switch(gmodus, "Warnen", "IO", "Sperren", "", "NIO"),\n    "IO"\n);\n'
-                'fnGrenzmodus(g: Text): Text = If(g = "Warnen" || g = "Sperren", g, "Mangel");')
+                '    fnAusserhalb(z, mi, ma),\n    Switch(If(gmodus = "Sperren" && !fnSperreGilt(mi, ma), "Mangel", gmodus), "Warnen", "IO", "Sperren", "", "NIO"),\n    "IO"\n);\n'
+                'fnGrenzmodus(g: Text): Text = If(g = "Warnen" || g = "Sperren", g, "Mangel");\n'
+                'fnSperreGilt(mi: Number, ma: Number): Boolean = IsBlank(mi) || IsBlank(ma) || mi <= ma;')
         t = rep(t, 'Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew, wt, wz));',
                 'Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew, wt, wz)) || (typ = "ZAHL" && gmodus = "Warnen" && fnAusserhalb(wz, mi, ma));')
         t = rep(t, '    fnKommentarNoetig(typ, bew, wt, wz, kpfl, gmodus, mi, ma) && Trim(kom) = "", "Kommentar",',
-                '    typ = "ZAHL" && gmodus = "Sperren" && fnAusserhalb(wz, mi, ma), "Bereich",\n'
+                '    typ = "ZAHL" && gmodus = "Sperren" && fnSperreGilt(mi, ma) && fnAusserhalb(wz, mi, ma), "Bereich",\n'
                 '    fnKommentarNoetig(typ, bew, wt, wz, kpfl, gmodus, mi, ma) && Trim(kom) = "", "Kommentar",')
         return t
     aendern(st, p, "3.3", "App.Formulas", formulas)
@@ -259,19 +263,35 @@ def paket3(st):
 
     aussen = "fnAusserhalb(ThisItem.WertZahl, ThisItem.MinWert, ThisItem.MaxWert)"
     ganz(st, p, "3.5", "lblKaZahlInfo.Text",
-         'Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert), "", "  ·  Soll " & If(IsBlank(ThisItem.MinWert), "", "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert), "", "bis " & ThisItem.MaxWert)) & '
-         'If(ThisItem.Bewertung = "NIO", "  ·  außerhalb des Sollbereichs", !' + aussen + ', "", ThisItem.Grenzmodus = "Warnen", "  ·  außerhalb, bitte begründen", ThisItem.Grenzmodus = "Sperren", "  ·  unzulässig, bitte prüfen", ""))')
-    farbe = ('If(ThisItem.Bewertung = "NIO" || (ThisItem.Grenzmodus = "Sperren" && ' + aussen + '), clrFehler, '
-             'ThisItem.Grenzmodus = "Warnen" && ' + aussen + ', clrWarnung, {sonst})')
+         'Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert), "", "  ·  " & If(ThisItem.Grenzmodus = "Sperren", "zulässig ", "Soll ") & If(IsBlank(ThisItem.MinWert), "", "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert), "", "bis " & ThisItem.MaxWert)) & '
+         'If(ThisItem.Bewertung = "NIO", "  ·  außerhalb des Sollbereichs", !' + aussen + ', "", varNurLesen, "  ·  außerhalb, begründet", ThisItem.Grenzmodus = "Warnen", "  ·  außerhalb, bitte begründen", ThisItem.Grenzmodus = "Sperren", "  ·  unzulässig, bitte prüfen", ""))')
+    farbe = ('If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && ' + aussen + '), clrFehler, '
+             + aussen + ', clrWarnung, {sonst})')
     ganz(st, p, "3.5", "lblKaZahlInfo.Color", farbe.format(sonst="clrTextGrau"))
     ganz(st, p, "3.5", "txtKaZahl.BorderColor", farbe.format(sonst="clrRahmen"))
+
+    aendern(st, p, "3.6", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "JSON(ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos), JSONFormat.Compact)",
+        'JSON(ShowColumns(AddColumns(colAntworten, Warnung, Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl, MinWert, MaxWert)), '
+        "PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact)", wo="JSON Warnung"))
+
+    def protokoll(t):
+        t = rep(t, "With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos)},",
+                "With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos), w: Coalesce(IfError(Boolean(a.Value.Warnung), false), false)},")
+        t = rep(t, 'color:" & If(b = "NIO", "#B3261E", "#0F7B3F")', 'color:" & If(b = "NIO", "#B3261E", w, "#9A5B00", "#0F7B3F")')
+        t = rep(t, "fnHtml(Text(a.Value.Einheit))) &",
+                "fnHtml(Text(a.Value.Einheit))) & If(w, \" <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>\", \"\") &")
+        return t
+    aendern(st, p, "3.7", "htmProtokoll.HtmlText", protokoll)
     return p
 
 
 # ---------------------------------------------------------------- Paket 4
 
-UDF_P4 = r'''fnBedPasst(w: Text, bew: Text, wt: Text, wz: Number): Boolean = With({w2: Lower(Trim(w))}, If(w2 = "*", fnBeantwortet(bew, wt, wz), w2 = Lower(bew) || w2 = Lower(Trim(wt)) || CountRows(Filter(Split(wt, ";") As s, Lower(Trim(s.Value)) = w2)) > 0));
-fnSichtbar(bid: Number, w: Text, gef: Boolean, bBid: Number, bInaktiv: Boolean, bBew: Text, bWt: Text, bWz: Number): Boolean = bid = 0 || Trim(w) = "" || !gef || bInaktiv || bBid <> 0 || fnBedPasst(w, bBew, bWt, bWz);'''
+UDF_P4 = r'''fnBedNorm(w: Text): Text = Lower(Substitute(Substitute(Trim(Coalesce(w, "")), ".", ""), " ", ""));
+fnBedGueltig(w: Text, typ: Text, auswahl: Text): Boolean = With({n: fnBedNorm(w)}, n = "*" || ((typ = "IONIO" || typ = "ZAHL") && (n = "io" || n = "nio")) || ((typ = "AUSWAHL" || typ = "MEHRFACH") && CountRows(Filter(Split(auswahl, ";") As s, fnBedNorm(s.Value) = n)) > 0));
+fnBedPasst(w: Text, bew: Text, wt: Text, wz: Number): Boolean = With({n: fnBedNorm(w)}, If(n = "*", fnBeantwortet(bew, wt, wz), n = fnBedNorm(bew) || n = fnBedNorm(wt) || CountRows(Filter(Split(wt, ";") As s, fnBedNorm(s.Value) = n)) > 0));
+fnSichtbar(bid: Number, w: Text, gef: Boolean, bBid: Number, bInaktiv: Boolean, bTyp: Text, bAuswahl: Text, bBew: Text, bWt: Text, bWz: Number): Boolean = bid = 0 || Trim(w) = "" || !gef || bInaktiv || bBid <> 0 || !fnBedGueltig(w, bTyp, bAuswahl) || fnBedPasst(w, bBew, bWt, bWz);'''
 
 
 def paket4(st):
@@ -321,12 +341,14 @@ def paket4(st):
         zeile_start = t.rfind("\n", 0, i) + 1
         einzug = t[zeile_start:i]
         neu = ("ClearCollect(colVersteckt, ShowColumns(Filter(colAntworten As a, !a.Inaktiv && !(" + sicht("a") + ")), PruefpunktID));\n"
-               + einzug + 'UpdateIf(colAntworten, PruefpunktID in colVersteckt.PruefpunktID, {Bewertung: "", WertText: "", WertZahl: Blank(), Kommentar: "", Ausgeblendet: true}, '
+               + einzug + 'UpdateIf(colAntworten, PruefpunktID in colVersteckt.PruefpunktID, {Bewertung: "", WertText: "", WertZahl: Blank(), Kommentar: "", Fotos: "", Ausgeblendet: true}, '
                "!Inaktiv && !(PruefpunktID in colVersteckt.PruefpunktID), {Ausgeblendet: false});\n" + einzug + anker)
         t = rep(t, anker, neu, wo="Ausblenden vor Upload")
-        t = rep(t, 'a.Bewertung = "NIO" || a.FotoModus <> "Aus"', '!a.Ausgeblendet && (a.Bewertung = "NIO" || a.FotoModus <> "Aus")', n=3, wo="Upload")
-        t = rep(t, "ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos)",
-                "ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Ausgeblendet)", wo="JSON")
+        t = rep(t, "fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", "!a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", n=3, wo="Upload")
+        t = rep(t, "ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url)), PruefpunktID) As d,",
+                "ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)), PruefpunktID) As d,", wo="Links anhängen")
+        t = rep(t, "Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact)",
+                "Einheit, Kommentar, Fotos, Warnung, Ausgeblendet), JSONFormat.Compact)", wo="JSON")
         return t
     aendern(st, p, "4.6", "btnKaSpeichern.OnSelect", speichern)
 
@@ -524,7 +546,7 @@ def namen_der_app(stand):
     params = set(re.findall(r"(\w+)\s*:\s*(?:Text|Number|Boolean|Date|DateTime)\b", formeln))
     benannt = set(re.findall(r"(?m)^(\w+)\s*=", formeln))
     felder = set(re.findall(r"(\w+)\s*:", s))
-    aliase = set(re.findall(r"\bAs\s+(\w+)", s))
+    aliase = set(re.findall(r"\bAs\s+(\w+)", s)) | set(re.findall(r"\bAddColumns\(\s*\w+\s*,\s*(\w+)", s))
     quellen = set(stand.app.spalten) | stand.neue_quellen
     spalten = set()
     for cols in stand.app.spalten.values():
