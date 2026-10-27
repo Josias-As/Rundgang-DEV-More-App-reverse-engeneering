@@ -321,8 +321,7 @@ If(ThisItem.Bewertung = "NIO"; clrFehlerHell; clrPrimaerHell)
 ```
 
 Prüfen nach dem Schritt:
-- Die Karte von Id 10 (FotoMoeglich = Ja, Foto noch leer) ist höher und zeigt rechts unten „📷 Foto“ (blau).
-- Y von `btnKaFoto` steht als Formel da, nicht als Zahl (E-05).
+- Y von `btnKaFoto` steht als Formel da, nicht als Zahl (E-05). Das Aussehen der Karten erst im Test (Vorschau) prüfen – in Studio ist colAntworten noch vom alten Stand.
 
 ### Schritt 1.7 – Zähler „Noch offen“ (unsichtbare Labels)
 
@@ -412,7 +411,7 @@ If(
 
 ### Schritt 1.9 – Foto-Fenster
 
-`conKaFoto` → `conKaFotoKarte` → `lblKaFotoHinweis`, `addKaFoto`, und in `galKaFotoNeu` das Bild `imgKaFotoNeu` (Bild beginnt unter dem ✕-Knopf, damit das ✕ immer tippbar ist, egal wie die Ebenen liegen). `addKaFoto` ist nur sichtbar, wenn für den Punkt neue Fotos auch hochgeladen werden (n.i.O. oder Foto Optional/Pflicht) – sonst gingen sie beim Speichern still verloren.
+`conKaFoto` → `conKaFotoKarte` → `lblKaFotoHinweis`, `addKaFoto`, und in `galKaFotoNeu` das Bild `imgKaFotoNeu` (Bild beginnt unter dem ✕-Knopf, damit das ✕ immer tippbar ist, egal wie die Ebenen liegen). `addKaFoto` ist nur sichtbar, wenn für den Punkt neue Fotos auch hochgeladen werden (n.i.O. oder Foto Optional/Pflicht). Ein bei n.i.O. gewähltes Foto geht weiterhin verloren, wenn der Punkt (Foto = Aus) vor dem Speichern auf i.O. zurückgestellt wird (wie bisher, gewollt).
 
 **`lblKaFotoHinweis.Text`**
 
@@ -454,6 +453,7 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
+**Nur im Test-Rundgang „ZZ Test Objektrundgang TCC“ testen** (nur dort entstehen Testdaten, Ordner TEST/, TestDatensatz = Ja). Je Rundgang und Tag gibt es eine Durchführung; ist die heutige schon abgeschlossen, einen Tag mit Testplan oder den Nachholtag nehmen.
 Namen im Bogen: **K1** = Kategorie, in der Prüfpunkt Id 10 (Thermometer) liegt. **P10** = Id 10. **PO** = ein anderer i.O./n.i.O.-Punkt in K1. **PX** = ein dritter i.O./n.i.O.-Punkt in K1 mit FotoMoeglich = Nein.
 Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pruefpunkte in Studio **Daten → RG_Pruefpunkte → Aktualisieren** und die Vorschau neu starten.
 Kategorien werden der Reihe nach freigeschaltet: Liegt K1 nicht als erste Kategorie, vorher die davor liegenden Kategorien speichern (oder eine neue Durchführung, in der K1 die nächste offene ist).
@@ -471,7 +471,7 @@ Kategorien werden der Reihe nach freigeschaltet: Liegt K1 nicht als erste Katego
 | A7 | PX zurück auf i.O. | Kommentarfeld und Foto-Knopf weg, Karte wieder niedrig |
 | A8 | PO auf n.i.O., dann i.O. | Foto-Knopf rot, dann wieder blau (Optional bleibt) |
 | A9 | SharePoint: P10 Foto = **Aus** (FotoMoeglich bleibt Ja), aktualisieren, Vorschau neu, K1 öffnen | P10 ohne Foto-Knopf (Foto-Spalte schlägt FotoMoeglich) |
-| A10 | SharePoint: P10 Foto = **Pflicht**, aktualisieren, Vorschau neu. K1 öffnen, Zurück („Verwerfen? Erneut tippen“) | Übersicht; nichts gespeichert (Speichern ist ohne Foto nicht möglich – gewollt) |
+| A10 | SharePoint: P10 Foto = **Pflicht**, aktualisieren, Vorschau neu. K1 öffnen, nichts ändern, Zurück | Übersicht direkt (ohne Nachfrage); nichts gespeichert |
 
 **Teil B – Tablet (Foto-Auswahl).** Entweder Studio im Browser des Tablets öffnen und dort die Vorschau nehmen, oder die App veröffentlichen (Josias entscheidet; die veröffentlichte DEV-App sehen alle mit Zugriff).
 
@@ -482,7 +482,7 @@ Kategorien werden der Reihe nach freigeschaltet: Liegt K1 nicht als erste Katego
 | B3 | PX: n.i.O. + Kommentar „test“, dann zurück auf i.O. | Kommentarfeld verschwindet |
 | B4 | Speichern | Meldung „Gespeichert.“, nächste Kategorie öffnet sich |
 | B5 | Bibliothek RG_Fotos → TEST/2026/10/<Title der Durchführung>/ | Datei `D<id>-K<kat>-P10-xxxxxxxx.jpg` |
-| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; Speichern ohne neues Foto möglich |
+| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; Speicher-Knopf zeigt „Speichern“ bzw. „Speichern & weiter“, nicht „Offene Punkte ↓“ (nicht tippen) |
 | B6a | PX auf n.i.O. tippen | Kommentarfeld ist **leer** (beim Speichern geleert, Verhalten 08:44); dann PX zurück auf i.O. und Zurück („Verwerfen? Erneut tippen“) |
 | B7 | Nur wenn der Testrundgang ohnehin abgeschlossen werden soll: vorher in einer Kategorie einen Punkt **n.i.O. + Kommentar, ohne Foto** speichern, dann alle Kategorien speichern und abschließen (legt Mängel in RG_Maengel und ein PDF in RG_Protokolle an) | Nach dem Abschluss „Ansehen“: P10 „📷 Foto (1)“, Fenster zeigt „Gespeicherte Fotos (nur Ansicht).“; der n.i.O.-Punkt ohne Foto hat keinen Foto-Knopf, Kommentar sichtbar |
 

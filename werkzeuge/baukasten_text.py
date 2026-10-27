@@ -54,8 +54,7 @@ PAKET_TEXT = {
             {"nr": "1.5", "titel": "Zahlenfeld", "text": []},
             {"nr": "1.6", "titel": "Karte, Kommentar und Foto-Knopf", "text": [
                 "Alle Steuerelemente liegen in `galKaPruefpunkte` → `conKaKarte` (Karte) bzw. direkt in der Galerievorlage (`lblKaAbstand`)."],
-             "pruefen": ["Die Karte von Id 10 (FotoMoeglich = Ja, Foto noch leer) ist höher und zeigt rechts unten „📷 Foto“ (blau).",
-                         "Y von `btnKaFoto` steht als Formel da, nicht als Zahl (E-05)."]},
+             "pruefen": ["Y von `btnKaFoto` steht als Formel da, nicht als Zahl (E-05). Das Aussehen der Karten erst im Test (Vorschau) prüfen – in Studio ist colAntworten noch vom alten Stand."]},
             {"nr": "1.7", "titel": "Zähler „Noch offen“ (unsichtbare Labels)", "text": [
                 "`lblKaFehlendAnzahl` und `lblKaFehlend` liegen direkt auf `scrKategorie` (unsichtbar)."]},
             {"nr": "1.8", "titel": "Speichern", "text": [
@@ -65,11 +64,12 @@ PAKET_TEXT = {
             {"nr": "1.9", "titel": "Foto-Fenster", "text": [
                 "`conKaFoto` → `conKaFotoKarte` → `lblKaFotoHinweis`, `addKaFoto`, und in `galKaFotoNeu` das Bild `imgKaFotoNeu` "
                 "(Bild beginnt unter dem ✕-Knopf, damit das ✕ immer tippbar ist, egal wie die Ebenen liegen). "
-                "`addKaFoto` ist nur sichtbar, wenn für den Punkt neue Fotos auch hochgeladen werden (n.i.O. oder Foto Optional/Pflicht) – sonst gingen sie beim Speichern still verloren."],
+                "`addKaFoto` ist nur sichtbar, wenn für den Punkt neue Fotos auch hochgeladen werden (n.i.O. oder Foto Optional/Pflicht). Ein bei n.i.O. gewähltes Foto geht weiterhin verloren, wenn der Punkt (Foto = Aus) vor dem Speichern auf i.O. zurückgestellt wird (wie bisher, gewollt)."],
              "pruefen": ["`conKaKarte.Height`, `lblKaAbstand.Y`, `imgKaFotoNeu.Height` und `btnKaFoto.Y` zeigen Formeln, keine festen Zahlen (E-05)."]},
             pruefung_schritt("1.10"),
         ],
         "test": [
+            "**Nur im Test-Rundgang „ZZ Test Objektrundgang TCC“ testen** (nur dort entstehen Testdaten, Ordner TEST/, TestDatensatz = Ja). Je Rundgang und Tag gibt es eine Durchführung; ist die heutige schon abgeschlossen, einen Tag mit Testplan oder den Nachholtag nehmen.",
             "Namen im Bogen: **K1** = Kategorie, in der Prüfpunkt Id 10 (Thermometer) liegt. **P10** = Id 10. **PO** = ein anderer i.O./n.i.O.-Punkt in K1. **PX** = ein dritter i.O./n.i.O.-Punkt in K1 mit FotoMoeglich = Nein.",
             "Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pruefpunkte in Studio **Daten → RG_Pruefpunkte → Aktualisieren** und die Vorschau neu starten.",
             "Kategorien werden der Reihe nach freigeschaltet: Liegt K1 nicht als erste Kategorie, vorher die davor liegenden Kategorien speichern (oder eine neue Durchführung, in der K1 die nächste offene ist).",
@@ -87,7 +87,7 @@ PAKET_TEXT = {
             "| A7 | PX zurück auf i.O. | Kommentarfeld und Foto-Knopf weg, Karte wieder niedrig |",
             "| A8 | PO auf n.i.O., dann i.O. | Foto-Knopf rot, dann wieder blau (Optional bleibt) |",
             "| A9 | SharePoint: P10 Foto = **Aus** (FotoMoeglich bleibt Ja), aktualisieren, Vorschau neu, K1 öffnen | P10 ohne Foto-Knopf (Foto-Spalte schlägt FotoMoeglich) |",
-            "| A10 | SharePoint: P10 Foto = **Pflicht**, aktualisieren, Vorschau neu. K1 öffnen, Zurück („Verwerfen? Erneut tippen“) | Übersicht; nichts gespeichert (Speichern ist ohne Foto nicht möglich – gewollt) |",
+            "| A10 | SharePoint: P10 Foto = **Pflicht**, aktualisieren, Vorschau neu. K1 öffnen, nichts ändern, Zurück | Übersicht direkt (ohne Nachfrage); nichts gespeichert |",
             "",
             "**Teil B – Tablet (Foto-Auswahl).** Entweder Studio im Browser des Tablets öffnen und dort die Vorschau nehmen, oder die App veröffentlichen (Josias entscheidet; die veröffentlichte DEV-App sehen alle mit Zugriff).",
             "",
@@ -98,7 +98,7 @@ PAKET_TEXT = {
             "| B3 | PX: n.i.O. + Kommentar „test“, dann zurück auf i.O. | Kommentarfeld verschwindet |",
             "| B4 | Speichern | Meldung „Gespeichert.“, nächste Kategorie öffnet sich |",
             "| B5 | Bibliothek RG_Fotos → TEST/2026/10/<Title der Durchführung>/ | Datei `D<id>-K<kat>-P10-xxxxxxxx.jpg` |",
-            "| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; Speichern ohne neues Foto möglich |",
+            "| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; Speicher-Knopf zeigt „Speichern“ bzw. „Speichern & weiter“, nicht „Offene Punkte ↓“ (nicht tippen) |",
             "| B6a | PX auf n.i.O. tippen | Kommentarfeld ist **leer** (beim Speichern geleert, Verhalten 08:44); dann PX zurück auf i.O. und Zurück („Verwerfen? Erneut tippen“) |",
             "| B7 | Nur wenn der Testrundgang ohnehin abgeschlossen werden soll: vorher in einer Kategorie einen Punkt **n.i.O. + Kommentar, ohne Foto** speichern, dann alle Kategorien speichern und abschließen (legt Mängel in RG_Maengel und ein PDF in RG_Protokolle an) | Nach dem Abschluss „Ansehen“: P10 „📷 Foto (1)“, Fenster zeigt „Gespeicherte Fotos (nur Ansicht).“; der n.i.O.-Punkt ohne Foto hat keinen Foto-Knopf, Kommentar sichtbar |",
             "",
@@ -137,12 +137,12 @@ PAKET_TEXT = {
             "",
             "| # | Klickfolge | erwartet |",
             "|---|---|---|",
-            "| T2.1 | Neue Durchführung starten (oder eine, in der K1 noch offen ist). K1: alles i.O., Speichern | K2 öffnet sich automatisch |",
+            "| T2.1 | Test-Rundgang öffnen (Durchführung des Tages; ist sie abgeschlossen: Tag mit Testplan oder Nachholtag). K1 speichern bzw. „Bearbeiten“ und speichern | K2 öffnet sich automatisch (oder über die Übersicht öffnen) |",
             "| T2.2 | PK auf i.O. | Kommentarfeld „Kommentar (Pflicht)“, rot umrandet; Fuß nennt „<PK> (Kommentar)“ |",
             "| T2.3 | PN unbeantwortet lassen | PN steht nicht in „Noch offen“ |",
             "| T2.4 | PK Kommentar „sauber“ | PK nicht mehr offen |",
-            "| T2.5 | PK auf n.i.O. | Hinweis wird „Kommentar zum Mangel (Pflicht)“, „sauber“ bleibt stehen |",
-            "| T2.6 | PK zurück auf i.O. | Hinweis „Kommentar (Pflicht)“, „sauber“ steht noch |",
+            "| T2.5 | PK auf n.i.O., Kommentar kurz leeren | leeres Feld zeigt „Kommentar zum Mangel (Pflicht)“; dann „sauber“ wieder eintragen |",
+            "| T2.6 | PK zurück auf i.O. | „sauber“ steht noch, PK nicht offen |",
             "| T2.7 | PM: n.i.O. + Kommentar „weg“, dann i.O. | Kommentarfeld von PM verschwindet |",
             "| T2.8 | Übrige Punkte ausfüllen, Speichern | „Gespeichert.“, die nächste offene Kategorie öffnet sich (falls es eine gibt) |",
             "| T2.9 | Zurück zur Übersicht, K2 „Bearbeiten“ | PK i.O., Kommentarfeld mit „sauber“ sichtbar |",
@@ -696,6 +696,15 @@ RUNDE3 = {
         ("B7: Titel im Bildfenster abgeschnitten", "Größe 16, Höhe 64, Bild ab Y 84 (Textbreite maschinell geprüft: 2 Zeilen)")],
 }
 
+RUNDE3_12 = {
+    1: [("Nr. 1 mittel: Tests nicht auf den ZZ-Test-Rundgang beschränkt", "Hinweis am Anfang des Bogens; Id 10 liegt laut Fortschritt im ZZ-Test-Rundgang, echte Stammdaten gibt es noch nicht"),
+        ("Nr. 2/5/6: B6 speichert beim Prüfen, A10 erwartet Nachfrage, Prüfung nach 1.6 in Studio nicht möglich", "Bogen und Prüfhinweis korrigiert"),
+        ("Nr. 7: Schritt 1.9 stellt Fotoverlust als behoben dar", "Text korrigiert (vorhandenes, gewolltes Verhalten)"),
+        ("Nr. 8: Fuß nennt nur den ersten Grund", "bekannt, bleibt so")],
+    2: [("Nr. 1 mittel: ZZ-Test-Rundgang", "wie Paket 1"),
+        ("Nr. 3/4: Hinweistext bei gefülltem Feld nicht sichtbar; eine Durchführung je Tag", "T2.1, T2.5, T2.6 angepasst")],
+}
+
 RUNDE2 = {
     1: [("Nr. 1 mittel: Erwartung „ohne Kommentar“ bei i.O. nicht sichtbar", "Test B6a: Punkt auf n.i.O. tippen, Kommentarfeld muss leer sein"),
         ("Nr. 2/3/4/6/13: Testbogen (Reihenfolge der Kategorien, Namen, Prüfhinweis 1.6, Daten aktualisieren, Foto = Aus bei FotoMoeglich Ja)", "ergänzt (A9, Hinweise im Bogen, Prüfhinweis 1.6)"),
@@ -730,6 +739,11 @@ for _k, _v in RUNDE2_34.items():
     RUNDE2[_k] = _v
 
 
+
+for _k, _v in RUNDE3_12.items():
+    RUNDE3[_k] = _v
+
+
 def UEBERSICHT(d):
     z = ["# Baukasten-Pakete 1–6 – Übersicht", ""]
     if d["simulation"]:
@@ -745,7 +759,8 @@ def UEBERSICHT(d):
         z.append("| %d | %s | %s | %d | %s |" % (p["nr"], PAKET_TEXT[p["nr"]]["titel"], sp_je[p["nr"]], len(p["props"]), ", ".join(p["neu"]) or "–"))
     z += ["", "## Prüfstand", "",
           "- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.",
-          "- Unabhängige Prüfung: Runde 1 (Pakete 1–4) und Runde 2 (alle sechs) eingearbeitet, siehe PRUEFUNG_n. Ergebnis Runde 3: siehe unten bzw. PRUEFUNG_n.",
+          "- Unabhängige Prüfung: Runde 1 (Pakete 1–4), Runde 2 (alle sechs) und Runde 3 (Pakete 1, 2, 5, 6) eingearbeitet, siehe PRUEFUNG_n. In Runde 3 fand kein Prüfer einen Code-Fehler, nur Testbogen- und Doku-Befunde (eingearbeitet).",
+          "- **Nicht erfüllt:** Paket 3+4 ist in Runde 3 nicht geprüft (Prüfer auf Josias' Wunsch gestoppt, Guthaben). Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) sind damit nur maschinell und von mir geprüft. Eine Prüfung ohne jeden Befund liegt für keines der sechs Pakete vor; die letzten Befunde waren Testbogen/Doku.",
           ]
     z += ["", "## Entscheidungen und Annahmen (bitte bestätigen)", "",
           "- **Foto-Pflicht gilt immer**, auch wenn der Punkt selbst nicht Pflicht ist (Nachweis, z. B. Thermometer).",

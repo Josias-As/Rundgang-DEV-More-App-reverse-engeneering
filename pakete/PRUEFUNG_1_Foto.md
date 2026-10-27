@@ -149,6 +149,15 @@ P1  ok    fnFotoNeuErlaubt: i.O. und Optional -> ja                             
 | Nr. 11/12: Foto bei Wechsel n.i.O.→i.O. (Aus) verworfen; Fuß nennt nur den ersten Grund | vorhandenes bzw. gewolltes Verhalten |
 | Nr. 17: ProtokollErstelltAm fehlt | Fehlalarm: Spalte existiert (DataSources), sie fehlte nur in der Prüfer-Übersicht |
 
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Nr. 1 mittel: Tests nicht auf den ZZ-Test-Rundgang beschränkt | Hinweis am Anfang des Bogens; Id 10 liegt laut Fortschritt im ZZ-Test-Rundgang, echte Stammdaten gibt es noch nicht |
+| Nr. 2/5/6: B6 speichert beim Prüfen, A10 erwartet Nachfrage, Prüfung nach 1.6 in Studio nicht möglich | Bogen und Prüfhinweis korrigiert |
+| Nr. 7: Schritt 1.9 stellt Fotoverlust als behoben dar | Text korrigiert (vorhandenes, gewolltes Verhalten) |
+| Nr. 8: Fuß nennt nur den ersten Grund | bekannt, bleibt so |
+
 ## Offene Befunde
 
 - **Nicht Teil dieses Pakets, aber für Foto-Pflicht wichtig:** Der Flow `RG_Foto_hochladen` antwortet nicht. Scheitert er nach dem Start, steht der Link trotzdem im JSON und die Pflicht gilt als erfüllt. Vorschlag „Flows rückmelden“ in BAUKASTEN_UEBERSICHT.md (eigenes Paket, nicht gebaut).

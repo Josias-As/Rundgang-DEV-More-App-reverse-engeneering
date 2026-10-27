@@ -276,12 +276,12 @@ Vorbereitung in RG_Pruefpunkte, danach Daten aktualisieren und Vorschau neu star
 
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T2.1 | Neue Durchführung starten (oder eine, in der K1 noch offen ist). K1: alles i.O., Speichern | K2 öffnet sich automatisch |
+| T2.1 | Test-Rundgang öffnen (Durchführung des Tages; ist sie abgeschlossen: Tag mit Testplan oder Nachholtag). K1 speichern bzw. „Bearbeiten“ und speichern | K2 öffnet sich automatisch (oder über die Übersicht öffnen) |
 | T2.2 | PK auf i.O. | Kommentarfeld „Kommentar (Pflicht)“, rot umrandet; Fuß nennt „<PK> (Kommentar)“ |
 | T2.3 | PN unbeantwortet lassen | PN steht nicht in „Noch offen“ |
 | T2.4 | PK Kommentar „sauber“ | PK nicht mehr offen |
-| T2.5 | PK auf n.i.O. | Hinweis wird „Kommentar zum Mangel (Pflicht)“, „sauber“ bleibt stehen |
-| T2.6 | PK zurück auf i.O. | Hinweis „Kommentar (Pflicht)“, „sauber“ steht noch |
+| T2.5 | PK auf n.i.O., Kommentar kurz leeren | leeres Feld zeigt „Kommentar zum Mangel (Pflicht)“; dann „sauber“ wieder eintragen |
+| T2.6 | PK zurück auf i.O. | „sauber“ steht noch, PK nicht offen |
 | T2.7 | PM: n.i.O. + Kommentar „weg“, dann i.O. | Kommentarfeld von PM verschwindet |
 | T2.8 | Übrige Punkte ausfüllen, Speichern | „Gespeichert.“, die nächste offene Kategorie öffnet sich (falls es eine gibt) |
 | T2.9 | Zurück zur Übersicht, K2 „Bearbeiten“ | PK i.O., Kommentarfeld mit „sauber“ sichtbar |

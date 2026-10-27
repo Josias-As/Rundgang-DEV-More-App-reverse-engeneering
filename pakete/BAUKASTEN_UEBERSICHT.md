@@ -16,7 +16,8 @@ Pakete **nur in dieser Reihenfolge**, jedes ganz (atomar), nach jedem Paket App-
 ## Prüfstand
 
 - Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.
-- Unabhängige Prüfung: Runde 1 (Pakete 1–4) und Runde 2 (alle sechs) eingearbeitet, siehe PRUEFUNG_n. Ergebnis Runde 3: siehe unten bzw. PRUEFUNG_n.
+- Unabhängige Prüfung: Runde 1 (Pakete 1–4), Runde 2 (alle sechs) und Runde 3 (Pakete 1, 2, 5, 6) eingearbeitet, siehe PRUEFUNG_n. In Runde 3 fand kein Prüfer einen Code-Fehler, nur Testbogen- und Doku-Befunde (eingearbeitet).
+- **Nicht erfüllt:** Paket 3+4 ist in Runde 3 nicht geprüft (Prüfer auf Josias' Wunsch gestoppt, Guthaben). Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) sind damit nur maschinell und von mir geprüft. Eine Prüfung ohne jeden Befund liegt für keines der sechs Pakete vor; die letzten Befunde waren Testbogen/Doku.
 
 ## Entscheidungen und Annahmen (bitte bestätigen)
 

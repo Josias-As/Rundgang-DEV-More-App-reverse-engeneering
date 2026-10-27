@@ -101,6 +101,13 @@ P2  ok    Kommentar leeren beim Speichern: i.O. mit Pflicht -> behalten         
 | Nr. 15: Schritt 2.2 nennt einen Testpunkt | verweist auf PK/PN |
 | Nr. 16 UNSICHER: Mail-Flow | es gibt keinen Mail-Flow (Export) |
 
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Nr. 1 mittel: ZZ-Test-Rundgang | wie Paket 1 |
+| Nr. 3/4: Hinweistext bei gefülltem Feld nicht sichtbar; eine Durchführung je Tag | T2.1, T2.5, T2.6 angepasst |
+
 ## Offene Befunde
 
 Keine.
