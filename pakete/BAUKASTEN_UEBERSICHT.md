@@ -39,3 +39,19 @@ Die Flows antworten nicht (Antwort-Aktion wäre Premium). Folge: Scheitert ein U
 ## Hinweise des Generators
 
 - SIMULATION: UpdateIf von 08:44 vor Set(varAntwortJSON eingefügt (nur Entwurf).
+
+## Stand bei Arbeitsende 27.10.2026 (auf Josias' Wunsch angehalten)
+
+**Nicht einsetzbereit.** Offen:
+1. Frischer Export nach 08:44 fehlt (Blöcke beruhen auf Simulation).
+2. Unabhängige Prüfung: Paket 1 (2 mittel, 7 niedrig), Paket 2+3 (4 mittel, 8 niedrig) und Paket 4 (3 mittel, 9 niedrig) liegen vor, sind aber **noch nicht eingearbeitet**. Die Prüfung für Paket 5+6 wurde abgebrochen. Berichte: `arbeit/2026-10-27_Baukasten/pruefung_unabhaengig/`.
+3. Geplante Korrekturen (noch nicht umgesetzt):
+   - „Kommentar leeren“ nur für aktive Punkte (`!Inaktiv`).
+   - Foto-Knopf auch, wenn alte Links vorhanden sind.
+   - Hinweis im Foto-Fenster in der Nur-Ansicht.
+   - Prüfen, ob SharePoint den Standardwert „Aus“ auch in vorhandene Zeilen schreibt.
+   - Sperren: Regel „nur Tippfehler-Grenzen“, Schutz bei Min > Max, Beschriftung „zulässig“.
+   - Warnen: JSON-Feld `Warnung`, orange im Protokoll und in der Nur-Ansicht.
+   - `clrWarnungHell` entfernen.
+   - Bedingte Fragen: Fotos ausgeblendeter Punkte leeren und nicht anhängen; Bedingungswert gegen die möglichen Werte von A prüfen (sonst B zeigen); i.O./n.i.O. als Schreibweise annehmen.
+   - Testbögen 1–4 als ausführbare Zeitachse (Vorschau ohne Foto / Tablet mit Foto).
