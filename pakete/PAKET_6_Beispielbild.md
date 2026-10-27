@@ -192,8 +192,8 @@ Den Bildschirm `scrKategorie` in der Strukturansicht markieren und den YAML-Bloc
               Color: =clrText
               Font: =Font.'Segoe UI'
               FontWeight: =FontWeight.Semibold
-              Height: =56
-              Size: =18
+              Height: =64
+              Size: =16
               Text: ="Beispiel – " & varBildFrage
               Width: =Parent.Width - 40
               X: =20
@@ -202,12 +202,12 @@ Den Bildschirm `scrKategorie` in der Strukturansicht markieren und den YAML-Bloc
             Control: Image@2.2.3
             Properties:
               AccessibleLabel: ="Beispielbild zu " & varBildFrage
-              Height: =Parent.Height - 76 - 96
+              Height: =Parent.Height - 84 - 96
               Image: =If(varBildID > 0, LookUp(RG_Hinweisbilder, ID = varBildID).Thumbnail.Large)
               ImagePosition: =ImagePosition.Fit
               Width: =Parent.Width - 40
               X: =20
-              Y: =76
+              Y: =84
         - btnKaBildSchliessen:
             Control: Classic/Button@2.2.0
             Properties:
@@ -228,6 +228,7 @@ Den Bildschirm `scrKategorie` in der Strukturansicht markieren und den YAML-Bloc
 
 Prüfen nach dem Schritt:
 - Beim Einfügen eines Containers bleiben die Kinder in ihm (Strukturansicht prüfen).
+- Formeln statt Zahlen (E-05): `conKaBild.Height` = Parent.Height, `btnKaBildSperre.Height` = Parent.Height, `conKaBildKarte.Height` = Min(Parent.Height - 32; 900), `conKaBildKarte.Y` = (Parent.Height - Self.Height) / 2, `imgKaBild.Height` = Parent.Height - 84 - 96, `btnKaBildSchliessen.Y` = Parent.Height - 76 – sonst per Formelleiste setzen.
 
 ### Schritt 6.7 – App-Prüfung und Speichern
 
@@ -244,7 +245,7 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 | T6.4 | Punkt ohne Bild | kein Knopf |
 | T6.5 | Nur-Ansicht nach Abschluss | Knopf vorhanden, Bild lässt sich ansehen (Bild aus den heutigen Stammdaten) |
 | T6.6 | HinweisBildID auf eine nicht vorhandene Id, aktualisieren, Vorschau neu | Fenster öffnet, Bildfläche leer, „Schließen“ geht |
-| T6.7 | Am Tablet (veröffentlicht oder Studio im Tablet-Browser) | Bild erscheint auch dort |
+| T6.7 | Am Tablet (veröffentlicht oder Studio im Tablet-Browser), hochkant und quer | Bild erscheint; das Fenster deckt den ganzen Bildschirm ab (Karten darunter nicht tippbar), „Schließen“ ist sichtbar |
 
 Hinweis: Das Zurücksetzen des Fensters in OnVisible ist eine Absicherung; über die Oberfläche lässt sich die Kategorie bei offenem Fenster nicht verlassen (Hintergrund gesperrt).
 

@@ -614,8 +614,8 @@
     "Color": "clrText",
     "Font": "Font.'Segoe UI'",
     "FontWeight": "FontWeight.Semibold",
-    "Height": "56",
-    "Size": "18",
+    "Height": "64",
+    "Size": "16",
     "Text": "\"Beispiel – \" & varBildFrage",
     "Width": "Parent.Width - 40",
     "X": "20",
@@ -627,12 +627,12 @@
    "typ": "Image@2.2.3",
    "props": {
     "AccessibleLabel": "\"Beispielbild zu \" & varBildFrage",
-    "Height": "Parent.Height - 76 - 96",
+    "Height": "Parent.Height - 84 - 96",
     "Image": "If(varBildID > 0, LookUp(RG_Hinweisbilder, ID = varBildID).Thumbnail.Large)",
     "ImagePosition": "ImagePosition.Fit",
     "Width": "Parent.Width - 40",
     "X": "20",
-    "Y": "76"
+    "Y": "84"
    }
   },
   "btnKaBildSchliessen": {

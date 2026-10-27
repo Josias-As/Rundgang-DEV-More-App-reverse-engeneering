@@ -260,5 +260,6 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
   btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
   btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
+  lblKaBildTitel                734 px (+10 %) / 670 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen'
 
 Fehler gesamt: 0

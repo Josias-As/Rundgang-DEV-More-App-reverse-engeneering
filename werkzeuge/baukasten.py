@@ -547,12 +547,12 @@ def paket6(st):
         "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
         "Width": "Parent.Width - 48", "X": "24", "Y": "(Parent.Height - Self.Height) / 2"})
     neues_control(st, p, "lblKaBildTitel", "conKaBildKarte", "Label@2.5.1", {
-        "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "56",
-        "Size": "18", "Text": '"Beispiel – " & varBildFrage', "Width": "Parent.Width - 40", "X": "20", "Y": "12"})
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "64",
+        "Size": "16", "Text": '"Beispiel – " & varBildFrage', "Width": "Parent.Width - 40", "X": "20", "Y": "12"})
     neues_control(st, p, "imgKaBild", "conKaBildKarte", "Image@2.2.3", {
         "AccessibleLabel": '"Beispielbild zu " & varBildFrage',
-        "Height": "Parent.Height - 76 - 96", "Image": "If(varBildID > 0, LookUp(RG_Hinweisbilder, ID = varBildID).Thumbnail.Large)",
-        "ImagePosition": "ImagePosition.Fit", "Width": "Parent.Width - 40", "X": "20", "Y": "76"})
+        "Height": "Parent.Height - 84 - 96", "Image": "If(varBildID > 0, LookUp(RG_Hinweisbilder, ID = varBildID).Thumbnail.Large)",
+        "ImagePosition": "ImagePosition.Fit", "Width": "Parent.Width - 40", "X": "20", "Y": "84"})
     neues_control(st, p, "btnKaBildSchliessen", "conKaBildKarte", "Classic/Button@2.2.0", {
         "BorderThickness": "0", "Color": "Color.White", "Fill": "clrPrimaer", "Font": "Font.'Segoe UI'", "Height": "56",
         "HoverFill": "ColorFade(clrPrimaer, -20%)", "OnSelect": "Set(varBildID, 0)", "PressedFill": "ColorFade(clrPrimaer, -35%)",
@@ -793,6 +793,7 @@ TEXTE = [
     ("btnKaBild", "Bild", 14, 64, 1, 20),
     ("btnKaDatumLeeren", "✕", 16, 56, 1, 20),
     ("btnKaBildSchliessen", "Schließen", 17, 200, 1, 20),
+    ("lblKaBildTitel", "Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen", 16, 680, 2, 10),
 ]
 
 

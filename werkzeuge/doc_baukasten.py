@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rg  # noqa: E402
-from baukasten_text import PAKET_TEXT, PRUEF_TEXT, RUNDE1, RUNDE2, UEBERSICHT  # noqa: E402
+from baukasten_text import PAKET_TEXT, PRUEF_TEXT, RUNDE1, RUNDE2, RUNDE3, UEBERSICHT  # noqa: E402
 
 AUS = os.path.join(rg.REPO, "pakete")
 ARB = os.path.join(rg.REPO, "arbeit", "2026-10-27_Baukasten")
@@ -131,6 +131,9 @@ def pruef_doc(d, p, nr, auto, logik):
     if RUNDE2.get(nr):
         z += ["## Unabhängige Prüfung – Runde 2 und Umgang", "", "| Befund | Umgang |", "|---|---|"]
         z += ["| %s | %s |" % x for x in RUNDE2[nr]] + [""]
+    if RUNDE3.get(nr):
+        z += ["## Unabhängige Prüfung – Runde 3 und Umgang", "", "| Befund | Umgang |", "|---|---|"]
+        z += ["| %s | %s |" % x for x in RUNDE3[nr]] + [""]
     z += ["## Offene Befunde", ""] + (t.get("offen") or ["Keine."]) + [""]
     return "\n".join(z)
 

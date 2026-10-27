@@ -215,6 +215,16 @@ P5  ok    fnDatumText ohne Datum                                                
 | P5-10/11: Doku, Testlücke Bedingung auf MEHRFACH | 5.2 angepasst, Test T5.4 |
 | Tests T5.7/T5.8 nicht ausführbar | Testbogen neu |
 
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B2: Rückweg nennt vier statt fünf Steuerelemente | korrigiert |
+| B3: „Drei Blöcke“, einzeln eingefügt kurz rote Fehler | „alle vier zusammen einfügen“ |
+| B4: Testdaten ohne Aktiv/Foto/Reihenfolge, kein Aufräumen | ergänzt |
+| B5: nur Stunde oder nur Minute wird nicht gespeichert; Restwerte UNSICHER | Teilangabe ist gewollt unvollständig („(Uhrzeit)“ im Fuß); Restwerte: Test T5.8c mit Ausweichplan |
+| B6: Testlücken (✕ bei Datum+Uhrzeit, alle Werte abwählen, Nur-Ansicht der Uhrzeit) | T5.8a–c, T5.12 ergänzt |
+
 ## Offene Befunde
 
 Keine.

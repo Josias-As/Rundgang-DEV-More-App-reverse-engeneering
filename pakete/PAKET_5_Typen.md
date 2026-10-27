@@ -25,7 +25,7 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 
 RG_Pruefpunkte → Spalte **Eingabetyp** → Spalteneinstellungen → Bearbeiten → Auswahlmöglichkeiten **ergänzen** (nichts umbenennen oder löschen): **MEHRFACH**, **DATUM**, **DATUMZEIT**. Standardwert unverändert lassen.
 Pflegeregel: den Typ eines schon benutzten Prüfpunkts nicht ändern (alte Antworten passen nicht zum neuen Typ), sondern einen neuen Punkt anlegen und den alten deaktivieren.
-Für den Test in K1: drei neue Prüfpunkte (Pflicht = Ja): **M** „ZZ Test Mängelarten“ MEHRFACH mit Auswahlwerte `Riss;Leck;Korrosion`, **D** „ZZ Test Datum letzte Wartung“ DATUM, **DZ** „ZZ Test Ablesezeit“ DATUMZEIT. Dazu **F** „ZZ Test Folge Leck“ (TEXT, Pflicht = Ja) mit BedingungPunkt = Id von M, BedingungWert = **Leck**.
+Für den Test in K1 neue Prüfpunkte, alle Pflicht = Ja, Aktiv = Ja, Foto = Aus, RgReihenfolge hinter den vorhandenen in dieser Folge: **M** „ZZ Test Mängelarten“ MEHRFACH mit Auswahlwerte `Riss;Leck;Korrosion`, **F** „ZZ Test Folge Leck“ (TEXT) mit BedingungPunkt = Id von M, BedingungWert = **Leck**, **D** „ZZ Test Datum letzte Wartung“ DATUM, **DZ** „ZZ Test Ablesezeit“ DATUMZEIT.
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (damit die App die neuen Auswahlwerte kennt).
 
 ### Schritt 5.3 – App.Formulas
@@ -164,7 +164,7 @@ fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(ta
 
 ### Schritt 5.4 – Datum, Uhrzeit und Leeren-Knopf (YAML)
 
-In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, dann den YAML-Block mit **Strg+V** einfügen (landet in derselben Karte). Drei Blöcke nacheinander oder zusammen.
+In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, dann den YAML-Block mit **Strg+V** einfügen (landet in derselben Karte). **Alle vier Blöcke zusammen** kopieren und einfügen (sie verweisen aufeinander; einzeln eingefügt stehen kurz rote Fehler).
 
 **YAML `dpKaDatum`** (englische Schreibweise, so wie es ist einfügen):
 
@@ -475,14 +475,19 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 | T5.6 | D „✕“ | Datum wieder leer, D offen; dann Datum erneut wählen |
 | T5.7 | DZ: nur Datum | Stunde/Minute werden wählbar; Fuß „… (Uhrzeit)“ |
 | T5.8 | DZ Stunde 07, Minute 05 | erledigt |
+| T5.8a | DZ „✕“ | Datum, Stunde und Minute leer, Stunde/Minute wieder gesperrt; dann Datum, 07, 05 erneut wählen |
+| T5.8b | M: alle Werte abwählen | M offen, F verschwindet; dann Riss, Leck, Korrosion wieder wählen, F erscheint mit „x“ |
+| T5.8c | DZ: Stunde leeren (leerer Eintrag), Kategorie nicht speichern, Zurück („Verwerfen?“), andere Kategorie öffnen, dann K1 erneut | in keiner Karte steht eine Stunde/Minute, die nicht gespeichert ist (UNSICHER, Restwerte in Galerie-Zeilen; falls doch: Befund melden, dann Stunde/Minute als eigene Felder führen) |
 | T5.9 | Übrige Pflichtpunkte von K1 ausfüllen, Speichern | „Gespeichert.“, die nächste offene Kategorie öffnet sich |
 | T5.10 | Zurück, K1 „Bearbeiten“ | M zeigt Riss, Leck, Korrosion; D und DZ („TT.MM.JJJJ 07:05“) stehen da; F mit „x“. „Zurück“ fragt **nicht** „Verwerfen?“ (UNSICHER: falls doch, Befund melden – Auswahlfelder lösen dann OnChange beim Laden aus) |
 | T5.11 | DZ Datum ändern, ohne zu speichern Zurück („Verwerfen? Erneut tippen“), K1 erneut öffnen | alter gespeicherter Wert steht wieder da (keine Restwerte) |
-| T5.12 | Nur mit Abschluss (siehe Paket 1, B7): Protokoll, „Ansehen“ | „Riss; Leck; Korrosion“, „TT.MM.JJJJ“, „TT.MM.JJJJ 07:05“ in der Wertspalte; keine Mängel durch diese Punkte; Nur-Ansicht zeigt die Werte, nicht änderbar, kein „✕“ |
+| T5.12 | Nur mit Abschluss (siehe Paket 1, B7): Protokoll, „Ansehen“ | „Riss; Leck; Korrosion“, „TT.MM.JJJJ“, „TT.MM.JJJJ 07:05“ in der Wertspalte; keine Mängel durch diese Punkte; Nur-Ansicht zeigt die Werte inkl. Stunde/Minute, nicht änderbar, kein „✕“ |
+
+Aufräumen: M, F, D, DZ auf Aktiv = Nein (sonst bleiben sie Pflichtpunkte in K1), Testdaten in den Papierkorb.
 
 ## Rückweg
 
-- Version wiederherstellen, oder: die vier neuen Steuerelemente löschen und App.Formulas aus dem Anhang einfügen.
+- Version wiederherstellen, oder: die fünf neuen Steuerelemente (`cboKaMehrfach`, `dpKaDatum`, `ddKaStunde`, `ddKaMinute`, `btnKaDatumLeeren`) löschen und App.Formulas aus dem Anhang einfügen.
 - Prüfpunkte mit den neuen Typen vorher deaktivieren (die alte App kennt die Typen nicht und würde sie nicht anzeigen, aber Pflicht-Prüfung würde sie nicht verlangen).
 
 ## Anhang – Vorher-Fassungen (für den Rückweg)

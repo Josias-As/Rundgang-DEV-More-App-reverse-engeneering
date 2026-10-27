@@ -102,6 +102,7 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
   btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
   btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
+  lblKaBildTitel                734 px (+10 %) / 670 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen'
 
 Fehler gesamt: 0
 
@@ -169,6 +170,13 @@ Fehler gesamt: 0
 | P6-3: Vorschaubilder am Tablet / Verzögerung | Hinweis in 6.2, Test T6.7 |
 | P6-4: leere Bildfläche ohne Hinweis | bewusst so (Schließen geht), Test T6.6 |
 | P6-5: Nur-Ansicht zeigt heutiges Bild | bewusst; Einfrieren kommt mit dem späteren Paket „Schlüssel/Status/Einfrieren“ |
+
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B1 mittel: E-05-Prüfung für das Bildfenster fehlt | Prüfliste mit den sechs Formeln in 6.6, Test T6.7 hochkant/quer |
+| B7: Titel im Bildfenster abgeschnitten | Größe 16, Höhe 64, Bild ab Y 84 (Textbreite maschinell geprüft: 2 Zeilen) |
 
 ## Offene Befunde
 
