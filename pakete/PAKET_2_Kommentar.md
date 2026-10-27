@@ -24,7 +24,7 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 ### Schritt 2.2 – SharePoint-Spalte anlegen
 
 RG_Pruefpunkte → **+ Spalte hinzufügen → Ja/Nein**: Name **KommentarPflicht**, Standardwert **Nein**.
-Für den Test: einen i.O./n.i.O.-Punkt in Kategorie 2 → KommentarPflicht = **Ja**.
+Für den Test: siehe Vorbereitung im Testbogen (zwei Punkte PK und PN).
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
 
 ### Schritt 2.3 – App.Formulas
@@ -272,7 +272,7 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
-Vorbereitung in RG_Pruefpunkte, danach Vorschau neu starten: P10 Foto = **Optional** (sonst blockiert die Foto-Pflicht das Speichern in der Vorschau). In der zweiten Kategorie **K2**: **PK** (i.O./n.i.O., Pflicht = Ja) KommentarPflicht = **Ja**; **PN** (i.O./n.i.O., Pflicht = **Nein**) KommentarPflicht = **Ja**; **PM** = ein anderer Punkt ohne KommentarPflicht.
+Vorbereitung in RG_Pruefpunkte, danach Daten aktualisieren und Vorschau neu starten: P10 Foto = **Optional** (sonst blockiert die Foto-Pflicht das Speichern in der Vorschau). **K2** = die Kategorie nach K1. Dort: **PK** (i.O./n.i.O., Pflicht = Ja) KommentarPflicht = **Ja**; **PN** (i.O./n.i.O., Pflicht auf **Nein** stellen) KommentarPflicht = **Ja**; **PM** = ein anderer i.O./n.i.O.-Punkt ohne KommentarPflicht.
 
 | # | Klickfolge | erwartet |
 |---|---|---|
@@ -283,9 +283,12 @@ Vorbereitung in RG_Pruefpunkte, danach Vorschau neu starten: P10 Foto = **Option
 | T2.5 | PK auf n.i.O. | Hinweis wird „Kommentar zum Mangel (Pflicht)“, „sauber“ bleibt stehen |
 | T2.6 | PK zurück auf i.O. | Hinweis „Kommentar (Pflicht)“, „sauber“ steht noch |
 | T2.7 | PM: n.i.O. + Kommentar „weg“, dann i.O. | Kommentarfeld von PM verschwindet |
-| T2.8 | Übrige Punkte ausfüllen, Speichern | „Gespeichert.“, K3 öffnet sich |
-| T2.9 | Zurück zur Übersicht, K2 „Bearbeiten“ | PK i.O. mit „sauber“; PM ohne Kommentar |
+| T2.8 | Übrige Punkte ausfüllen, Speichern | „Gespeichert.“, die nächste offene Kategorie öffnet sich (falls es eine gibt) |
+| T2.9 | Zurück zur Übersicht, K2 „Bearbeiten“ | PK i.O., Kommentarfeld mit „sauber“ sichtbar |
+| T2.9a | PM auf n.i.O. tippen | Kommentarfeld von PM ist **leer** (beim Speichern geleert); PM zurück auf i.O., Zurück („Verwerfen? Erneut tippen“) |
 | T2.10 | Nur mit Abschluss (siehe Paket 1, B7): Protokoll | „sauber“ grau kursiv beim i.O.-Punkt; kein Mangel für PK |
+
+Aufräumen: PN wieder Pflicht = Ja (falls vorher so), Testdaten in den Papierkorb (nur TestDatensatz = Ja).
 
 ## Rückweg
 

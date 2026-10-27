@@ -6,7 +6,7 @@ Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-1
 
 - Zwei neue Spalten am Prüfpunkt B: **BedingungPunkt** (Id von Punkt A, gleiche Kategorie) und **BedingungWert** (z. B. NIO, IO, ein Auswahlwert, oder * = irgendeine Antwort).
 - B erscheint und wird verlangt nur, wenn A den Wert hat. Sonst ist B unsichtbar, zählt nicht als offen und bekommt keine Fotos hochgeladen.
-- Beim Speichern leert die App ausgeblendete Punkte (Werte, Kommentar, Foto-Links) und merkt sie im JSON als `Ausgeblendet` – keine Mängel, im Protokoll und in der Nur-Ansicht nicht sichtbar. Neue Fotos eines ausgeblendeten Punkts werden nicht hochgeladen.
+- Beim Speichern schreibt die App ausgeblendete Punkte leer (Werte, Kommentar, Foto-Links) und mit `Ausgeblendet` ins JSON – keine Mängel, im Protokoll und in der Nur-Ansicht nicht sichtbar. Die Eingaben auf dem Bildschirm bleiben unangetastet, bis das Speichern geklappt hat (das JSON entsteht aus einer Kopie). Neue Fotos eines ausgeblendeten Punkts werden nicht hochgeladen.
 - Fehlkonfiguration fällt sicher aus: A fehlt, A ist selbst bedingt (Kette), BedingungWert ist leer oder passt nicht zu A (z. B. Tippfehler, Wert, den es in A nicht gibt) → B wird immer gezeigt. Schreibweisen „i.O.“/„n.i.O.“, Groß-/Kleinschreibung und Leerzeichen sind egal.
 - Zähler (x von y ausgefüllt, Balken, n.i.O.-Zahl, Noch offen, Sprung) zählen nur sichtbare Punkte.
 
@@ -26,7 +26,7 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 RG_Pruefpunkte:
 - **BedingungPunkt** – Zahl, 0 Dezimalstellen, Standardwert **0** (0 = keine Bedingung)
 - **BedingungWert** – Einzelne Textzeile, Standardwert leer
-Gültige Bedingungswerte: bei A = i.O./n.i.O. oder Zahl: **IO** oder **NIO**; bei A = Auswahl/Mehrfachauswahl: einer der Auswahlwerte von A; bei jedem Typ: `*` (irgendeine Antwort). Bei Zahl-Punkten mit Grenzmodus Warnen ist ein Wert außerhalb „IO“ – dort Bedingungen auf NIO vermeiden.
+Gültige Bedingungswerte: bei A = i.O./n.i.O. oder Zahl: **IO** oder **NIO**; bei A = Auswahl (ab Paket 5 auch Mehrfachauswahl): einer der Auswahlwerte von A; bei jedem Typ: `*` (irgendeine Antwort). Bei Zahl-Punkten mit Grenzmodus Warnen ist ein Wert außerhalb „IO“, mit Sperren nie „NIO“ – Bedingungen auf NIO nur bei Grenzmodus Mangel.
 Für den Test in K1: **A** = PX (i.O./n.i.O., Pflicht = Ja). Neuer Prüfpunkt **B** „ZZ Test Folgefrage Ursache“: TEXT, Pflicht = Ja, Aktiv = Ja, Foto = Optional, RgReihenfolge direkt hinter A, BedingungPunkt = Id von A, BedingungWert = **NIO**.
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
 
@@ -191,7 +191,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); Inaktiv: false}
                     )
                 )
             )
@@ -211,6 +211,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      BedID: Coalesce(p.BedingungPunkt; 0);
                      BedWert: Coalesce(p.BedingungWert; "");
                      Ausgeblendet: false;
+                     Warnung: false;
                      Inaktiv: false}
                 )
             )
@@ -218,7 +219,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); Inaktiv: true}
             )
         )
     )
@@ -270,7 +271,7 @@ If(varNurLesen; "Nur Ansicht – der Rundgang ist nicht mehr in Arbeit."; Value(
 
 ### Schritt 4.6 – Speichern
 
-`btnKaSpeichern.OnSelect`: Ausgeblendete leeren (inkl. Foto-Links) und markieren, vor dem Foto-Upload; Upload und Anhängen von Links nur für sichtbare Punkte; JSON mit `Ausgeblendet`.
+`btnKaSpeichern.OnSelect`: ausgeblendete Punkte vor dem Foto-Upload bestimmen (`colVersteckt`); Upload, Anhängen von Links und „übernommen“ nur für sichtbare; JSON und AnzahlNIO aus einer Kopie (`colSpeichern`), in der ausgeblendete leer und markiert sind.
 
 **`btnKaSpeichern.OnSelect`**
 
@@ -301,25 +302,26 @@ If(
                 IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
                     Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
                 ClearCollect(colVersteckt; ShowColumns(Filter(colAntworten As a; !a.Inaktiv && !(If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))))); PruefpunktID));;
-                UpdateIf(colAntworten; PruefpunktID in colVersteckt.PruefpunktID; {Bewertung: ""; WertText: ""; WertZahl: Blank(); Kommentar: ""; Fotos: ""; Ausgeblendet: true}; !Inaktiv && !(PruefpunktID in colVersteckt.PruefpunktID); {Ausgeblendet: false});;
-                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
+                ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
                 ForAll(colFotoNeu As f;
                     Patch(colFotos; LookUp(colFotos; Nr = f.Nr);
                         {Url: With({ordner: fnArchivOrdner(durch.TagText; durch.TestDatensatz) & "/" & durch.Title}; If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild; name: f.Datei}; f.Datei; ordner; varDurchID; f.PruefpunktID; durch.TestDatensatz)); ""; fnSpUrl("RG_Fotos"; ordner & "/" & f.Datei)))})
                 );;
-                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) > 0;
-                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; !a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
+                If(CountRows(Filter(colFotos As f1; IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1; a1.PruefpunktID = f1.PruefpunktID)}; !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) > 0;
+                    Notify(CountRows(Filter(colFotos As f2; IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2; a2.PruefpunktID = f2.PruefpunktID)}; !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen."; NotificationType.Error);
                     ForAll(Distinct(Filter(colFotos; !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)); PruefpunktID) As d;
                         Patch(colAntworten; LookUp(colAntworten; PruefpunktID = d.Value);
                             {Fotos: With({alt: LookUp(colAntworten; PruefpunktID = d.Value).Fotos; neu: Concat(Filter(colFotos; PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)); Url; " | ")};
                                 If(IsBlank(alt); neu; alt & " | " & neu))})
                     );;
-                    UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
+                    UpdateIf(colFotos; !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID); {Uebernommen: true});;
                     UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
-                    Set(varAntwortJSON; JSON(ShowColumns(AddColumns(colAntworten; Warnung; Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)); PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet); JSONFormat.Compact));;
+                    UpdateIf(colAntworten; !Inaktiv; {Warnung: Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)});;
+                    ClearCollect(colSpeichern; ForAll(colAntworten As r; If(r.PruefpunktID in colVersteckt.PruefpunktID; Patch(r; {Bewertung: ""; WertText: ""; WertZahl: Blank(); Kommentar: ""; Fotos: ""; Warnung: false; Ausgeblendet: true}); r.Inaktiv; r; Patch(r; {Ausgeblendet: false}))));;
+                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
-                            {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colAntworten; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
+                            {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colSpeichern; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
                         Set(varPatchFehler; true)
                     );;
                     Refresh(RG_KategorieErgebnisse);;
@@ -382,7 +384,7 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 ## Test
 
-Vorschau neu starten. Neue Durchführung (K1 noch nicht gespeichert) – sonst ist A schon gespeichert.
+Daten aktualisieren, Vorschau neu starten. K1 öffnen (neu oder „Bearbeiten“); A muss dabei i.O. oder leer sein. Textfelder übernehmen die Eingabe erst beim Verlassen des Felds (woanders hintippen). „Übrige Punkte ausfüllen“ heißt: alle Pflichtpunkte von K1, auch Z1–Z3 aus Paket 3, falls noch aktiv.
 
 | # | Klickfolge | erwartet |
 |---|---|---|
@@ -391,20 +393,20 @@ Vorschau neu starten. Neue Durchführung (K1 noch nicht gespeichert) – sonst i
 | T4.3 | B Text „Leck“, an B ein Foto-Knopf (Optional) sichtbar | B nicht mehr offen |
 | T4.4 | A zurück auf i.O. | B verschwindet, Liste rückt nach; Fuß ohne B |
 | T4.5 | A wieder n.i.O. | B kommt mit „Leck“ zurück (noch nicht gespeichert, also nicht verloren) |
-| T4.6 | A auf i.O., übrige Punkte ausfüllen, Speichern | „Gespeichert.“ |
+| T4.6 | A auf i.O., übrige Punkte ausfüllen, Speichern | „Gespeichert.“ (B war ausgeblendet) |
 | T4.7 | Zurück, K1 „Bearbeiten“, A auf n.i.O. | B erscheint **leer** (beim Speichern geleert) |
 | T4.8 | A Kommentar „tropft“, B „Leck“, Speichern | „Gespeichert.“ |
 | T4.9 | SharePoint: BedingungWert von B = **n.i.O.**; Vorschau neu starten, K1 „Bearbeiten“, A auf i.O. | B verschwindet (Schreibweise egal) |
-| T4.10 | BedingungWert = **Rot**; Vorschau neu starten, K1 „Bearbeiten“ | B ist immer sichtbar (ungültiger Wert → sicherer Ausfall). Danach BedingungWert wieder **NIO** |
+| T4.10 | BedingungWert = **Rot**; aktualisieren, Vorschau neu, K1 „Bearbeiten“, A auf i.O. | B bleibt sichtbar (ungültiger Wert → sicherer Ausfall). Zurück („Verwerfen?“). Danach BedingungWert wieder **NIO** |
 | T4.11 | Nur mit Abschluss (siehe Paket 1, B7), Stand T4.8: RG_Maengel, Protokoll, „Ansehen“ | Mangel nur für A; Protokoll und Nur-Ansicht zeigen B mit „Leck“ |
-| T4.12 | Zweite Durchführung (anderer Tag, Nachholtag oder Testplan): K1 mit A = i.O. speichern, abschließen | Protokoll und Nur-Ansicht ohne B; kein Mangel |
+| T4.12 | Zweite Durchführung (anderer Tag mit Testplan oder Nachholtag ≥ 1; am selben Tag gibt es je Rundgang nur eine): K1 mit A = i.O. speichern, abschließen | Protokoll und Nur-Ansicht ohne B; kein Mangel |
 | T4.13 | Eine vor Paket 4 gespeicherte Kategorie „Ansehen“ | unverändert (JSON ohne `Ausgeblendet` gilt als sichtbar) |
 
 ## Rückweg
 
 - Version wiederherstellen oder Vorher-Blöcke einfügen (App.Formulas zuletzt).
 - JSON mit `Ausgeblendet` stört die alte App nicht (Feld wird ignoriert); ausgeblendete Punkte stehen dann als leere Zeilen im Protokoll.
-- Spalten dürfen bleiben; vor dem Rückweg BedingungPunkt der Testpunkte auf 0 setzen.
+- Spalten dürfen bleiben. Vor dem Rückweg alle bedingten Punkte (B) auf **Aktiv = Nein** setzen – die alte App kennt keine Bedingung und würde sie immer als Pflicht zeigen.
 
 ## Anhang – Vorher-Fassungen (für den Rückweg)
 
@@ -558,7 +560,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); Inaktiv: false}
                     )
                 )
             )
@@ -575,6 +577,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      FotoModus: fnFotoModus(p.Foto.Value; Coalesce(p.FotoMoeglich; false));
                      KommentarPflicht: Coalesce(p.KommentarPflicht; false);
                      Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value);
+                     Warnung: false;
                      Inaktiv: false}
                 )
             )
@@ -582,7 +585,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); Inaktiv: true}
             )
         )
     )
@@ -670,7 +673,8 @@ If(
                     );;
                     UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
                     UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
-                    Set(varAntwortJSON; JSON(ShowColumns(AddColumns(colAntworten; Warnung; Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)); PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung); JSONFormat.Compact));;
+                    UpdateIf(colAntworten; !Inaktiv; {Warnung: Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)});;
+                    Set(varAntwortJSON; JSON(ShowColumns(colAntworten; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
                             {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colAntworten; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});

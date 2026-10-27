@@ -23,8 +23,8 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 ### Schritt 3.2 – SharePoint-Spalte anlegen
 
 RG_Pruefpunkte → **+ Spalte hinzufügen → Auswahl**: Name **Grenzmodus**, Auswahlmöglichkeiten **Mangel**, **Warnen**, **Sperren**, Standardwert **Mangel**, keine Mehrfachauswahl.
-Regel für die Pflege: **Sperren** nur mit Grenzen, die ein echter Wert nie überschreitet (z. B. Temperatur −50 bis 150). Sollwerte immer mit Mangel oder Warnen.
-Für den Test in K1 drei neue Prüfpunkte (ZAHL, Pflicht = Ja, Einheit °C, Min 6, Max 16, Reihenfolge hinter den vorhandenen): **Z1** „ZZ Test Temp Mangel“ (Grenzmodus Mangel), **Z2** „ZZ Test Temp Warnen“ (Warnen), **Z3** „ZZ Test Temp Sperren“ (Sperren).
+Regeln für die Pflege: **Sperren** nur mit Grenzen, die ein echter Wert nie überschreitet (z. B. Temperatur −50 bis 150); Sollwerte immer mit Mangel oder Warnen. Min nie größer als Max. Grenzmodus und Min/Max nicht umstellen, solange Rundgänge des Tages laufen (beim Öffnen wird neu bewertet).
+Für den Test in K1 drei neue Prüfpunkte (ZAHL, Pflicht = Ja, Aktiv = Ja, Einheit °C, Min 6, Max 16, Reihenfolge hinter den vorhandenen): **Z1** „ZZ Test Temp Mangel“ (Grenzmodus Mangel), **Z2** „ZZ Test Temp Warnen“ (Warnen), **Z3** „ZZ Test Temp Sperren“ (Sperren).
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
 
 ### Schritt 3.3 – App.Formulas
@@ -157,7 +157,7 @@ fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(ta
 
 ### Schritt 3.4 – Kategorie öffnen
 
-`scrKategorie.OnVisible`: Grenzmodus aus der Spalte, Bewertung gespeicherter Zahlen mit dem Grenzmodus.
+`scrKategorie.OnVisible`: Grenzmodus aus der Spalte, Bewertung gespeicherter Zahlen mit dem Grenzmodus, neues Feld `Warnung` (in der Nur-Ansicht aus dem gespeicherten JSON).
 
 **`scrKategorie.OnVisible`**
 
@@ -184,7 +184,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); Inaktiv: false}
                     )
                 )
             )
@@ -201,6 +201,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      FotoModus: fnFotoModus(p.Foto.Value; Coalesce(p.FotoMoeglich; false));
                      KommentarPflicht: Coalesce(p.KommentarPflicht; false);
                      Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value);
+                     Warnung: false;
                      Inaktiv: false}
                 )
             )
@@ -208,7 +209,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); Inaktiv: true}
             )
         )
     )
@@ -225,24 +226,24 @@ Set(varIsLoading; false)
 **`lblKaZahlInfo.Text`**
 
 ```
-Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert); ""; "  ·  " & If(ThisItem.Grenzmodus = "Sperren"; "zulässig "; "Soll ") & If(IsBlank(ThisItem.MinWert); ""; "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert); ""; "bis " & ThisItem.MaxWert)) & If(ThisItem.Bewertung = "NIO"; "  ·  außerhalb des Sollbereichs"; !fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert); ""; varNurLesen; "  ·  außerhalb, begründet"; ThisItem.Grenzmodus = "Warnen"; "  ·  außerhalb, bitte begründen"; ThisItem.Grenzmodus = "Sperren"; "  ·  unzulässig, bitte prüfen"; ""))
+Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert); ""; "  ·  " & If(ThisItem.Grenzmodus = "Sperren" && fnSperreGilt(ThisItem.MinWert; ThisItem.MaxWert); "zulässig "; "Soll ") & If(IsBlank(ThisItem.MinWert); ""; "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert); ""; "bis " & ThisItem.MaxWert)) & If(ThisItem.Bewertung = "NIO"; "  ·  außerhalb des Sollbereichs"; varNurLesen; If(ThisItem.Warnung; "  ·  außerhalb, begründet"; ""); !fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert); ""; ThisItem.Grenzmodus = "Warnen"; If(Trim(ThisItem.Kommentar) = ""; "  ·  außerhalb, bitte begründen"; "  ·  außerhalb, begründet"); ThisItem.Grenzmodus = "Sperren"; "  ·  unzulässig, bitte prüfen"; ""))
 ```
 
 **`lblKaZahlInfo.Color`**
 
 ```
-If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrFehler; fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert); clrWarnung; clrTextGrau)
+If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrFehler; If(varNurLesen; ThisItem.Warnung; fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrWarnung; clrTextGrau)
 ```
 
 **`txtKaZahl.BorderColor`**
 
 ```
-If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrFehler; fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert); clrWarnung; clrRahmen)
+If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrFehler; If(varNurLesen; ThisItem.Warnung; fnAusserhalb(ThisItem.WertZahl; ThisItem.MinWert; ThisItem.MaxWert)); clrWarnung; clrRahmen)
 ```
 
 ### Schritt 3.6 – Speichern: Kennzeichen Warnung im JSON
 
-`btnKaSpeichern.OnSelect`: nur die JSON-Zeile ändert sich (`AddColumns(…; Warnung; …)`).
+`btnKaSpeichern.OnSelect`: vor dem JSON wird `Warnung` für aktive Punkte gesetzt, das JSON nimmt das Feld mit.
 
 **`btnKaSpeichern.OnSelect`**
 
@@ -286,7 +287,8 @@ If(
                     );;
                     UpdateIf(colFotos; !Uebernommen && !IsBlank(Url); {Uebernommen: true});;
                     UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
-                    Set(varAntwortJSON; JSON(ShowColumns(AddColumns(colAntworten; Warnung; Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)); PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung); JSONFormat.Compact));;
+                    UpdateIf(colAntworten; !Inaktiv; {Warnung: Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)});;
+                    Set(varAntwortJSON; JSON(ShowColumns(colAntworten; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
                             {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colAntworten; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
@@ -366,12 +368,15 @@ Vorschau neu starten (Stammdaten). P10 Foto = Optional (siehe Paket 2). Neue Dur
 | T3.8 | Z3 = 6 | im Bereich, Hinweis weg |
 | T3.9 | Speichern | „Gespeichert.“ |
 | T3.10 | Zurück, K1 „Bearbeiten“ | Z1 n.i.O. + „zu warm“; Z2 orange „außerhalb, bitte begründen“ + „Fühler defekt“; Z3 = 6 |
-| T3.11 | Zurück (Verwerfen). SharePoint: Z3 Min = 16, Max = 6. Vorschau neu starten, K1 „Bearbeiten“, Z3 = 12 | Z3 wird n.i.O. mit Kommentarpflicht statt gesperrt (Schutz bei Min > Max). Danach Z3 wieder Min 6, Max 16 |
-| T3.12 | Nur mit Abschluss (siehe Paket 1, B7): RG_Maengel und Protokoll | Mangel für Z1, keiner für Z2; im Protokoll Z2 „i.O.“ orange mit „(außerhalb Soll, begründet)“ und grauem Kommentar; „Ansehen“: Z2 „außerhalb, begründet“ |
+| T3.11 | Zurück (Verwerfen). SharePoint: Z3 Min = 16, Max = 6, Daten aktualisieren, Vorschau neu, K1 „Bearbeiten“, Z3 = 12 | Z3 wird n.i.O. mit Kommentarpflicht statt gesperrt (Schutz bei Min > Max), Beschriftung „Soll“. **Nicht speichern:** Zurück („Verwerfen? Erneut tippen“). Danach Z3 wieder Min 6, Max 16 |
+| T3.12 | Nur mit Abschluss (siehe Paket 1, B7): RG_Maengel und Protokoll | Mangel für Z1, keiner für Z2; im Protokoll Z2 „i.O.“ orange mit „(außerhalb Soll, begründet)“ und grauem Kommentar; „Ansehen“: Z2 „außerhalb, begründet“ (aus dem gespeicherten Kennzeichen) |
+
+Aufräumen: Z1–Z3 auf Aktiv = Nein setzen (sonst bleiben sie Pflichtpunkte in K1), Testdaten in den Papierkorb.
 
 ## Rückweg
 
 - Version wiederherstellen oder Vorher-Blöcke einfügen (App.Formulas zuletzt). Spalte darf bleiben.
+- Gespeicherte Warnen-Werte (i.O. außerhalb) bleiben im JSON. Öffnet die alte App eine solche Kategorie zum Bearbeiten, bewertet sie den Wert neu als n.i.O. (Kommentar ist da). Abgeschlossene Rundgänge sind nicht betroffen.
 
 ## Anhang – Vorher-Fassungen (für den Rückweg)
 

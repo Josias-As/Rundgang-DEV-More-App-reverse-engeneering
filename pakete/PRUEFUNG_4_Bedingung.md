@@ -18,7 +18,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   lblKaStand.Text                  ok
   btnKaSpeichern.OnSelect          ok
   htmProtokoll.HtmlText            ok
-  Paket 4: colAntworten hat in allen drei Zweigen dieselben 22 Felder
+  Paket 4: colAntworten hat in allen drei Zweigen dieselben 23 Felder
 ```
 
 ## b) Typcheck
@@ -32,8 +32,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 
 1. Spalten + aktualisieren vor OnVisible.
 2. App.Formulas (fnSichtbar) vor den Aufrufern; zwischendurch rote Fehler möglich, App-Prüfung am Ende.
-3. Im Speichern: Ausblenden/Leeren **vor** dem Foto-Upload und **vor** dem JSON (sonst würden Fotos ausgeblendeter Punkte hochgeladen bzw. alte Werte gespeichert).
-4. `colVersteckt` wird im selben Klick angelegt, bevor UpdateIf sie liest.
+3. Im Speichern: `colVersteckt` **vor** dem Foto-Upload (Upload, Links, „übernommen“ lesen sie), `colSpeichern` direkt **vor** dem JSON (nach „Kommentar leeren“ und „Warnung setzen“), AnzahlNIO danach aus colSpeichern.
 
 ## d) Auswirkungsliste
 
@@ -42,7 +41,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | scrKategorie.OnVisible | ja | BedID, BedWert, Ausgeblendet in allen Zweigen; Start-Sprung auf ersten sichtbaren Punkt |
 | fnFehlt / fnFehltGrund | nein | unverändert; Aufrufer filtern vorher auf sichtbar |
 | btnKaSpeichern: Prüfung und Sprung | ja | Prüfung über lblKaFehlendAnzahl (nur sichtbare), Sprung nur auf sichtbare |
-| JSON-Aufbau (varAntwortJSON) | ja | neues Feld Ausgeblendet; ausgeblendete Punkte mit leeren Werten |
+| JSON-Aufbau (varAntwortJSON) | ja | aus der Kopie colSpeichern: neues Feld Ausgeblendet, ausgeblendete Punkte leer (auch Warnung = false); AnzahlNIO ebenfalls aus der Kopie |
 | Mängel bei Abschluss (btnRuAbschluss) | nein (Formel) | ausgeblendete haben Bewertung "" → keine Mängel; AnzahlNIO zählt nach dem Leeren → Plausibilität Sum(AnzahlNIO) = Mängel stimmt |
 | htmProtokoll | ja | ausgeblendete Zeilen weggelassen |
 | Foto-Upload (btnKaSpeichern F1/F2) | ja | nur sichtbare (`!a.Ausgeblendet`) an allen 3 Stellen; Links werden nur an sichtbare Punkte gehängt; ausgeblendete verlieren ihre Foto-Links (Dateien bleiben in RG_Fotos) |
@@ -61,12 +60,12 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | Rundgang abgeschlossen (Nur-Lesen) | Sichtbarkeit aus dem gespeicherten Flag, keine Neuberechnung | Code |
 | Wechsel n.i.O. → i.O. → n.i.O. (an A) | B erscheint/verschwindet/erscheint; Eingaben in B bleiben bis zum Speichern erhalten | T4.2–T4.4 |
 | Kategorie zweimal speichern | B einmal ausgeblendet gespeichert → leer; beim zweiten Mal wieder live berechnet | T4.5 |
-| Abbruch mitten im Speichern | Leeren ausgeblendeter Punkte ist schon passiert (nur unsichtbare Werte, gehen in der Sitzung verloren – gewollt, sie gehören nicht zum Rundgang); erneutes Speichern konsistent | Code |
+| Abbruch mitten im Speichern | colAntworten bleibt unverändert (JSON aus der Kopie colSpeichern); stellt der Prüfer A zurück, erscheint B mit seinen Eingaben; Fotos von B bleiben unübernommen in colFotos | Code, T4.5 |
 | Netzfehler | unverändert (Nachlese) | Code |
 | zwei Prüfer gleichzeitig | unverändert (GespeichertAm) | Code |
 | Fehlkonfiguration (A fehlt, Kette, leerer Wert, Wert passt nicht zu A, Liste) | B sichtbar und verlangt | Logik-Probe, T4.10 |
 | Schreibweise i.O./n.i.O., Groß-/Kleinschreibung | wie IO/NIO | Logik-Probe, T4.9 |
-| Foto an B, dann B ausgeblendet, Speichern | Foto wird nicht hochgeladen und nicht verlinkt; gespeicherte Links von B werden geleert; erscheint B später wieder, ist die Foto-Pflicht nicht durch ein altes Foto erfüllt | Code |
+| Foto an B, dann B ausgeblendet, Speichern | Foto wird nicht hochgeladen und nicht verlinkt; im JSON sind die Links von B leer; schon früher hochgeladene Dateien von B bleiben ohne Verweis in RG_Fotos (bekannt, harmlos) | Code |
 
 Logik-Gegenprobe der Funktionen (`werkzeuge/logik_probe.py`, Python-Nachbildung der Formeln, keine Ausführung von Power Fx):
 
@@ -120,6 +119,18 @@ P4  ok    Bedingung NIO bei Text-Punkt A (ungültig) -> B sichtbar              
 | B10 UNSICHER: Galerie verschiebt sich | Test T4.4 |
 | B11 UNSICHER: Flows lesen JSON | kein Flow liest das JSON (Export belegt) |
 | B12: Pfade in 4.5 | ergänzt |
+
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B4-1 mittel: T4.10 prüft den sicheren Ausfall nicht | T4.10: A auf i.O. → B bleibt sichtbar |
+| B4-2 mittel: Leeren vor Upload/Nachlese verliert Eingaben, Fotos falsch übernommen | behoben: JSON und AnzahlNIO aus Kopie colSpeichern, colAntworten bleibt; Upload/Links/„übernommen“ über colVersteckt |
+| Bedingung NIO an Sperren-Punkt | Pflegehinweis: NIO nur bei Grenzmodus Mangel |
+| Rückweg „BedingungPunkt auf 0“ wirkungslos | korrigiert: B auf Aktiv = Nein |
+| Testbogen (neue Durchführung, Nachholtage, Z1–Z3, Textfeld verlassen) | ergänzt |
+| MEHRFACH erst ab Paket 5 | im Hinweis vermerkt |
+| Kette, verworfene Werte/Fotos, Dateien ohne Verweis | gewollt bzw. bekannt, dokumentiert |
 
 ## Offene Befunde
 

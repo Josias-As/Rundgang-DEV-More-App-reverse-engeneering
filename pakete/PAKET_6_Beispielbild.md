@@ -5,7 +5,7 @@ Stand: 27.10.2026 · erzeugt mit `werkzeuge/baukasten.py` aus dem Export `2026-1
 ## Kurzfassung
 
 - Neue Bildbibliothek **RG_Hinweisbilder** und neue Zahlspalte **HinweisBildID** am Prüfpunkt (Id des Bilds in der Bibliothek, 0 = keins).
-- Hat ein Punkt ein Bild, steht rechts oben in der Karte „Beispielbild“. Tippen öffnet ein Fenster mit dem Bild in voller Breite.
+- Hat ein Punkt ein Bild, steht rechts oben in der Karte ein kleiner Knopf „Bild“ (64 px, die Frage wird nur 80 px schmaler). Tippen öffnet ein Fenster mit dem Bild in voller Breite.
 - Statt „in der Karte aufklappen“ (Übergabe) ein Fenster: größeres Bild auf dem Tablet, keine wechselnde Kartenhöhe (Falle E-05). Bitte bestätigen.
 - Das Bild wird erst beim Öffnen geladen (eine Abfrage), nicht für jede Karte.
 - Vorab-Test (Schritt 6.3) klärt, ob die Vorschaubilder der Bibliothek in der App ankommen; sonst Abbruch ohne Änderung.
@@ -25,7 +25,8 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 
 IMS+ → Neu → **Dokumentbibliothek** „**RG_Hinweisbilder**“. Rechte wie die anderen RG-Bibliotheken (alle lesen). Ein Testbild hochladen (JPG/PNG), dessen **ID** notieren (Ansicht → Spalte ID einblenden).
 RG_Pruefpunkte → **+ Spalte → Zahl**: **HinweisBildID**, 0 Dezimalstellen, Standardwert **0**.
-Für den Test: Prüfpunkt Id 10 → HinweisBildID = ID des Testbilds.
+Für den Test: Prüfpunkt Id 10 → HinweisBildID = ID des Testbilds. Nach dem Hochladen ein paar Minuten warten (SharePoint erzeugt die Vorschaubilder verzögert).
+Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren**.
 
 ### Schritt 6.3 – Datenquelle und Vorab-Test
 
@@ -62,7 +63,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Inaktiv: false}
                     )
                 )
             )
@@ -83,6 +84,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      BedWert: Coalesce(p.BedingungWert; "");
                      Ausgeblendet: false;
                      BildID: Coalesce(p.HinweisBildID; 0);
+                     Warnung: false;
                      Inaktiv: false}
                 )
             )
@@ -90,7 +92,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); BildID: 0; Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); BildID: 0; Inaktiv: true}
             )
         )
     )
@@ -107,7 +109,7 @@ Set(varIsLoading; false)
 **`lblKaFrage.Width`**
 
 ```
-Parent.Width - 40 - If(ThisItem.BildID > 0; 160; 0)
+Parent.Width - 40 - If(ThisItem.BildID > 0; 80; 0)
 ```
 
 **YAML `btnKaBild`** (englische Schreibweise, so wie es ist einfügen):
@@ -134,15 +136,15 @@ Parent.Width - 40 - If(ThisItem.BildID > 0; 160; 0)
       RadiusTopLeft: =8
       RadiusTopRight: =8
       Size: =14
-      Text: ="Beispielbild"
+      Text: ="Bild"
       Visible: =ThisItem.BildID > 0
-      Width: =144
-      X: =Parent.Width - 164
+      Width: =64
+      X: =Parent.Width - 84
       Y: =10
 ```
 
 Prüfen nach dem Schritt:
-- `btnKaBild` liegt in `conKaKarte`, Y = 10, Höhe 34 (endet über `lblKaHinweis` bei Y 46).
+- `btnKaBild` liegt in `conKaKarte`, X = Parent.Width - 84, Y = 10, Höhe 34 (endet über `lblKaHinweis` bei Y 46).
 
 ### Schritt 6.6 – Bildfenster
 
@@ -236,13 +238,15 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T6.1 | Kategorie 1 öffnen | Thermometer-Karte: rechts oben „Beispielbild“, Fragetext läuft nicht darunter |
-| T6.2 | „Beispielbild“ tippen | Fenster mit Titel „Beispiel – …“ und Bild; Rest der App nicht tippbar |
+| T6.1 | K1 öffnen | Karte von P10: rechts oben „Bild“, Fragetext endet davor (lange Frage: ggf. abgeschnitten wie bisher, nur 80 px früher) |
+| T6.2 | „Bild“ tippen | Fenster mit Titel „Beispiel – …“ und Bild; Rest der App nicht tippbar |
 | T6.3 | „Schließen“ | Fenster zu |
-| T6.4 | Fenster offen lassen, Bildschirm wechseln (Zurück) und Kategorie wieder öffnen | Fenster ist zu |
-| T6.5 | Punkt ohne Bild | kein Knopf |
-| T6.6 | Nur-Ansicht nach Abschluss | Knopf vorhanden, Bild lässt sich ansehen |
-| T6.7 | HinweisBildID auf eine nicht vorhandene Id | Fenster öffnet, Bildfläche leer (kein Absturz) |
+| T6.4 | Punkt ohne Bild | kein Knopf |
+| T6.5 | Nur-Ansicht nach Abschluss | Knopf vorhanden, Bild lässt sich ansehen (Bild aus den heutigen Stammdaten) |
+| T6.6 | HinweisBildID auf eine nicht vorhandene Id, aktualisieren, Vorschau neu | Fenster öffnet, Bildfläche leer, „Schließen“ geht |
+| T6.7 | Am Tablet (veröffentlicht oder Studio im Tablet-Browser) | Bild erscheint auch dort |
+
+Hinweis: Das Zurücksetzen des Fensters in OnVisible ist eine Absicherung; über die Oberfläche lässt sich die Kategorie bei offenem Fenster nicht verlassen (Hintergrund gesperrt).
 
 ## Rückweg
 
@@ -277,7 +281,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); Inaktiv: false}
                     )
                 )
             )
@@ -297,6 +301,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      BedID: Coalesce(p.BedingungPunkt; 0);
                      BedWert: Coalesce(p.BedingungWert; "");
                      Ausgeblendet: false;
+                     Warnung: false;
                      Inaktiv: false}
                 )
             )
@@ -304,7 +309,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); Inaktiv: true}
             )
         )
     )

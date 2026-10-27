@@ -49,7 +49,7 @@
   lblKaStand.Text                  ok
   btnKaSpeichern.OnSelect          ok
   htmProtokoll.HtmlText            ok
-== Paket 5: 1 Properties, neue Steuerelemente: cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute
+== Paket 5: 1 Properties, neue Steuerelemente: cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute, btnKaDatumLeeren
   App.Formulas                     ok
   cboKaMehrfach.Items              ok
   cboKaMehrfach.DisplayFields      ok
@@ -82,6 +82,7 @@
   dpKaDatum.Height                 ok
   dpKaDatum.IconBackground         ok
   dpKaDatum.IconFill               ok
+  dpKaDatum.InputTextPlaceholder   ok
   dpKaDatum.OnChange               ok
   dpKaDatum.Size                   ok
   dpKaDatum.StartOfWeek            ok
@@ -143,6 +144,27 @@
   ddKaMinute.Width                 ok
   ddKaMinute.X                     ok
   ddKaMinute.Y                     ok
+  btnKaDatumLeeren.BorderColor     ok
+  btnKaDatumLeeren.BorderThickness ok
+  btnKaDatumLeeren.Color           ok
+  btnKaDatumLeeren.Fill            ok
+  btnKaDatumLeeren.Font            ok
+  btnKaDatumLeeren.Height          ok
+  btnKaDatumLeeren.HoverColor      ok
+  btnKaDatumLeeren.HoverFill       ok
+  btnKaDatumLeeren.OnSelect        ok
+  btnKaDatumLeeren.PressedColor    ok
+  btnKaDatumLeeren.PressedFill     ok
+  btnKaDatumLeeren.RadiusBottomLeft ok
+  btnKaDatumLeeren.RadiusBottomRight ok
+  btnKaDatumLeeren.RadiusTopLeft   ok
+  btnKaDatumLeeren.RadiusTopRight  ok
+  btnKaDatumLeeren.Size            ok
+  btnKaDatumLeeren.Text            ok
+  btnKaDatumLeeren.Visible         ok
+  btnKaDatumLeeren.Width           ok
+  btnKaDatumLeeren.X               ok
+  btnKaDatumLeeren.Y               ok
 == Paket 6: 2 Properties, neue Steuerelemente: btnKaBild, conKaBild, btnKaBildSperre, conKaBildKarte, lblKaBildTitel, imgKaBild, btnKaBildSchliessen
   scrKategorie.OnVisible           ok
   lblKaFrage.Width                 ok
@@ -218,10 +240,10 @@
   btnKaBildSchliessen.Y            ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 3: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 4: colAntworten hat in allen drei Zweigen dieselben 22 Felder
-  Paket 5: colAntworten hat in allen drei Zweigen dieselben 22 Felder
-  Paket 6: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
+  Paket 4: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 5: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
@@ -235,7 +257,8 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   lblKaZahlInfo                 649 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb, bitte begründen'
   lblKaZahlInfo                 620 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  unzulässig, bitte prüfen'
   cboKaMehrfach (Platzhalter)   307 px (+10 %) / 400 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Auswählen (mehrere möglich)'
-  btnKaBild                     102 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Beispielbild'
+  btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
+  btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
   btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
 
 Fehler gesamt: 0

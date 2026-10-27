@@ -27,7 +27,7 @@ IMS+ → Liste **RG_Pruefpunkte** → **+ Spalte hinzufügen → Auswahl**:
 - Name: **Foto** (genau so)
 - Auswahlmöglichkeiten (je eine Zeile): **Aus**, **Optional**, **Pflicht**
 - Standardwert: **Aus** · Mehrfachauswahl: **Nein** · Werte erforderlich: **Nein**
-- **FotoMoeglich nicht löschen und nicht umbenennen.** Die App liest eine leere Foto-Spalte wie bisher (FotoMoeglich Ja → Optional). Neue Prüfpunkte ab jetzt nur noch über **Foto** steuern; der Standardwert „Aus“ gilt für neu angelegte Zeilen.
+- **FotoMoeglich nicht löschen und nicht umbenennen.** Die App liest eine leere Foto-Spalte wie bisher (FotoMoeglich Ja → Optional). Neue Prüfpunkte ab jetzt nur noch über **Foto** steuern; der Standardwert „Aus“ gilt für neu angelegte Zeilen, FotoMoeglich wirkt dort nicht mehr. Empfehlung: FotoMoeglich im Listenformular ausblenden (Formular bearbeiten → Spalten), damit niemand sie noch benutzt.
 - **Danach prüfen (UNSICHER, wie SharePoint vorhandene Zeilen füllt):** Rasteransicht von RG_Pruefpunkte, Spalte Foto. Stehen die vorhandenen Zeilen leer → gut. Steht überall „Aus“, bei allen Zeilen mit FotoMoeglich = Ja Foto = **Optional** setzen (heute nur Id 10).
 - Für den Test noch **nichts** umstellen; Test-Teil A beginnt mit dem Ist-Zustand.
 Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
@@ -35,7 +35,7 @@ Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (
 ### Schritt 1.3 – App.Formulas
 
 Je Block: Steuerelement in der Strukturansicht markieren, Property oben links im Auswahlfeld wählen, in der Formelleiste **Strg+A**, dann den ganzen Block einfügen. Bis alle Blöcke dieses Pakets drin sind, können rote Fehler stehen (neue Funktionsköpfe passen erst zusammen, wenn alle Aufrufer ersetzt sind).
-`App` markieren, Property **Formulas**. Ganzer Inhalt wird ersetzt (neu: fnLinkAnzahl, fnFotoModus, fnBeantwortet, fnAusserhalb, fnKommentarNoetig, fnFehltGrund; fnFehlt mit 12 Werten; fnZahlBewertung mit 4. Wert).
+`App` markieren, Property **Formulas**. Ganzer Inhalt wird ersetzt (neu: fnLinkAnzahl, fnFotoModus, fnFotoNeuErlaubt, fnBeantwortet, fnAusserhalb, fnKommentarNoetig, fnFehltGrund; fnFehlt mit 12 Werten; fnZahlBewertung mit 4. Wert).
 
 **`App.Formulas`**
 
@@ -321,7 +321,7 @@ If(ThisItem.Bewertung = "NIO"; clrFehlerHell; clrPrimaerHell)
 ```
 
 Prüfen nach dem Schritt:
-- Karte eines Punkts mit Foto = Pflicht ist höher und zeigt rechts unten „📷 Foto *“ (blau).
+- Die Karte von Id 10 (FotoMoeglich = Ja, Foto noch leer) ist höher und zeigt rechts unten „📷 Foto“ (blau).
 - Y von `btnKaFoto` steht als Formel da, nicht als Zahl (E-05).
 
 ### Schritt 1.7 – Zähler „Noch offen“ (unsichtbare Labels)
@@ -455,7 +455,8 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 ## Test
 
 Namen im Bogen: **K1** = Kategorie, in der Prüfpunkt Id 10 (Thermometer) liegt. **P10** = Id 10. **PO** = ein anderer i.O./n.i.O.-Punkt in K1. **PX** = ein dritter i.O./n.i.O.-Punkt in K1 mit FotoMoeglich = Nein.
-Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pruefpunkte die Vorschau schließen und neu starten.
+Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pruefpunkte in Studio **Daten → RG_Pruefpunkte → Aktualisieren** und die Vorschau neu starten.
+Kategorien werden der Reihe nach freigeschaltet: Liegt K1 nicht als erste Kategorie, vorher die davor liegenden Kategorien speichern (oder eine neue Durchführung, in der K1 die nächste offene ist).
 
 **Teil A – Studio-Vorschau (ohne Foto-Auswahl)**
 
@@ -469,7 +470,8 @@ Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pr
 | A6 | PX auf n.i.O. | Kommentarfeld links, roter „📷 Foto“ rechts in einer Zeile |
 | A7 | PX zurück auf i.O. | Kommentarfeld und Foto-Knopf weg, Karte wieder niedrig |
 | A8 | PO auf n.i.O., dann i.O. | Foto-Knopf rot, dann wieder blau (Optional bleibt) |
-| A9 | Zurück („Verwerfen? Erneut tippen“) | Übersicht; nichts gespeichert (Speichern ist ohne Foto nicht möglich – gewollt) |
+| A9 | SharePoint: P10 Foto = **Aus** (FotoMoeglich bleibt Ja), aktualisieren, Vorschau neu, K1 öffnen | P10 ohne Foto-Knopf (Foto-Spalte schlägt FotoMoeglich) |
+| A10 | SharePoint: P10 Foto = **Pflicht**, aktualisieren, Vorschau neu. K1 öffnen, Zurück („Verwerfen? Erneut tippen“) | Übersicht; nichts gespeichert (Speichern ist ohne Foto nicht möglich – gewollt) |
 
 **Teil B – Tablet (Foto-Auswahl).** Entweder Studio im Browser des Tablets öffnen und dort die Vorschau nehmen, oder die App veröffentlichen (Josias entscheidet; die veröffentlichte DEV-App sehen alle mit Zugriff).
 
@@ -480,7 +482,8 @@ Stammdaten werden pro Sitzung zwischengespeichert: nach jeder Änderung in RG_Pr
 | B3 | PX: n.i.O. + Kommentar „test“, dann zurück auf i.O. | Kommentarfeld verschwindet |
 | B4 | Speichern | Meldung „Gespeichert.“, nächste Kategorie öffnet sich |
 | B5 | Bibliothek RG_Fotos → TEST/2026/10/<Title der Durchführung>/ | Datei `D<id>-K<kat>-P10-xxxxxxxx.jpg` |
-| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; PX ohne Kommentar (beim Speichern geleert, Verhalten 08:44); Speichern ohne neues Foto möglich |
+| B6 | Zurück zur Übersicht, K1 „Bearbeiten“ | P10 „📷 Foto (1)“ ohne *; Speichern ohne neues Foto möglich |
+| B6a | PX auf n.i.O. tippen | Kommentarfeld ist **leer** (beim Speichern geleert, Verhalten 08:44); dann PX zurück auf i.O. und Zurück („Verwerfen? Erneut tippen“) |
 | B7 | Nur wenn der Testrundgang ohnehin abgeschlossen werden soll: vorher in einer Kategorie einen Punkt **n.i.O. + Kommentar, ohne Foto** speichern, dann alle Kategorien speichern und abschließen (legt Mängel in RG_Maengel und ein PDF in RG_Protokolle an) | Nach dem Abschluss „Ansehen“: P10 „📷 Foto (1)“, Fenster zeigt „Gespeicherte Fotos (nur Ansicht).“; der n.i.O.-Punkt ohne Foto hat keinen Foto-Knopf, Kommentar sichtbar |
 
 Aufräumen: Testdaten wie gewohnt in den Papierkorb (nur TestDatensatz = Ja). P10 Foto auf den gewünschten Wert lassen.

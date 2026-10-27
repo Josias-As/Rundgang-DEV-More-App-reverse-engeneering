@@ -7,7 +7,7 @@ Export: `2026-10-27_0909`. Kennzeichnung: **belegt** (maschinell/Export), **gesc
 Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Bezeichner ist Steuerelement, Variable, Sammlung, Funktion, Liste, Spalte, Feld oder Alias der App bzw. wird im Paket angelegt.
 
 ```
-== Paket 5: 1 Properties, neue Steuerelemente: cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute
+== Paket 5: 1 Properties, neue Steuerelemente: cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute, btnKaDatumLeeren
   App.Formulas                     ok
   cboKaMehrfach.Items              ok
   cboKaMehrfach.DisplayFields      ok
@@ -40,6 +40,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   dpKaDatum.Height                 ok
   dpKaDatum.IconBackground         ok
   dpKaDatum.IconFill               ok
+  dpKaDatum.InputTextPlaceholder   ok
   dpKaDatum.OnChange               ok
   dpKaDatum.Size                   ok
   dpKaDatum.StartOfWeek            ok
@@ -101,7 +102,28 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   ddKaMinute.Width                 ok
   ddKaMinute.X                     ok
   ddKaMinute.Y                     ok
-  Paket 5: colAntworten hat in allen drei Zweigen dieselben 22 Felder
+  btnKaDatumLeeren.BorderColor     ok
+  btnKaDatumLeeren.BorderThickness ok
+  btnKaDatumLeeren.Color           ok
+  btnKaDatumLeeren.Fill            ok
+  btnKaDatumLeeren.Font            ok
+  btnKaDatumLeeren.Height          ok
+  btnKaDatumLeeren.HoverColor      ok
+  btnKaDatumLeeren.HoverFill       ok
+  btnKaDatumLeeren.OnSelect        ok
+  btnKaDatumLeeren.PressedColor    ok
+  btnKaDatumLeeren.PressedFill     ok
+  btnKaDatumLeeren.RadiusBottomLeft ok
+  btnKaDatumLeeren.RadiusBottomRight ok
+  btnKaDatumLeeren.RadiusTopLeft   ok
+  btnKaDatumLeeren.RadiusTopRight  ok
+  btnKaDatumLeeren.Size            ok
+  btnKaDatumLeeren.Text            ok
+  btnKaDatumLeeren.Visible         ok
+  btnKaDatumLeeren.Width           ok
+  btnKaDatumLeeren.X               ok
+  btnKaDatumLeeren.Y               ok
+  Paket 5: colAntworten hat in allen drei Zweigen dieselben 23 Felder
 ```
 
 ## b) Typcheck
@@ -130,7 +152,8 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
 | Foto-Upload | nein |  |
 | Lesemodus nach Abschluss | ja | neue Felder DisplayMode.View; Mehrfachauswahl: Auswahl = gespeicherter Text (Nur-Ansicht-Zweig) → zeigt genau die gewählten Werte |
 | Nachlese-Vergleich | nein |  |
-| Bedingungen (Paket 4) | ja (indirekt) | fnBedPasst prüft Werte der Mehrfachauswahl einzeln |
+| Bedingungen (Paket 4) | ja (indirekt) | fnBedPasst prüft Werte der Mehrfachauswahl einzeln, fnBedGueltig kennt MEHRFACH |
+| Leeren eines Datums | ja | btnKaDatumLeeren setzt WertText = "" und die drei Felder zurück; Stunde/Minute erst nach dem Datum wählbar |
 
 ## e) Szenarien
 
@@ -177,6 +200,20 @@ P5  ok    fnDatumText ohne Datum                                                
 ## g) Lauffähigkeit
 
 - T5.1–T5.10 in der Vorschau. UNSICHER: Darstellung einer leeren Datumsauswahl (DefaultDate leer) – T5.1 zeigt es.
+
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| P5-1 mittel: Datum lässt sich nicht leeren | neuer Knopf `btnKaDatumLeeren` (✕) leert den Wert und setzt die drei Felder zurück |
+| P5-3: Uhrzeit vor Datum geht verloren | Stunde/Minute gesperrt, bis ein Datum gewählt ist |
+| P5-4: Platzhalter der Datumsauswahl | InputTextPlaceholder „Datum wählen“ |
+| P5-5/P5-6 UNSICHER: OnChange beim Laden / Restwerte nach Verwerfen | Tests T5.10/T5.11 |
+| P5-7: Typwechsel eines benutzten Punkts | Pflegeregel in 5.2 |
+| P5-8: Reihenfolge der Mehrfachauswahl | gespeichert in der Reihenfolge der Auswahlwerte |
+| P5-9: modernes statt klassisches Kombinationsfeld | Menüpfad „Einfügen → Klassisch“ genannt |
+| P5-10/11: Doku, Testlücke Bedingung auf MEHRFACH | 5.2 angepasst, Test T5.4 |
+| Tests T5.7/T5.8 nicht ausführbar | Testbogen neu |
 
 ## Offene Befunde
 

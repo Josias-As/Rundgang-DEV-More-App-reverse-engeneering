@@ -82,10 +82,10 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   btnKaBildSchliessen.Y            ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 3: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 4: colAntworten hat in allen drei Zweigen dieselben 22 Felder
-  Paket 5: colAntworten hat in allen drei Zweigen dieselben 22 Felder
-  Paket 6: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
+  Paket 4: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 5: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
@@ -99,12 +99,13 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   lblKaZahlInfo                 649 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb, bitte begründen'
   lblKaZahlInfo                 620 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  unzulässig, bitte prüfen'
   cboKaMehrfach (Platzhalter)   307 px (+10 %) / 400 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Auswählen (mehrere möglich)'
-  btnKaBild                     102 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Beispielbild'
+  btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
+  btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
   btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
 
 Fehler gesamt: 0
 
-  Paket 6: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+  Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
 ```
 
 ## b) Typcheck
@@ -158,6 +159,16 @@ Fehler gesamt: 0
 ## g) Lauffähigkeit
 
 - Vorab-Test 6.3 und T6.1–T6.7 in der Vorschau.
+
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| P6-1 mittel: Frage wird 160 px schmaler, abgeschnitten | Knopf „Bild“ 64 px, Frage nur 80 px schmaler |
+| T6.4 nicht ausführbar | entfernt, Absicherung erklärt |
+| P6-3: Vorschaubilder am Tablet / Verzögerung | Hinweis in 6.2, Test T6.7 |
+| P6-4: leere Bildfläche ohne Hinweis | bewusst so (Schließen geht), Test T6.6 |
+| P6-5: Nur-Ansicht zeigt heutiges Bild | bewusst; Einfrieren kommt mit dem späteren Paket „Schlüssel/Status/Einfrieren“ |
 
 ## Offene Befunde
 

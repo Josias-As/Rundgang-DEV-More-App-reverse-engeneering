@@ -92,6 +92,15 @@ P2  ok    Kommentar leeren beim Speichern: i.O. mit Pflicht -> behalten         
 | B10: Kommentar vor dem Patch geleert | vorhandenes Verhalten (08:44), bleibt; als Szenario dokumentiert |
 | B12: ENTWURF nicht in den Voraussetzungen | erledigt (frischer Export) |
 
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Nr. 1 mittel: T2.9 nicht sichtbar prüfbar | T2.9/T2.9a neu |
+| Nr. 14: KommentarPflicht abschalten löscht Kommentare | im Rückweg und in den Szenarien genannt |
+| Nr. 15: Schritt 2.2 nennt einen Testpunkt | verweist auf PK/PN |
+| Nr. 16 UNSICHER: Mail-Flow | es gibt keinen Mail-Flow (Export) |
+
 ## Offene Befunde
 
 Keine.

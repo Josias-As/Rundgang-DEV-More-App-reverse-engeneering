@@ -136,6 +136,19 @@ P1  ok    fnFotoNeuErlaubt: i.O. und Optional -> ja                             
 | B8: Kommentar inaktiver Antworten wird geleert | behoben: `!Inaktiv` in „Kommentar leeren“ |
 | B9: alte Foto-Links bei i.O. + Aus unsichtbar | behoben: Foto-Knopf auch bei vorhandenen Links; neue Fotos dort nicht wählbar (addKaFoto.Visible) |
 
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Nr. 1 mittel: Erwartung „ohne Kommentar“ bei i.O. nicht sichtbar | Test B6a: Punkt auf n.i.O. tippen, Kommentarfeld muss leer sein |
+| Nr. 2/3/4/6/13: Testbogen (Reihenfolge der Kategorien, Namen, Prüfhinweis 1.6, Daten aktualisieren, Foto = Aus bei FotoMoeglich Ja) | ergänzt (A9, Hinweise im Bogen, Prüfhinweis 1.6) |
+| Nr. 5: addKaFoto.Visible nicht in der E-05-Liste | kein YAML-Einfügen, per Formelleiste – E-05 betrifft es nicht |
+| Nr. 7: Foto-Pflicht bei unbeantwortetem optionalem Punkt | Annahme, von Josias zu bestätigen |
+| Nr. 8: FotoMoeglich bei neuen Punkten wirkungslos | Empfehlung in 1.2: Spalte im Formular ausblenden |
+| Nr. 9/10: Doku | Auswirkungsliste und Schritt 1.3 ergänzt |
+| Nr. 11/12: Foto bei Wechsel n.i.O.→i.O. (Aus) verworfen; Fuß nennt nur den ersten Grund | vorhandenes bzw. gewolltes Verhalten |
+| Nr. 17: ProtokollErstelltAm fehlt | Fehlalarm: Spalte existiert (DataSources), sie fehlte nur in der Prüfer-Übersicht |
+
 ## Offene Befunde
 
 - **Nicht Teil dieses Pakets, aber für Foto-Pflicht wichtig:** Der Flow `RG_Foto_hochladen` antwortet nicht. Scheitert er nach dem Start, steht der Link trotzdem im JSON und die Pflicht gilt als erfüllt. Vorschlag „Flows rückmelden“ in BAUKASTEN_UEBERSICHT.md (eigenes Paket, nicht gebaut).

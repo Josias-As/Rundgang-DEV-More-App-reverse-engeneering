@@ -24,8 +24,9 @@ Studio: oben **Speichern**. Dann make.powerapps.com → Apps → „Rundgang DEV
 ### Schritt 5.2 – SharePoint: Auswahlwerte ergänzen
 
 RG_Pruefpunkte → Spalte **Eingabetyp** → Spalteneinstellungen → Bearbeiten → Auswahlmöglichkeiten **ergänzen** (nichts umbenennen oder löschen): **MEHRFACH**, **DATUM**, **DATUMZEIT**. Standardwert unverändert lassen.
-Für den Test in Kategorie 1: drei neue Prüfpunkte (Pflicht = Ja): „ZZ Test Mängelarten“ MEHRFACH mit Auswahlwerte `Riss;Leck;Korrosion`, „ZZ Test Datum letzte Wartung“ DATUM, „ZZ Test Ablesezeit“ DATUMZEIT.
-Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (sonst kennt die App die neue Spalte nicht und die Formeln in den nächsten Schritten zeigen Fehler).
+Pflegeregel: den Typ eines schon benutzten Prüfpunkts nicht ändern (alte Antworten passen nicht zum neuen Typ), sondern einen neuen Punkt anlegen und den alten deaktivieren.
+Für den Test in K1: drei neue Prüfpunkte (Pflicht = Ja): **M** „ZZ Test Mängelarten“ MEHRFACH mit Auswahlwerte `Riss;Leck;Korrosion`, **D** „ZZ Test Datum letzte Wartung“ DATUM, **DZ** „ZZ Test Ablesezeit“ DATUMZEIT. Dazu **F** „ZZ Test Folge Leck“ (TEXT, Pflicht = Ja) mit BedingungPunkt = Id von M, BedingungWert = **Leck**.
+Danach in Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren** (damit die App die neuen Auswahlwerte kennt).
 
 ### Schritt 5.3 – App.Formulas
 
@@ -161,7 +162,7 @@ fnDateiname(t: Text): Text = Trim(Substitute(Substitute(Substitute(Substitute(Su
 fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(tag; 4) & "/" & Mid(tag; 6; 2);;fnSpUrl(bib: Text; pfad: Text): Text = "https://technoformgroup.sharepoint.com/sites/IMSKonzept/" & bib & "/" & Substitute(pfad; " "; "%20");;
 ```
 
-### Schritt 5.4 – Datum und Uhrzeit (YAML)
+### Schritt 5.4 – Datum, Uhrzeit und Leeren-Knopf (YAML)
 
 In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, dann den YAML-Block mit **Strg+V** einfügen (landet in derselben Karte). Drei Blöcke nacheinander oder zusammen.
 
@@ -181,6 +182,7 @@ In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, 
       Height: =56
       IconBackground: =clrPrimaer
       IconFill: =Color.White
+      InputTextPlaceholder: ="Datum wählen"
       OnChange: |-
         =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(Self.SelectedDate, Coalesce(ddKaStunde.Selected.Value, ""), Coalesce(ddKaMinute.Selected.Value, ""), ThisItem.Typ = "DATUMZEIT")});
         Set(varGeaendert, true)
@@ -208,7 +210,7 @@ In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, 
       ChevronHoverFill: =Color.White
       Color: =clrText
       Default: =If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 12, 2), "")
-      DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+      DisplayMode: =If(varNurLesen, DisplayMode.View, IsBlank(dpKaDatum.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
       Fill: =clrKarte
       Font: =Font.'Segoe UI'
       Height: =56
@@ -247,7 +249,7 @@ In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, 
       ChevronHoverFill: =Color.White
       Color: =clrText
       Default: =If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 15, 2), "")
-      DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+      DisplayMode: =If(varNurLesen, DisplayMode.View, IsBlank(dpKaDatum.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
       Fill: =clrKarte
       Font: =Font.'Segoe UI'
       Height: =56
@@ -270,16 +272,50 @@ In der Strukturansicht in `conKaKarte` das Steuerelement `txtKaText` markieren, 
       Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
 ```
 
+**YAML `btnKaDatumLeeren`** (englische Schreibweise, so wie es ist einfügen):
+
+```yaml
+- btnKaDatumLeeren:
+    Control: Classic/Button@2.2.0
+    Properties:
+      BorderColor: =clrRahmen
+      BorderThickness: =1
+      Color: =clrTextGrau
+      Fill: =clrKarte
+      Font: =Font.'Segoe UI'
+      Height: =56
+      HoverColor: =clrText
+      HoverFill: =clrPrimaerHell
+      OnSelect: |-
+        =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ""});
+        Reset(dpKaDatum);
+        Reset(ddKaStunde);
+        Reset(ddKaMinute);
+        Set(varGeaendert, true)
+      PressedColor: =clrText
+      PressedFill: =clrPrimaerHell
+      RadiusBottomLeft: =8
+      RadiusBottomRight: =8
+      RadiusTopLeft: =8
+      RadiusTopRight: =8
+      Size: =16
+      Text: ="✕"
+      Visible: =!varNurLesen && (ThisItem.Typ = "DATUM" || ThisItem.Typ = "DATUMZEIT") && ThisItem.WertText <> ""
+      Width: =56
+      X: =If(ThisItem.Typ = "DATUMZEIT", 504, 272)
+      Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+```
+
 Prüfen nach dem Schritt:
-- Alle drei liegen in `conKaKarte` (Strukturansicht).
+- Alle vier liegen in `conKaKarte` (Strukturansicht).
 - Y steht als Formel `54 + If(ThisItem.Hinweis <> ""; 24; 0)` da, nicht als Zahl (E-05) – sonst per Formelleiste setzen.
-- Die Namen sind genau `dpKaDatum`, `ddKaStunde`, `ddKaMinute` (Studio hängt bei Doppelungen „_1“ an).
+- Die Namen sind genau `dpKaDatum`, `ddKaStunde`, `ddKaMinute`, `btnKaDatumLeeren` (Studio hängt bei Doppelungen „_1“ an).
 
 ### Schritt 5.5 – Mehrfachauswahl (Kombinationsfeld über das Menü)
 
 Für das klassische Kombinationsfeld kenne ich die Steuerelement-Version in dieser Umgebung nicht sicher, deshalb ohne YAML:
 1. Strukturansicht: `conKaKarte` markieren.
-2. **Einfügen → Eingabe → Kombinationsfeld** (klassisch). Es muss **in** `conKaKarte` landen.
+2. **Einfügen → Klassisch → Kombinationsfeld** (nicht das moderne Kombinationsfeld unter „Eingabe“). Es muss **in** `conKaKarte` landen.
 3. Umbenennen in **cboKaMehrfach**.
 4. Die folgenden Properties setzen (je ganze Property ersetzen):
 
@@ -324,7 +360,7 @@ Filter(ForAll(Split(ThisItem.WertText; ";") As s; {Value: Trim(s.Value)}); ThisR
 **`cboKaMehrfach.OnChange`**
 
 ```
-Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {WertText: Concat(Self.SelectedItems; ThisRecord.Value; "; ")});;
+Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {WertText: Concat(Filter(ForAll(Split(ThisItem.Auswahl; ";") As s; {Value: Trim(s.Value)}) As i; i.Value <> "" && i.Value in Self.SelectedItems.Value); Value; "; ")});;
 Set(varGeaendert; true)
 ```
 
@@ -431,16 +467,18 @@ Bei einem Formelfehler: Fehlermeldung und Steuerelement notieren, nicht selbst u
 
 | # | Klickfolge | erwartet |
 |---|---|---|
-| T5.1 | Kategorie 1 öffnen | Mängelarten: Kombinationsfeld „Auswählen (mehrere möglich)“; Datum: Datumsauswahl; Ablesezeit: Datum + zwei Listen (Stunde, Minute). Andere Typen unverändert |
-| T5.2 | Nichts davon ausfüllen | Fuß zählt alle drei als offen |
-| T5.3 | Riss und Leck wählen | Fuß zählt Mängelarten nicht mehr |
-| T5.4 | Datum letzte Wartung wählen | erledigt |
-| T5.5 | Ablesezeit: nur Datum | „… (Uhrzeit)“ im Fuß |
-| T5.6 | Stunde 07, Minute 05 | erledigt |
-| T5.7 | Ablesezeit: erst Stunde/Minute, dann Datum | ergibt „TT.MM.JJJJ 07:05“, erledigt |
-| T5.8 | Speichern, Kategorie wieder öffnen | alle drei Werte stehen wieder da (Kombinationsfeld mit Riss, Leck) |
-| T5.9 | Abschluss → Protokoll | „Riss; Leck“, „27.10.2026“, „27.10.2026 07:05“ in der Wertspalte; keine Mängel durch diese Punkte |
-| T5.10 | Ansehen nach Abschluss | Werte sichtbar, nicht änderbar |
+| T5.1 | K1 öffnen | M: Kombinationsfeld „Auswählen (mehrere möglich)“; D: Datumsauswahl „Datum wählen“; DZ: Datum + zwei Listen (Stunde, Minute, noch gesperrt); F nicht sichtbar. Andere Typen unverändert |
+| T5.2 | Nichts davon ausfüllen | Fuß zählt M, D, DZ als offen |
+| T5.3 | M: Korrosion, dann Riss wählen | M erledigt (gespeichert wird „Riss; Korrosion“ in der Reihenfolge der Auswahlwerte) |
+| T5.4 | M zusätzlich Leck | F erscheint (Bedingung auf einen Wert der Mehrfachauswahl) |
+| T5.5 | F „x“, D Datum wählen | erledigt; rechts neben D ein „✕“ |
+| T5.6 | D „✕“ | Datum wieder leer, D offen; dann Datum erneut wählen |
+| T5.7 | DZ: nur Datum | Stunde/Minute werden wählbar; Fuß „… (Uhrzeit)“ |
+| T5.8 | DZ Stunde 07, Minute 05 | erledigt |
+| T5.9 | Übrige Pflichtpunkte von K1 ausfüllen, Speichern | „Gespeichert.“, die nächste offene Kategorie öffnet sich |
+| T5.10 | Zurück, K1 „Bearbeiten“ | M zeigt Riss, Leck, Korrosion; D und DZ („TT.MM.JJJJ 07:05“) stehen da; F mit „x“. „Zurück“ fragt **nicht** „Verwerfen?“ (UNSICHER: falls doch, Befund melden – Auswahlfelder lösen dann OnChange beim Laden aus) |
+| T5.11 | DZ Datum ändern, ohne zu speichern Zurück („Verwerfen? Erneut tippen“), K1 erneut öffnen | alter gespeicherter Wert steht wieder da (keine Restwerte) |
+| T5.12 | Nur mit Abschluss (siehe Paket 1, B7): Protokoll, „Ansehen“ | „Riss; Leck; Korrosion“, „TT.MM.JJJJ“, „TT.MM.JJJJ 07:05“ in der Wertspalte; keine Mängel durch diese Punkte; Nur-Ansicht zeigt die Werte, nicht änderbar, kein „✕“ |
 
 ## Rückweg
 

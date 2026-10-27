@@ -10,8 +10,13 @@ Pakete **nur in dieser Reihenfolge**, jedes ganz (atomar), nach jedem Paket App-
 | 2 | Pflicht-Kommentar auch bei i.O. (pro Prüfpunkt) | KommentarPflicht (Ja/Nein) | 5 | – |
 | 3 | Zahlengrenzen pro Prüfpunkt: Mangel, Warnen oder Sperren | Grenzmodus (Auswahl) | 7 | – |
 | 4 | Bedingte Fragen | BedingungPunkt (Zahl), BedingungWert (Text) | 10 | – |
-| 5 | Neue Typen: Mehrfachauswahl, Datum, Datum + Uhrzeit | Eingabetyp + 3 Werte | 1 | cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute |
+| 5 | Neue Typen: Mehrfachauswahl, Datum, Datum + Uhrzeit | Eingabetyp + 3 Werte | 1 | cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute, btnKaDatumLeeren |
 | 6 | Hinweis mit Beispielbild | Bibliothek RG_Hinweisbilder, HinweisBildID (Zahl) | 2 | btnKaBild, conKaBild, btnKaBildSperre, conKaBildKarte, lblKaBildTitel, imgKaBild, btnKaBildSchliessen |
+
+## Prüfstand
+
+- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.
+- Unabhängige Prüfung: Runde 1 (Pakete 1–4) und Runde 2 (alle sechs) eingearbeitet, siehe PRUEFUNG_n. Ergebnis Runde 3: siehe unten bzw. PRUEFUNG_n.
 
 ## Entscheidungen und Annahmen (bitte bestätigen)
 

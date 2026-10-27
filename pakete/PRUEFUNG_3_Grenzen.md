@@ -15,7 +15,7 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   txtKaZahl.BorderColor            ok
   btnKaSpeichern.OnSelect          ok
   htmProtokoll.HtmlText            ok
-  Paket 3: colAntworten hat in allen drei Zweigen dieselben 19 Felder
+  Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
 ```
 
 ## b) Typcheck
@@ -108,6 +108,18 @@ P3  ok    Warnen ohne Min/Max: nie außerhalb                                   
 | B5: Neubewertung beim Öffnen zählt nicht als Änderung | vorhandenes Verhalten, als Szenario dokumentiert |
 | B6: Nur-Ansicht zeigt Aufforderungen | behoben |
 | B11: clrWarnungHell unbenutzt | entfernt |
+
+## Unabhängige Prüfung – Runde 2 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| B3-1 mittel: Nur-Ansicht liest heutige Min/Max statt des Kennzeichens | behoben: Feld `Warnung` in allen drei Zweigen, Nur-Ansicht liest nur das Feld; deaktivierte Punkte behalten es |
+| „zulässig“ bei Min > Max | behoben: „zulässig“ nur, wenn die Sperre gilt |
+| „bitte begründen“ bleibt nach der Begründung | behoben: dann „außerhalb, begründet“ |
+| Testbogen (Aktiv, Aufräumen, T3.11 nicht speichern) | ergänzt |
+| Rückweg: Warnen-Werte in der alten App; Umstellen während laufender Rundgänge | im Rückweg bzw. als Pflegeregel ergänzt |
+| Warnen/Mangel bei Min > Max | vorhandenes Verhalten (alles außerhalb), Pflegeregel „Min nie größer als Max“ |
+| lblKaZahlInfo auf schmalen Geräten | App ist für Tablet hochkant (768) gebaut; dort 2 Zeilen geprüft |
 
 ## Offene Befunde
 

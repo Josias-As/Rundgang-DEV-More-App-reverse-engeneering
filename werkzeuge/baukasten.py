@@ -257,23 +257,33 @@ def paket3(st):
         t = rep(t, '                     Grenzmodus: "Mangel",\n',
                 "                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n")
         t = rep(t, 'KommentarPflicht: false, Grenzmodus: "Mangel", Inaktiv: false}',
-                "KommentarPflicht: false, Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), Inaktiv: false}")
+                "KommentarPflicht: false, Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), Warnung: Coalesce(IfError(Boolean(a.Warnung), false), false), Inaktiv: false}")
+        t = rep(t, "                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n",
+                "                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n                     Warnung: false,\n")
+        t = rep(t, 'KommentarPflicht: false, Grenzmodus: "Mangel", Inaktiv: true}',
+                'KommentarPflicht: false, Grenzmodus: "Mangel", Warnung: Coalesce(IfError(Boolean(o.Value.Warnung), false), false), Inaktiv: true}')
         return t
     aendern(st, p, "3.4", "scrKategorie.OnVisible", onvisible)
 
     aussen = "fnAusserhalb(ThisItem.WertZahl, ThisItem.MinWert, ThisItem.MaxWert)"
     ganz(st, p, "3.5", "lblKaZahlInfo.Text",
-         'Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert), "", "  ·  " & If(ThisItem.Grenzmodus = "Sperren", "zulässig ", "Soll ") & If(IsBlank(ThisItem.MinWert), "", "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert), "", "bis " & ThisItem.MaxWert)) & '
-         'If(ThisItem.Bewertung = "NIO", "  ·  außerhalb des Sollbereichs", !' + aussen + ', "", varNurLesen, "  ·  außerhalb, begründet", ThisItem.Grenzmodus = "Warnen", "  ·  außerhalb, bitte begründen", ThisItem.Grenzmodus = "Sperren", "  ·  unzulässig, bitte prüfen", ""))')
+         'Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert), "", "  ·  " & If(ThisItem.Grenzmodus = "Sperren" && fnSperreGilt(ThisItem.MinWert, ThisItem.MaxWert), "zulässig ", "Soll ") & If(IsBlank(ThisItem.MinWert), "", "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert), "", "bis " & ThisItem.MaxWert)) & '
+         'If(ThisItem.Bewertung = "NIO", "  ·  außerhalb des Sollbereichs", varNurLesen, If(ThisItem.Warnung, "  ·  außerhalb, begründet", ""), !' + aussen + ', "", '
+         'ThisItem.Grenzmodus = "Warnen", If(Trim(ThisItem.Kommentar) = "", "  ·  außerhalb, bitte begründen", "  ·  außerhalb, begründet"), ThisItem.Grenzmodus = "Sperren", "  ·  unzulässig, bitte prüfen", ""))')
     farbe = ('If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren" && ' + aussen + '), clrFehler, '
-             + aussen + ', clrWarnung, {sonst})')
+             'If(varNurLesen, ThisItem.Warnung, ' + aussen + '), clrWarnung, {sonst})')
     ganz(st, p, "3.5", "lblKaZahlInfo.Color", farbe.format(sonst="clrTextGrau"))
     ganz(st, p, "3.5", "txtKaZahl.BorderColor", farbe.format(sonst="clrRahmen"))
 
-    aendern(st, p, "3.6", "btnKaSpeichern.OnSelect", lambda t: rep(
-        t, "JSON(ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos), JSONFormat.Compact)",
-        'JSON(ShowColumns(AddColumns(colAntworten, Warnung, Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl, MinWert, MaxWert)), '
-        "PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact)", wo="JSON Warnung"))
+    def speichern3(t):
+        anker = 'UpdateIf(colAntworten, !Inaktiv && !fnKommentarNoetig(Typ, Bewertung, WertText, WertZahl, KommentarPflicht, Grenzmodus, MinWert, MaxWert), {Kommentar: ""});'
+        i = t.index(anker)
+        einzug = t[t.rfind("\n", 0, i) + 1:i]
+        t = rep(t, anker, anker + "\n" + einzug + 'UpdateIf(colAntworten, !Inaktiv, {Warnung: Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl, MinWert, MaxWert)});', wo="Warnung setzen")
+        t = rep(t, "ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos), JSONFormat.Compact)",
+                "ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact)", wo="JSON Warnung")
+        return t
+    aendern(st, p, "3.6", "btnKaSpeichern.OnSelect", speichern3)
 
     def protokoll(t):
         t = rep(t, "With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos)},",
@@ -302,16 +312,16 @@ def paket4(st):
         t, 'fnFehlt(typ: Text, pflicht: Boolean,', UDF_P4 + '\nfnFehlt(typ: Text, pflicht: Boolean,'))
 
     def onvisible(t):
-        t = rep(t, 'Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), Inaktiv: false}',
-                'Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), BedID: 0, BedWert: "", '
+        t = rep(t, 'Warnung: Coalesce(IfError(Boolean(a.Warnung), false), false), Inaktiv: false}',
+                'Warnung: Coalesce(IfError(Boolean(a.Warnung), false), false), BedID: 0, BedWert: "", '
                 'Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet), false), false), Inaktiv: false}')
         t = rep(t, "                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n",
                 "                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n"
                 "                     BedID: Coalesce(p.BedingungPunkt, 0),\n"
                 '                     BedWert: Coalesce(p.BedingungWert, ""),\n'
                 "                     Ausgeblendet: false,\n")
-        t = rep(t, 'Grenzmodus: "Mangel", Inaktiv: true}',
-                'Grenzmodus: "Mangel", BedID: 0, BedWert: "", '
+        t = rep(t, 'Warnung: Coalesce(IfError(Boolean(o.Value.Warnung), false), false), Inaktiv: true}',
+                'Warnung: Coalesce(IfError(Boolean(o.Value.Warnung), false), false), BedID: 0, BedWert: "", '
                 'Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet), false), false), Inaktiv: true}')
         t = rep(t, "Set(varSprungRec, First(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge)));",
                 "Set(varSprungRec, First(Sort(Filter(colAntworten As a, !a.Inaktiv && " + sicht("a") + "), Reihenfolge)));")
@@ -341,14 +351,23 @@ def paket4(st):
         zeile_start = t.rfind("\n", 0, i) + 1
         einzug = t[zeile_start:i]
         neu = ("ClearCollect(colVersteckt, ShowColumns(Filter(colAntworten As a, !a.Inaktiv && !(" + sicht("a") + ")), PruefpunktID));\n"
-               + einzug + 'UpdateIf(colAntworten, PruefpunktID in colVersteckt.PruefpunktID, {Bewertung: "", WertText: "", WertZahl: Blank(), Kommentar: "", Fotos: "", Ausgeblendet: true}, '
-               "!Inaktiv && !(PruefpunktID in colVersteckt.PruefpunktID), {Ausgeblendet: false});\n" + einzug + anker)
-        t = rep(t, anker, neu, wo="Ausblenden vor Upload")
-        t = rep(t, "fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", "!a.Ausgeblendet && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", n=3, wo="Upload")
+               + einzug + anker)
+        t = rep(t, anker, neu, wo="Ausgeblendete bestimmen vor Upload")
+        t = rep(t, "fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", "!(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)", n=3, wo="Upload")
         t = rep(t, "ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url)), PruefpunktID) As d,",
                 "ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)), PruefpunktID) As d,", wo="Links anhängen")
-        t = rep(t, "Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact)",
-                "Einheit, Kommentar, Fotos, Warnung, Ausgeblendet), JSONFormat.Compact)", wo="JSON")
+        t = rep(t, "UpdateIf(colFotos, !Uebernommen && !IsBlank(Url), {Uebernommen: true});",
+                "UpdateIf(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID), {Uebernommen: true});", wo="Übernommen")
+        anker2 = "Set(varAntwortJSON, JSON(ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung), JSONFormat.Compact));"
+        i = t.index(anker2)
+        einzug = t[t.rfind("\n", 0, i) + 1:i]
+        t = rep(t, anker2,
+                'ClearCollect(colSpeichern, ForAll(colAntworten As r, If(r.PruefpunktID in colVersteckt.PruefpunktID, '
+                'Patch(r, {Bewertung: "", WertText: "", WertZahl: Blank(), Kommentar: "", Fotos: "", Warnung: false, Ausgeblendet: true}), '
+                'r.Inaktiv, r, Patch(r, {Ausgeblendet: false}))));\n' + einzug +
+                "Set(varAntwortJSON, JSON(ShowColumns(colSpeichern, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung, Ausgeblendet), JSONFormat.Compact));",
+                wo="JSON aus Kopie")
+        t = rep(t, 'AnzahlNIO: CountRows(Filter(colAntworten, Bewertung = "NIO"))', 'AnzahlNIO: CountRows(Filter(colSpeichern, Bewertung = "NIO"))', wo="AnzahlNIO")
         return t
     aendern(st, p, "4.6", "btnKaSpeichern.OnSelect", speichern)
 
@@ -384,7 +403,7 @@ def paket5(st):
         "SelectMultiple": "true",
         "IsSearchable": "false",
         "DefaultSelectedItems": 'Filter(ForAll(Split(ThisItem.WertText, ";") As s, {Value: Trim(s.Value)}), ThisRecord.Value <> "")',
-        "OnChange": 'Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Concat(Self.SelectedItems, ThisRecord.Value, "; ")});\nSet(varGeaendert, true)',
+        "OnChange": 'Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Concat(Filter(ForAll(Split(ThisItem.Auswahl, ";") As s, {Value: Trim(s.Value)}) As i, i.Value <> "" && i.Value in Self.SelectedItems.Value), Value, "; ")});\nSet(varGeaendert, true)',
         "InputTextPlaceholder": '"Auswählen (mehrere möglich)"',
         "AccessibleLabel": '"Mehrfachauswahl: " & ThisItem.Frage',
         "DisplayMode": "If(varNurLesen, DisplayMode.View, DisplayMode.Edit)",
@@ -411,6 +430,7 @@ def paket5(st):
         "Height": "56",
         "IconBackground": "clrPrimaer",
         "IconFill": "Color.White",
+        "InputTextPlaceholder": '"Datum wählen"',
         "OnChange": patch.format(d="Self.SelectedDate", h="ddKaStunde.Selected.Value", m="ddKaMinute.Selected.Value"),
         "Size": "16",
         "StartOfWeek": "StartOfWeek.Monday",
@@ -435,7 +455,7 @@ def paket5(st):
             "ChevronHoverFill": "Color.White",
             "Color": "clrText",
             "Default": 'If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, ' + pos + ', 2), "")',
-            "DisplayMode": "If(varNurLesen, DisplayMode.View, DisplayMode.Edit)",
+            "DisplayMode": "If(varNurLesen, DisplayMode.View, IsBlank(dpKaDatum.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)",
             "Fill": "clrKarte",
             "Font": "Font.'Segoe UI'",
             "Height": "56",
@@ -454,6 +474,26 @@ def paket5(st):
             "X": x,
             "Y": zeile,
         })
+    neues_control(st, p, "btnKaDatumLeeren", "conKaKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrRahmen",
+        "BorderThickness": "1",
+        "Color": "clrTextGrau",
+        "Fill": "clrKarte",
+        "Font": "Font.'Segoe UI'",
+        "Height": "56",
+        "HoverColor": "clrText",
+        "HoverFill": "clrPrimaerHell",
+        "OnSelect": 'Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ""});\nReset(dpKaDatum);\nReset(ddKaStunde);\nReset(ddKaMinute);\nSet(varGeaendert, true)',
+        "PressedColor": "clrText",
+        "PressedFill": "clrPrimaerHell",
+        "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
+        "Size": "16",
+        "Text": '"✕"',
+        "Visible": '!varNurLesen && (ThisItem.Typ = "DATUM" || ThisItem.Typ = "DATUMZEIT") && ThisItem.WertText <> ""',
+        "Width": "56",
+        "X": 'If(ThisItem.Typ = "DATUMZEIT", 504, 272)',
+        "Y": zeile,
+    })
     return p
 
 
@@ -475,7 +515,7 @@ def paket6(st):
                 'Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet), false), false), BildID: 0, Inaktiv: true}')
         return t
     aendern(st, p, "6.4", "scrKategorie.OnVisible", onvisible)
-    ganz(st, p, "6.5", "lblKaFrage.Width", "Parent.Width - 40 - If(ThisItem.BildID > 0, 160, 0)")
+    ganz(st, p, "6.5", "lblKaFrage.Width", "Parent.Width - 40 - If(ThisItem.BildID > 0, 80, 0)")
 
     neues_control(st, p, "btnKaBild", "conKaKarte", "Classic/Button@2.2.0", {
         "BorderColor": "clrPrimaer",
@@ -491,10 +531,10 @@ def paket6(st):
         "PressedFill": "clrPrimaerHell",
         "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
         "Size": "14",
-        "Text": '"Beispielbild"',
+        "Text": '"Bild"',
         "Visible": "ThisItem.BildID > 0",
-        "Width": "144",
-        "X": "Parent.Width - 164",
+        "Width": "64",
+        "X": "Parent.Width - 84",
         "Y": "10",
     })
     neues_control(st, p, "conKaBild", "scrKategorie", "GroupContainer@1.5.0", {
@@ -750,7 +790,8 @@ TEXTE = [
     ("lblKaZahlInfo", "Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb, bitte begründen", 14, 464, 2, 10),
     ("lblKaZahlInfo", "Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  unzulässig, bitte prüfen", 14, 464, 2, 10),
     ("cboKaMehrfach (Platzhalter)", "Auswählen (mehrere möglich)", 16, 460, 1, 60),
-    ("btnKaBild", "Beispielbild", 14, 144, 1, 20),
+    ("btnKaBild", "Bild", 14, 64, 1, 20),
+    ("btnKaDatumLeeren", "✕", 16, 56, 1, 20),
     ("btnKaBildSchliessen", "Schließen", 17, 200, 1, 20),
 ]
 
