@@ -1,0 +1,382 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrStart:
+    Properties:
+      Fill: =clrHintergrund
+      LoadingSpinner: =LoadingSpinner.Data
+      LoadingSpinnerColor: =clrPrimaer
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        If(IsBlank(varHeute) || varHeute <> Today(), Set(varHeute, Today()); Set(varTag, Today()));
+        Set(varTagText, Text(varTag, "yyyy-mm-dd"));
+        Concurrent(
+            ClearCollect(colRundgaenge, Filter(RG_Rundgaenge, Aktiv = true)),
+            ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true))
+        );
+        Select(btnStartTagLaden)
+    Children:
+      - conStartKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaer
+            Height: =96
+            Width: =Parent.Width
+          Children:
+            - lblStartTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =Parent.Height
+                  Size: =26
+                  Text: ="Rundgang"
+                  Width: =Parent.Width / 2
+                  X: =24
+            - lblStartNutzer:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  Size: =14
+                  Text: =User().FullName & If(cfgTestmodus, "  ·  TESTMODUS", "")
+                  Width: =Parent.Width / 2 - 24
+                  X: =Parent.Width / 2
+      - lblStartTagTitel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =28
+            Size: =14
+            Text: ="Tag"
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =112
+      - ddStartTag:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            AccessibleLabel: ="Tag des Rundgangs auswählen"
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            ChevronBackground: =clrPrimaer
+            ChevronFill: =Color.White
+            ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+            ChevronHoverFill: =Color.White
+            Color: =clrText
+            Default: =fnTagLabel(varTag, varHeute)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =60
+            HoverFill: =clrPrimaerHell
+            Items: |-
+              =ForAll(Sequence(cfgNachholTage + 1 + If(DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage, 1, 0), 0) As s, With({d: If(s.Value > cfgNachholTage, varTag, DateAdd(varHeute, -s.Value, TimeUnit.Days))}, {Value: fnTagLabel(d, varHeute), Datum: d}))
+            Items.Value: =Value
+            OnChange: |-
+              =Set(varTag, Self.Selected.Datum);
+              Set(varTagText, Text(varTag, "yyyy-mm-dd"));
+              Select(btnStartTagLaden)
+            PaddingLeft: =16
+            PressedColor: =Color.White
+            PressedFill: =clrPrimaer
+            SelectionColor: =Color.White
+            SelectionFill: =clrPrimaer
+            Size: =18
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =144
+      - lblStartListeTitel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =28
+            Size: =14
+            Text: ="Geplante Rundgänge"
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =224
+      - galStartRundgaenge:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            AccessibleLabel: ="Geplante Rundgänge für " & fnTagAnzeige(varTag)
+            Height: =Parent.Height - 256 - If(conStartOffen.Visible, 96, 0)
+            Items: |-
+              =Sort(
+                  AddColumns(
+                      AddColumns(
+                          Filter(colRundgaenge As r, CountRows(Filter(colPlan As p, p.RundgangID = r.ID && fnPlanPasst(p.StartMontag, p.GueltigBis, p.Wochentag, p.ZyklusWochen, varTag))) > 0 || !IsBlank(LookUp(colDurchTag As d2, d2.RundgangID = r.ID))),
+                          Durch, LookUp(colDurchTag As d, d.RundgangID = ID)
+                      ),
+                      Erledigt, If(IsBlank(Durch), 0, CountRows(Filter(colErgTag As e, e.DurchfuehrungID = Durch.ID))),
+                      Gesamt, If(IsBlank(Durch), 0, Durch.AnzahlKategorien),
+                      Zustand, If(IsBlank(Durch), "offen", Durch.Status = stAbgeschlossen, "abgeschlossen", "inarbeit")
+                  ),
+                  RgReihenfolge
+              )
+            ShowScrollbar: =false
+            TemplatePadding: =0
+            TemplateSize: =136
+            Width: =Parent.Width
+            Y: =256
+          Children:
+            - conRgKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ThisItem.Zustand = "abgeschlossen", clrErfolg, clrRahmen)
+                  BorderThickness: =1
+                  Fill: =clrKarte
+                  Height: =Parent.TemplateHeight - 16
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =Parent.TemplateWidth - 48
+                  X: =24
+                  Y: =8
+                Children:
+                  - lblRgName:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =36
+                        Size: =20
+                        Text: =ThisItem.Title
+                        Width: =Parent.Width - 236
+                        X: =20
+                        Y: =14
+                  - lblRgStatus:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.Zustand = "abgeschlossen", clrErfolg, clrTextGrau)
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Size: =14
+                        Text: |-
+                          =Switch(ThisItem.Zustand,
+                              "offen", "Noch nicht begonnen",
+                              "inarbeit", "In Arbeit · " & ThisItem.Erledigt & " von " & ThisItem.Gesamt & " Kategorien",
+                              "Abgeschlossen · " & Coalesce(ThisItem.Durch.AnzahlNIO, 0) & " n.i.O.")
+                        Width: =Parent.Width - 236
+                        X: =20
+                        Y: =52
+                  - conRgBalken:
+                      Control: GroupContainer@1.5.0
+                      Variant: ManualLayout
+                      Properties:
+                        Fill: =clrPrimaerHell
+                        Height: =8
+                        Width: =Parent.Width - 236
+                        X: =20
+                        Y: =88
+                      Children:
+                        - conRgBalkenWert:
+                            Control: GroupContainer@1.5.0
+                            Variant: ManualLayout
+                            Properties:
+                              Fill: =If(ThisItem.Zustand = "abgeschlossen", clrErfolg, clrPrimaer)
+                              Height: =Parent.Height
+                              Width: =Parent.Width * If(ThisItem.Zustand = "abgeschlossen", 1, ThisItem.Gesamt > 0, ThisItem.Erledigt / ThisItem.Gesamt, 0)
+                  - btnRgAktion:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =If(ThisItem.Zustand = "abgeschlossen", 2, 0)
+                        Color: =If(ThisItem.Zustand = "abgeschlossen", clrPrimaer, Color.White)
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(ThisItem.Zustand = "abgeschlossen", clrKarte, clrPrimaer)
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverColor: =Self.Color
+                        HoverFill: =If(ThisItem.Zustand = "abgeschlossen", clrPrimaerHell, ColorFade(clrPrimaer, -20%))
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              Set(varIsLoading, true);
+                              Set(varPatchFehler, false);
+                              Set(varRgID, ThisItem.ID);
+                              Set(varSchluessel, "R" & ThisItem.ID & "-" & varTagText);
+                              Refresh(RG_Durchfuehrungen);
+                              Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));
+                              If(varDurchID = 0,
+                                  If(DateDiff(varTag, varHeute, TimeUnit.Days) < 0 || DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage,
+                                      Notify("Für diesen Tag kann kein Rundgang gestartet werden.", NotificationType.Error),
+                                      With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},
+                                          With({kk: Sort(AddColumns(Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0), BReihe, LookUp(b As be2, be2.ID = BereichID).RgReihenfolge, BName, LookUp(b As be3, be3.ID = BereichID).Title), BReihe * 10000 + RgReihenfolge)},
+                                              ClearCollect(colKatBau, ForAll(Sequence(CountRows(kk)) As s, With({z: Index(kk, s.Value)}, {KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))
+                                          )
+                                      );
+                                      If(CountRows(colKatBau) = 0,
+                                          Notify("Für diesen Rundgang sind keine aktiven Kategorien hinterlegt.", NotificationType.Error),
+                                          IfError(
+                                              Patch(RG_Durchfuehrungen, Defaults(RG_Durchfuehrungen), {Title: varSchluessel, RundgangID: varRgID, RundgangName: ThisItem.Title, TagText: varTagText, KW: ISOWeekNum(varTag), Wochentag: Weekday(varTag, StartOfWeek.Monday), Status: stInArbeit, AnzahlKategorien: CountRows(colKatBau), KategorieListe: JSON(colKatBau, JSONFormat.Compact), PrueferEmail: User().Email, PrueferName: User().FullName, StartZeit: Now(), TestDatensatz: StartsWith(ThisItem.Title, "ZZ Test")}),
+                                              Set(varPatchFehler, true)
+                                          );
+                                          Refresh(RG_Durchfuehrungen);
+                                          Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));
+                                          If(varDurchID = 0, Notify("Der Rundgang konnte nicht gestartet werden. Bitte erneut versuchen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error))
+                                      )
+                                  )
+                              );
+                              If(varDurchID > 0, Navigate(scrRundgang, ScreenTransition.None));
+                              Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));
+                              Set(varIsLoading, false)
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =16
+                        Text: =Switch(ThisItem.Zustand, "offen", "Starten", "inarbeit", "Fortsetzen", "Ansehen")
+                        Width: =176
+                        X: =Parent.Width - 196
+                        Y: =(Parent.Height - 56) / 2
+      - lblStartKeine:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =60
+            Size: =16
+            Text: ="Für diesen Tag ist kein Rundgang geplant."
+            Visible: =!varIsLoading && galStartRundgaenge.AllItemsCount = 0
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =296
+      - btnStartTagLaden:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Height: =10
+            OnSelect: |-
+              =Set(varIsLoading, true);
+              Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));
+              Concurrent(
+                  ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),
+                  ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),
+                  ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText))
+              );
+              Set(varIsLoading, false)
+            Text: ="laden"
+            Visible: =false
+            Width: =10
+      - tmrStartTag:
+          Control: Timer@2.1.0
+          Properties:
+            AutoStart: =true
+            Height: =10
+            OnTimerEnd: |-
+              =If(varHeute <> Today(),
+                  Set(varHeute, Today());
+                  Set(varTag, Today());
+                  Set(varTagText, Text(Today(), "yyyy-mm-dd"));
+                  Reset(ddStartTag);
+                  Select(btnStartTagLaden)
+              )
+            Repeat: =true
+            Visible: =false
+            Width: =10
+      - conStartLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(244, 245, 249, 0.75)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnStartLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  Text: =""
+                  Width: =Parent.Width
+            - lblStartLaden:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =18
+                  Text: ="Bitte warten …"
+                  Width: =Parent.Width
+                  Y: =(Parent.Height - 40) / 2
+      - conStartOffen:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =clrFehler
+            BorderThickness: =1
+            Fill: =clrFehlerHell
+            Height: =96
+            Visible: =CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute)) > 0
+            Width: =Parent.Width
+            Y: =Parent.Height - 96
+          Children:
+            - lblStartOffen:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrFehler
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  Size: =14
+                  Text: |-
+                    =With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText)), n: CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute))},
+                        "⚠  Nicht abgeschlossen: " & o.RundgangName & " vom " & Text(DateValue(o.TagText), "dd.mm.yyyy") & If(n > 1, " (und " & (n - 1) & " weitere)", ""))
+                  Width: =Parent.Width - 260
+                  X: =24
+                  Y: =16
+            - btnStartOffen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  Fill: =clrFehler
+                  Font: =Font.'Segoe UI'
+                  Height: =56
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrFehler, -15%)
+                  OnSelect: |-
+                    =If(!varIsLoading,
+                        With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText))},
+                            If(!IsBlank(o),
+                                Set(varTag, DateValue(o.TagText));
+                                Set(varTagText, o.TagText);
+                                Set(varRgID, o.RundgangID);
+                                Set(varSchluessel, o.Title);
+                                Set(varDurchID, o.ID);
+                                Navigate(scrRundgang, ScreenTransition.None)
+                            )
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrFehler, -30%)
+                  Size: =16
+                  Text: ="Öffnen"
+                  Width: =196
+                  X: =Parent.Width - 220
+                  Y: =20

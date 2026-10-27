@@ -1,0 +1,738 @@
+# ************************************************************************************************
+# Warning: YAML source code for Canvas Apps should only be used to review changes made within Power Apps Studio and for minor edits (Preview).
+# Use the maker portal to create and edit your Power Apps.
+# 
+# The schema file for Canvas Apps is available at https://go.microsoft.com/fwlink/?linkid=2304907
+# 
+# For more information, visit https://go.microsoft.com/fwlink/?linkid=2292623
+# ************************************************************************************************
+Screens:
+  scrKategorie:
+    Properties:
+      Fill: =clrHintergrund
+      LoadingSpinner: =LoadingSpinner.Data
+      LoadingSpinnerColor: =clrPrimaer
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        Set(varZurueckFrage, false);
+        Set(varAlleIOFrage, false);
+        Set(varZeigeFehlend, false);
+        Set(varFotoPP, 0);
+        Clear(colFotos);
+        Set(varGeaendert, false);
+        Set(varSchluesselK, "D" & varDurchID & "-K" & varKatID);
+        Set(varNurLesen, varDurch.Status <> stInArbeit);
+        Refresh(RG_KategorieErgebnisse);
+        Concurrent(
+            ClearCollect(colPP, Filter(RG_Pruefpunkte, KategorieID = varKatID && Aktiv = true)),
+            Set(varErgebnis, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK))
+        );
+        Set(varGespeichertBeimOeffnen, varErgebnis.GespeichertAm);
+        With({t: If(IsBlank(varErgebnis.Antworten), Table(ParseJSON("[]")), Table(ParseJSON(varErgebnis.Antworten)))},
+            If(varNurLesen && !IsEmpty(t),
+                // (3) Nur-Ansicht: genau das anzeigen, was gespeichert wurde (unabhängig von späteren Stammdaten-Änderungen)
+                ClearCollect(colAntworten,
+                    ForAll(Sequence(CountRows(t)) As i,
+                        With({a: Index(t, i.Value).Value},
+                            With({pp: LookUp(colPP, ID = Value(a.PruefpunktID))},
+                                {PruefpunktID: Value(a.PruefpunktID), Frage: Text(a.Frage), Typ: Text(a.Typ), Pflicht: false, Einheit: Coalesce(Text(a.Einheit), ""), MinWert: pp.MinWert, MaxWert: pp.MaxWert, Auswahl: Coalesce(Text(a.WertText), ""), Hinweis: "", Reihenfolge: i.Value,
+                                 Bewertung: Coalesce(Text(a.Bewertung), ""), WertText: Coalesce(Text(a.WertText), ""), WertZahl: Value(a.WertZahl), Kommentar: Coalesce(Text(a.Kommentar), ""), Fotos: Coalesce(Text(a.Fotos), ""), FotoMoeglich: Coalesce(pp.FotoMoeglich, false), Inaktiv: false}
+                            )
+                        )
+                    )
+                ),
+                // Bearbeiten: aktive Prüfpunkte aus den Stammdaten, vorbelegt aus dem gespeicherten JSON
+                ClearCollect(colAntworten,
+                    ForAll(Sort(colPP, RgReihenfolge) As p,
+                        With({alt: LookUp(t As j, Value(j.Value.PruefpunktID) = p.ID)},
+                            {PruefpunktID: p.ID, Frage: p.Title, Typ: p.Eingabetyp.Value, Pflicht: p.Pflicht, Einheit: Coalesce(p.Einheit, ""), MinWert: p.MinWert, MaxWert: p.MaxWert, Auswahl: Coalesce(p.Auswahlwerte, ""), Hinweis: Coalesce(p.Hinweis, ""), Reihenfolge: p.RgReihenfolge,
+                             Bewertung: If(IsBlank(alt), "", p.Eingabetyp.Value = "ZAHL" && !IsBlank(alt.Value.WertZahl), fnZahlBewertung(Value(alt.Value.WertZahl), p.MinWert, p.MaxWert), Coalesce(Text(alt.Value.Bewertung), "")),
+                             WertText: If(IsBlank(alt), "", Coalesce(Text(alt.Value.WertText), "")),
+                             WertZahl: If(IsBlank(alt), Blank(), Value(alt.Value.WertZahl)),
+                             Kommentar: If(IsBlank(alt), "", Coalesce(Text(alt.Value.Kommentar), "")),
+                             Fotos: If(IsBlank(alt), "", Coalesce(Text(alt.Value.Fotos), "")),
+                             Inaktiv: false}
+                        )
+                    )
+                );
+                // (3b) Antworten inzwischen deaktivierter Prüfpunkte unverändert mitführen: ausgeblendet, gehen beim Speichern nicht verloren
+                Collect(colAntworten,
+                    ForAll(Filter(t As j2, IsBlank(LookUp(colPP, ID = Value(j2.Value.PruefpunktID)))) As o,
+                        {PruefpunktID: Value(o.Value.PruefpunktID), Frage: Text(o.Value.Frage), Typ: Text(o.Value.Typ), Pflicht: false, Einheit: Coalesce(Text(o.Value.Einheit), ""), MinWert: Blank(), MaxWert: Blank(), Auswahl: "", Hinweis: "", Reihenfolge: 100000 + Value(o.Value.PruefpunktID),
+                         Bewertung: Coalesce(Text(o.Value.Bewertung), ""), WertText: Coalesce(Text(o.Value.WertText), ""), WertZahl: Value(o.Value.WertZahl), Kommentar: Coalesce(Text(o.Value.Kommentar), ""), Fotos: Coalesce(Text(o.Value.Fotos), ""), FotoMoeglich: false, Inaktiv: true}
+                    )
+                )
+            )
+        );
+        // (8) Liste immer oben beginnen
+        Set(varSprungRec, First(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge)));
+        Reset(galKaPruefpunkte);
+        Set(varIsLoading, false)
+    Children:
+      - conKaKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaer
+            Height: =136
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - btnKaZurueck:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Left
+                  BorderThickness: =0
+                  Color: =Color.White
+                  Fill: =If(varZurueckFrage, clrFehler, RGBA(0, 0, 0, 0))
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.12)
+                  OnSelect: |-
+                    =If(varGeaendert && !varNurLesen && !varZurueckFrage,
+                        Set(varZurueckFrage, true),
+                        Set(varZurueckFrage, false);
+                        Navigate(scrRundgang, ScreenTransition.None)
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.2)
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Text: =If(varZurueckFrage, "‹  Verwerfen? Erneut tippen", "‹  Kategorien")
+                  Width: =280
+                  X: =8
+                  Y: =8
+            - lblKaTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =24
+                  Text: =varKatName
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =56
+            - lblKaUnter:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =RGBA(255, 255, 255, 0.85)
+                  Font: =Font.'Segoe UI'
+                  Height: =28
+                  Size: =14
+                  Text: =varBereichName & "  ·  Kategorie " & varKatPos & " von " & CountRows(colKatListe) & If(varNurLesen, "  ·  nur Ansicht", "  ·  " & (CountRows(Filter(colAntworten, !Inaktiv)) - Value(lblKaFehlendAnzahl.Text)) & " von " & CountRows(Filter(colAntworten, !Inaktiv)) & " ausgefüllt")
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =96
+      - galKaPruefpunkte:
+          Control: Gallery@2.15.0
+          Variant: VariableHeight
+          Properties:
+            AccessibleLabel: ="Prüfpunkte der Kategorie " & varKatName
+            Default: =varSprungRec
+            Height: =Parent.Height - 144 - 112
+            Items: =Sort(Filter(colAntworten, !Inaktiv), Reihenfolge)
+            ShowScrollbar: =false
+            TemplatePadding: =0
+            TemplateSize: =180
+            Width: =Parent.Width
+            Y: =144
+          Children:
+            - conKaKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =If(ThisItem.Bewertung = "NIO" || (varZeigeFehlend && fnFehlt(ThisItem.Typ, ThisItem.Pflicht, ThisItem.Bewertung, ThisItem.WertText, ThisItem.WertZahl, ThisItem.Kommentar)), clrFehler, clrRahmen)
+                  BorderThickness: =If(ThisItem.Bewertung = "NIO" || (varZeigeFehlend && fnFehlt(ThisItem.Typ, ThisItem.Pflicht, ThisItem.Bewertung, ThisItem.WertText, ThisItem.WertZahl, ThisItem.Kommentar)), 2, 1)
+                  Fill: =clrKarte
+                  Height: =54 + If(ThisItem.Hinweis <> "", 24, 0) + 56 + If(ThisItem.Bewertung = "NIO", 68, If(Coalesce(LookUp(colPP, ID = ThisItem.PruefpunktID).FotoMoeglich, false), 64, 0)) + 20
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =Parent.TemplateWidth - 48
+                  X: =24
+                  Y: =8
+                Children:
+                  - lblKaFrage:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =32
+                        Size: =17
+                        Text: =ThisItem.Frage & If(ThisItem.Pflicht, "  *", "")
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =14
+                  - lblKaHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =If(ThisItem.Hinweis <> "", 24, 0)
+                        Text: =ThisItem.Hinweis
+                        Visible: =ThisItem.Hinweis <> ""
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =46
+                  - btnKaIO:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrErfolg
+                        Color: =If(ThisItem.Bewertung = "IO", Color.White, clrErfolg)
+                        DisabledBorderColor: =clrErfolg
+                        DisabledColor: =Self.Color
+                        DisabledFill: =Self.Fill
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        Fill: =If(ThisItem.Bewertung = "IO", clrErfolg, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverColor: =Self.Color
+                        HoverFill: =If(ThisItem.Bewertung = "IO", ColorFade(clrErfolg, -15%), clrErfolgHell)
+                        OnSelect: |-
+                          =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {Bewertung: If(ThisItem.Bewertung = "IO", "", "IO")});
+                          Set(varGeaendert, true)
+                        PressedColor: =Color.White
+                        PressedFill: =clrErfolg
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =17
+                        Text: ="i.O."
+                        Visible: =ThisItem.Typ = "IONIO"
+                        X: =20
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - btnKaNIO:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrFehler
+                        Color: =If(ThisItem.Bewertung = "NIO", Color.White, clrFehler)
+                        DisabledBorderColor: =clrFehler
+                        DisabledColor: =Self.Color
+                        DisabledFill: =Self.Fill
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        Fill: =If(ThisItem.Bewertung = "NIO", clrFehler, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverColor: =Self.Color
+                        HoverFill: =If(ThisItem.Bewertung = "NIO", ColorFade(clrFehler, -15%), clrFehlerHell)
+                        OnSelect: |-
+                          =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {Bewertung: If(ThisItem.Bewertung = "NIO", "", "NIO")});
+                          Set(varGeaendert, true)
+                        PressedColor: =Color.White
+                        PressedFill: =clrFehler
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =17
+                        Text: ="n.i.O."
+                        Visible: =ThisItem.Typ = "IONIO"
+                        X: =196
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - ddKaAuswahl:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: |-
+                          ="Auswahl: " & ThisItem.Frage
+                        AllowEmptySelection: =true
+                        BorderColor: =clrRahmen
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: =ThisItem.WertText
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverFill: =clrPrimaerHell
+                        Items: =Split(ThisItem.Auswahl, ";")
+                        Items.Value: =Value
+                        OnChange: |-
+                          =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Coalesce(Self.Selected.Value, "")});
+                          Set(varGeaendert, true)
+                        PaddingLeft: =12
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =16
+                        Visible: =ThisItem.Typ = "AUSWAHL"
+                        Width: =Min(460, Parent.Width - 40)
+                        X: =20
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - txtKaZahl:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: |-
+                          ="Messwert in " & ThisItem.Einheit & ": " & ThisItem.Frage
+                        BorderColor: =If(ThisItem.Bewertung = "NIO", clrFehler, clrRahmen)
+                        Color: =clrText
+                        Default: =If(IsBlank(ThisItem.WertZahl), "", Text(ThisItem.WertZahl))
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Format: =TextFormat.Number
+                        Height: =56
+                        HintText: ="Wert"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =With({z: IfError(Value(Self.Text), Blank())},
+                              Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertZahl: z, Bewertung: If(IsBlank(z), "", fnZahlBewertung(z, ThisItem.MinWert, ThisItem.MaxWert))})
+                          );
+                          Set(varGeaendert, true)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =18
+                        Visible: =ThisItem.Typ = "ZAHL"
+                        Width: =200
+                        X: =20
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - lblKaZahlInfo:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.Bewertung = "NIO", clrFehler, clrTextGrau)
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        Size: =14
+                        Text: =Trim(ThisItem.Einheit & If(IsBlank(ThisItem.MinWert) && IsBlank(ThisItem.MaxWert), "", "  ·  Soll " & If(IsBlank(ThisItem.MinWert), "", "ab " & ThisItem.MinWert & " ") & If(IsBlank(ThisItem.MaxWert), "", "bis " & ThisItem.MaxWert)) & If(ThisItem.Bewertung = "NIO", "  ·  außerhalb des Sollbereichs", ""))
+                        Visible: =ThisItem.Typ = "ZAHL"
+                        Width: =Parent.Width - 256
+                        X: =236
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - txtKaText:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: |-
+                          ="Eingabe: " & ThisItem.Frage
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        Default: =ThisItem.WertText
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HintText: ="Eingabe"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Self.Text});
+                          Set(varGeaendert, true)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =16
+                        Visible: =ThisItem.Typ = "TEXT"
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
+                  - txtKaKommentar:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: |-
+                          ="Kommentar zum Mangel: " & ThisItem.Frage
+                        BorderColor: =If(Trim(ThisItem.Kommentar) = "", clrFehler, clrRahmen)
+                        Color: =clrText
+                        Default: =ThisItem.Kommentar
+                        DisplayMode: =If(varNurLesen, DisplayMode.View, DisplayMode.Edit)
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HintText: ="Kommentar zum Mangel (Pflicht)"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {Kommentar: Self.Text});
+                          Set(varGeaendert, true)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
+                        Size: =16
+                        Visible: =ThisItem.Bewertung = "NIO"
+                        Width: |-
+                          =
+                          Parent.Width - 196
+                        X: =20
+                        Y: =54 + If(ThisItem.Hinweis <> "", 24, 0) + 68
+                  - btnKaFoto:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrFehler
+                        BorderThickness: =1
+                        Color: =clrFehler
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverColor: =clrFehler
+                        HoverFill: =clrFehlerHell
+                        OnSelect: =Set(varFotoPP, ThisItem.PruefpunktID)
+                        PressedColor: =clrFehler
+                        PressedFill: =clrFehlerHell
+                        Text: |-
+                          =With({n: CountRows(Filter(colFotos, PruefpunktID = ThisItem.PruefpunktID)) + If(IsBlank(ThisItem.Fotos), 0, CountRows(Split(ThisItem.Fotos, " | ")))},
+                              "📷 Foto" & If(n > 0, " (" & n & ")", "")
+                          )
+                        Visible: =ThisItem.Bewertung = "NIO" || Coalesce(LookUp(colPP, ID = ThisItem.PruefpunktID).FotoMoeglich, false)
+                        Width: =144
+                        X: =Parent.Width - 164
+                        Y: |+
+                          =54 + If(ThisItem.Hinweis <> "", 24, 0) + If(ThisItem.Bewertung = "NIO", 68, 56)
+            - lblKaAbstand:
+                Control: Label@2.5.1
+                Properties:
+                  Height: =8
+                  Text: =ThisItem.Auswahl
+                  Width: =10
+                  Y: =8 + 54 + If(ThisItem.Hinweis <> "", 24, 0) + 56 + If(ThisItem.Bewertung = "NIO", 68, 0) + 20
+      - lblKaFehlendAnzahl:
+          Control: Label@2.5.1
+          Properties:
+            Height: =10
+            Text: =CountRows(Filter(colAntworten, !Inaktiv && fnFehlt(Typ, Pflicht, Bewertung, WertText, WertZahl, Kommentar)))
+            Visible: =false
+            Width: =10
+      - lblKaFehlend:
+          Control: Label@2.5.1
+          Properties:
+            Height: =10
+            Text: =Concat(Filter(Sort(colAntworten, Reihenfolge), !Inaktiv && fnFehlt(Typ, Pflicht, Bewertung, WertText, WertZahl, Kommentar)), Frage & If(Bewertung = "NIO" && Trim(Kommentar) = "", " (Kommentar)", ""), "; ")
+            Visible: =false
+            Width: =10
+      - conKaFuss:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            Fill: =clrKarte
+            Height: =112
+            Width: =Parent.Width
+            Y: =Parent.Height - Self.Height
+          Children:
+            - lblKaStand:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(!varNurLesen && Value(lblKaFehlendAnzahl.Text) = 0, clrErfolg, clrTextGrau)
+                  Font: =Font.'Segoe UI'
+                  Height: =88
+                  Size: =14
+                  Text: |-
+                    =If(varNurLesen, "Nur Ansicht – der Rundgang ist nicht mehr in Arbeit.", Value(lblKaFehlendAnzahl.Text) = 0, "✓  Alles ausgefüllt" & With({n: CountRows(Filter(colAntworten, !Inaktiv && Bewertung = "NIO"))}, If(n > 0, " · " & n & " n.i.O.", "")), "Noch offen (" & lblKaFehlendAnzahl.Text & "): " & lblKaFehlend.Text)
+                  Width: =Parent.Width - If(varNurLesen, 48, 280)
+                  X: =24
+                  Y: =12
+            - btnKaSpeichern:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =If(Value(lblKaFehlendAnzahl.Text) > 0, clrPrimaer, Color.White)
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =If(Value(lblKaFehlendAnzahl.Text) > 0, clrPrimaerHell, clrPrimaer)
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(
+                        // (9) noch etwas offen → zum ersten offenen Punkt springen und offene Karten rot markieren
+                        Value(lblKaFehlendAnzahl.Text) > 0,
+                            Set(varZeigeFehlend, true);
+                            Set(varSprungRec, First(Filter(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge), fnFehlt(Typ, Pflicht, Bewertung, WertText, WertZahl, Kommentar))));
+                            Reset(galKaPruefpunkte),
+                        !varIsLoading && Now() >= varSperreBis,
+                            Set(varIsLoading, true);
+                            Set(varPatchFehler, false);
+                            Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));
+                            Concurrent(
+                                ClearCollect(colErledigt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, KategorieID, AnzahlNIO, GespeichertAm, PrueferName)),
+                                Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID))
+                            );
+                            With({durch: varDurch, erg: LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)},
+                                If(
+                                    CountRows(Filter(colAntworten, !Inaktiv)) = 0,
+                                        Notify("Diese Kategorie hat keine aktiven Prüfpunkte. Bitte die Stammdaten prüfen lassen.", NotificationType.Error),
+                                    Value(lblKaFehlendAnzahl.Text) > 0,
+                                        Notify("Bitte noch ausfüllen: " & lblKaFehlend.Text, NotificationType.Warning),
+                                    durch.Status <> stInArbeit,
+                                        Notify("Der Rundgang ist nicht mehr in Arbeit – Änderungen sind nicht möglich.", NotificationType.Error),
+                                    !IsBlank(erg) && erg.GespeichertAm <> varGespeichertBeimOeffnen,
+                                        Notify("Diese Kategorie wurde inzwischen von " & erg.PrueferName & " gespeichert. Bitte zurück und neu öffnen.", NotificationType.Error),
+                                    IsBlank(erg) && CountRows(Filter(colKatListe As kl, kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e, e.KategorieID = kl.KategorieID)))) > 0,
+                                        Notify("Bitte zuerst die vorherigen Kategorien abschließen.", NotificationType.Warning),
+                                    // (F1) neue Fotos hochladen – nur für Punkte, die (noch) n.i.O. sind; schon hochgeladene (Url gesetzt) nicht erneut
+                                    ClearCollect(colFotoNeu, Filter(colFotos As f0, IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0, a0.PruefpunktID = f0.PruefpunktID)}, a.Bewertung = "NIO" || Coalesce(LookUp(colPP, ID = a.PruefpunktID).FotoMoeglich, false))));
+                                    ForAll(colFotoNeu As f,
+                                        Patch(colFotos, LookUp(colFotos, Nr = f.Nr),
+                                            {Url: With({ordner: fnArchivOrdner(durch.TagText, durch.TestDatensatz) & "/" & durch.Title}, If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild, name: f.Datei}, f.Datei, ordner, varDurchID, f.PruefpunktID, durch.TestDatensatz)), "", fnSpUrl("RG_Fotos", ordner & "/" & f.Datei)))})
+                                    );
+                                    If(CountRows(Filter(colFotos As f1, IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1, a1.PruefpunktID = f1.PruefpunktID)}, a.Bewertung = "NIO" || Coalesce(LookUp(colPP, ID = a.PruefpunktID).FotoMoeglich, false)))) > 0,
+                                        Notify(CountRows(Filter(colFotos As f2, IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2, a2.PruefpunktID = f2.PruefpunktID)}, a.Bewertung = "NIO" || Coalesce(LookUp(colPP, ID = a.PruefpunktID).FotoMoeglich, false)))) & " Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen.", NotificationType.Error),
+                                        // (F2) Links der neuen Fotos an die Antworten hängen (nur einmal je Foto)
+                                        ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url)), PruefpunktID) As d,
+                                            Patch(colAntworten, LookUp(colAntworten, PruefpunktID = d.Value),
+                                                {Fotos: With({alt: LookUp(colAntworten, PruefpunktID = d.Value).Fotos, neu: Concat(Filter(colFotos, PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)), Url, " | ")},
+                                                    If(IsBlank(alt), neu, alt & " | " & neu))})
+                                        );
+                                        UpdateIf(colFotos, !Uebernommen && !IsBlank(Url), {Uebernommen: true});
+                                        Set(varAntwortJSON, JSON(ShowColumns(colAntworten, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos), JSONFormat.Compact));
+                                        IfError(
+                                            Patch(RG_KategorieErgebnisse, If(IsBlank(erg), Defaults(RG_KategorieErgebnisse), erg),
+                                                {Title: varSchluesselK, DurchfuehrungID: varDurchID, TagText: durch.TagText, KategorieID: varKatID, Position: varKatPos, BereichName: varBereichName, KategorieName: varKatName, Antworten: varAntwortJSON, AnzahlNIO: CountRows(Filter(colAntworten, Bewertung = "NIO")), PrueferEmail: User().Email, PrueferName: User().FullName, GespeichertAm: Now(), TestDatensatz: durch.TestDatensatz}),
+                                            Set(varPatchFehler, true)
+                                        );
+                                        Refresh(RG_KategorieErgebnisse);
+                                        Set(varNachlese, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK));
+                                        If(varNachlese.Antworten = varAntwortJSON,
+                                            Set(varGeaendert, false);
+                                            Clear(colFotos);
+                                            Notify("Gespeichert.", NotificationType.Success);
+                                            // (7) die Übersicht öffnet danach selbst die nächste offene Kategorie
+                                            Set(varWeiter, true);
+                                            Navigate(scrRundgang, ScreenTransition.None),
+                                            Notify("Speichern wurde nicht bestätigt. Bitte erneut tippen." & If(varPatchFehler, " (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)", ""), NotificationType.Error)
+                                        )
+                                    )
+                                )
+                            );
+                            Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));
+                            Set(varIsLoading, false)
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  Size: =18
+                  Text: =If(Value(lblKaFehlendAnzahl.Text) > 0, "Offene Punkte ↓", CountRows(Filter(colKatListe As k, k.KategorieID <> varKatID && IsBlank(LookUp(colErledigt As e, e.KategorieID = k.KategorieID)))) > 0, "Speichern & weiter", "Speichern")
+                  Visible: =!varNurLesen
+                  Width: =224
+                  X: =Parent.Width - 248
+                  Y: =24
+      - conKaLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(244, 245, 249, 0.75)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnKaLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  Text: =""
+                  Width: =Parent.Width
+            - lblKaLaden:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =18
+                  Text: ="Bitte warten …"
+                  Width: =Parent.Width
+                  Y: =(Parent.Height - 40) / 2
+      - conKaBalken:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =clrPrimaerHell
+            Height: =6
+            Visible: =!varNurLesen
+            Width: =Parent.Width
+            Y: =136
+          Children:
+            - conKaBalkenWert:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =If(Value(lblKaFehlendAnzahl.Text) = 0, clrErfolg, clrPrimaer)
+                  Height: =Parent.Height
+                  Width: |-
+                    =Parent.Width * With({n: CountRows(Filter(colAntworten, !Inaktiv))}, If(n = 0, 0, (n - Value(lblKaFehlendAnzahl.Text)) / n))
+      - conKaFoto:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0.45)
+            Height: =Parent.Height
+            Visible: =varFotoPP > 0
+            Width: =Parent.Width
+          Children:
+            - btnKaFotoSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Height: =Parent.Height
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  Text: =""
+                  Width: =Parent.Width
+            - conKaFotoKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  Fill: =clrKarte
+                  Height: =Min(Parent.Height - 32, 680)
+                  RadiusBottomLeft: =16
+                  RadiusBottomRight: =16
+                  RadiusTopLeft: =16
+                  RadiusTopRight: =16
+                  Width: =Parent.Width - 48
+                  X: =24
+                  Y: =(Parent.Height - Self.Height) / 2
+                Children:
+                  - lblKaFotoTitel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Size: =18
+                        Text: ="Fotos – " & LookUp(colAntworten, PruefpunktID = varFotoPP).Frage
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =16
+                  - lblKaFotoHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Text: ="Bitte keine Personen fotografieren. Neue Fotos werden beim „Speichern“ hochgeladen."
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =56
+                  - galKaFotoNeu:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =220
+                        Items: =Filter(colFotos, PruefpunktID = varFotoPP)
+                        TemplatePadding: =8
+                        TemplateSize: =200
+                        Width: =Parent.Width - 40
+                        WrapCount: =3
+                        X: =20
+                        Y: =176
+                      Children:
+                        - btnKaFotoEntfernen:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderThickness: =0
+                              Color: =Color.White
+                              DisplayMode: =If(IsBlank(ThisItem.Url), DisplayMode.Edit, DisplayMode.Disabled)
+                              Fill: =clrFehler
+                              OnSelect: =Remove(colFotos, ThisItem)
+                              RadiusBottomLeft: =20
+                              RadiusBottomRight: =20
+                              RadiusTopLeft: =20
+                              RadiusTopRight: =20
+                              Text: ="✕"
+                              Width: =40
+                              X: =Parent.TemplateWidth - 48
+                              Y: =8
+                        - imgKaFotoNeu:
+                            Control: Image@2.2.3
+                            Properties:
+                              Height: =Parent.TemplateHeight - 8
+                              Image: =ThisItem.Bild
+                              ImagePosition: =ImagePosition.Fill
+                              Width: =Parent.TemplateWidth - 8
+                  - lblKaFotoAlt:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Text: ="Bereits gespeichert:"
+                        Visible: =galKaFotoAlt.AllItemsCount > 0
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =404
+                  - galKaFotoAlt:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        Height: =Max(60, Parent.Height - 436 - 88)
+                        Items: |-
+                          =Filter(
+                              ForAll(Split(Coalesce(LookUp(colAntworten, PruefpunktID = varFotoPP).Fotos, ""), " | ") As s, {Url: Trim(s.Value)}),
+                              !IsBlank(Url)
+                          )
+                        TemplatePadding: =4
+                        TemplateSize: =52
+                        Width: =Parent.Width - 40
+                        X: =20
+                        Y: =436
+                      Children:
+                        - btnKaFotoAltOeffnen:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              Align: =Align.Left
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Color: =clrPrimaer
+                              Fill: =clrKarte
+                              Height: =44
+                              OnSelect: =Launch(ThisItem.Url)
+                              Text: |-
+                                ="📷  Gespeichertes Foto öffnen"
+                              Width: =Parent.TemplateWidth - 8
+                  - btnKaFotoFertig:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        Fill: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =56
+                        HoverFill: =ColorFade(clrPrimaer, -20%)
+                        OnSelect: =Set(varFotoPP, 0)
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        Size: =17
+                        Text: ="Fertig"
+                        Width: =200
+                        X: =Parent.Width - 220
+                        Y: =Parent.Height - 76
+                  - addKaFoto:
+                      Control: AddMedia@2.2.1
+                      Properties:
+                        BorderColor: =RGBA(0, 18, 107, 1)
+                        Height: |+
+                          =64
+                        OnChange: |-
+                          =If(!IsBlank(Self.Media),
+                              // Dateiname schon jetzt festlegen: bei einem Wiederholungsversuch entsteht keine zweite Datei
+                              Collect(colFotos, {PruefpunktID: varFotoPP, Nr: Coalesce(Max(colFotos, Nr), 0) + 1, Bild: Self.Media, Datei: varSchluesselK & "-P" & varFotoPP & "-" & Left(Text(GUID()), 8) & ".jpg", Url: "", Uebernommen: false});
+                              Set(varGeaendert, true);
+                              Reset(Self)
+                          )
+                        Size: =25
+                        Text: |+
+                          ="Foto aufnehmen / auswählen"
+                        Visible: |+
+                          =!varNurLesen
+                        Width: |+
+                          =Parent.Width - 40
+                        X: |+
+                          =20
+                        Y: |+
+                          =96
