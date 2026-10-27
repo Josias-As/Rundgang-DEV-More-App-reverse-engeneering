@@ -1,0 +1,239 @@
+SIMULATION: UpdateIf von 08:44 vor Set(varAntwortJSON eingefügt (nur Entwurf).
+== Paket 1: 24 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  scrKategorie.OnVisible           ok
+  txtKaZahl.OnChange               ok
+  conKaKarte.BorderColor           ok
+  conKaKarte.BorderThickness       ok
+  conKaKarte.Height                ok
+  lblKaAbstand.Y                   ok
+  txtKaKommentar.Visible           ok
+  btnKaFoto.Visible                ok
+  btnKaFoto.Y                      ok
+  btnKaFoto.Text                   ok
+  btnKaFoto.BorderColor            ok
+  btnKaFoto.Color                  ok
+  btnKaFoto.HoverColor             ok
+  btnKaFoto.PressedColor           ok
+  btnKaFoto.HoverFill              ok
+  btnKaFoto.PressedFill            ok
+  lblKaFehlendAnzahl.Text          ok
+  lblKaFehlend.Text                ok
+  btnKaSpeichern.OnSelect          ok
+  lblKaFotoHinweis.Text            ok
+  addKaFoto.Size                   ok
+  imgKaFotoNeu.Y                   ok
+  imgKaFotoNeu.Height              ok
+== Paket 2: 5 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  scrKategorie.OnVisible           ok
+  txtKaKommentar.HintText          ok
+  txtKaKommentar.AccessibleLabel   ok
+  htmProtokoll.HtmlText            ok
+== Paket 3: 5 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  scrKategorie.OnVisible           ok
+  lblKaZahlInfo.Text               ok
+  lblKaZahlInfo.Color              ok
+  txtKaZahl.BorderColor            ok
+== Paket 4: 10 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  scrKategorie.OnVisible           ok
+  galKaPruefpunkte.Items           ok
+  lblKaFehlendAnzahl.Text          ok
+  lblKaFehlend.Text                ok
+  lblKaUnter.Text                  ok
+  conKaBalkenWert.Width            ok
+  lblKaStand.Text                  ok
+  btnKaSpeichern.OnSelect          ok
+  htmProtokoll.HtmlText            ok
+== Paket 5: 1 Properties, neue Steuerelemente: cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute
+  App.Formulas                     ok
+  cboKaMehrfach.Items              ok
+  cboKaMehrfach.DisplayFields      ok
+  cboKaMehrfach.SearchFields       ok
+  cboKaMehrfach.SelectMultiple     ok
+  cboKaMehrfach.IsSearchable       ok
+  cboKaMehrfach.DefaultSelectedItems ok
+  cboKaMehrfach.OnChange           ok
+  cboKaMehrfach.InputTextPlaceholder ok
+  cboKaMehrfach.AccessibleLabel    ok
+  cboKaMehrfach.DisplayMode        ok
+  cboKaMehrfach.Visible            ok
+  cboKaMehrfach.BorderColor        ok
+  cboKaMehrfach.ChevronBackground  ok
+  cboKaMehrfach.ChevronFill        ok
+  cboKaMehrfach.SelectionFill      ok
+  cboKaMehrfach.SelectionColor     ok
+  cboKaMehrfach.Font               ok
+  cboKaMehrfach.Size               ok
+  cboKaMehrfach.X                  ok
+  cboKaMehrfach.Y                  ok
+  cboKaMehrfach.Width              ok
+  cboKaMehrfach.Height             ok
+  dpKaDatum.AccessibleLabel        ok
+  dpKaDatum.BorderColor            ok
+  dpKaDatum.Color                  ok
+  dpKaDatum.DefaultDate            ok
+  dpKaDatum.DisplayMode            ok
+  dpKaDatum.Font                   ok
+  dpKaDatum.Height                 ok
+  dpKaDatum.IconBackground         ok
+  dpKaDatum.IconFill               ok
+  dpKaDatum.OnChange               ok
+  dpKaDatum.Size                   ok
+  dpKaDatum.StartOfWeek            ok
+  dpKaDatum.Visible                ok
+  dpKaDatum.Width                  ok
+  dpKaDatum.X                      ok
+  dpKaDatum.Y                      ok
+  ddKaStunde.AccessibleLabel       ok
+  ddKaStunde.AllowEmptySelection   ok
+  ddKaStunde.BorderColor           ok
+  ddKaStunde.ChevronBackground     ok
+  ddKaStunde.ChevronFill           ok
+  ddKaStunde.ChevronHoverBackground ok
+  ddKaStunde.ChevronHoverFill      ok
+  ddKaStunde.Color                 ok
+  ddKaStunde.Default               ok
+  ddKaStunde.DisplayMode           ok
+  ddKaStunde.Fill                  ok
+  ddKaStunde.Font                  ok
+  ddKaStunde.Height                ok
+  ddKaStunde.HoverFill             ok
+  ddKaStunde.Items                 ok
+  ddKaStunde.Items.Value           ok
+  ddKaStunde.OnChange              ok
+  ddKaStunde.PaddingLeft           ok
+  ddKaStunde.PressedColor          ok
+  ddKaStunde.PressedFill           ok
+  ddKaStunde.SelectionColor        ok
+  ddKaStunde.SelectionFill         ok
+  ddKaStunde.Size                  ok
+  ddKaStunde.Visible               ok
+  ddKaStunde.Width                 ok
+  ddKaStunde.X                     ok
+  ddKaStunde.Y                     ok
+  ddKaMinute.AccessibleLabel       ok
+  ddKaMinute.AllowEmptySelection   ok
+  ddKaMinute.BorderColor           ok
+  ddKaMinute.ChevronBackground     ok
+  ddKaMinute.ChevronFill           ok
+  ddKaMinute.ChevronHoverBackground ok
+  ddKaMinute.ChevronHoverFill      ok
+  ddKaMinute.Color                 ok
+  ddKaMinute.Default               ok
+  ddKaMinute.DisplayMode           ok
+  ddKaMinute.Fill                  ok
+  ddKaMinute.Font                  ok
+  ddKaMinute.Height                ok
+  ddKaMinute.HoverFill             ok
+  ddKaMinute.Items                 ok
+  ddKaMinute.Items.Value           ok
+  ddKaMinute.OnChange              ok
+  ddKaMinute.PaddingLeft           ok
+  ddKaMinute.PressedColor          ok
+  ddKaMinute.PressedFill           ok
+  ddKaMinute.SelectionColor        ok
+  ddKaMinute.SelectionFill         ok
+  ddKaMinute.Size                  ok
+  ddKaMinute.Visible               ok
+  ddKaMinute.Width                 ok
+  ddKaMinute.X                     ok
+  ddKaMinute.Y                     ok
+== Paket 6: 2 Properties, neue Steuerelemente: btnKaBild, conKaBild, btnKaBildSperre, conKaBildKarte, lblKaBildTitel, imgKaBild, btnKaBildSchliessen
+  scrKategorie.OnVisible           ok
+  lblKaFrage.Width                 ok
+  btnKaBild.BorderColor            ok
+  btnKaBild.BorderThickness        ok
+  btnKaBild.Color                  ok
+  btnKaBild.Fill                   ok
+  btnKaBild.Font                   ok
+  btnKaBild.Height                 ok
+  btnKaBild.HoverColor             ok
+  btnKaBild.HoverFill              ok
+  btnKaBild.OnSelect               ok
+  btnKaBild.PressedColor           ok
+  btnKaBild.PressedFill            ok
+  btnKaBild.RadiusBottomLeft       ok
+  btnKaBild.RadiusBottomRight      ok
+  btnKaBild.RadiusTopLeft          ok
+  btnKaBild.RadiusTopRight         ok
+  btnKaBild.Size                   ok
+  btnKaBild.Text                   ok
+  btnKaBild.Visible                ok
+  btnKaBild.Width                  ok
+  btnKaBild.X                      ok
+  btnKaBild.Y                      ok
+  conKaBild.Fill                   ok
+  conKaBild.Height                 ok
+  conKaBild.Visible                ok
+  conKaBild.Width                  ok
+  btnKaBildSperre.BorderThickness  ok
+  btnKaBildSperre.Fill             ok
+  btnKaBildSperre.Height           ok
+  btnKaBildSperre.HoverFill        ok
+  btnKaBildSperre.PressedFill      ok
+  btnKaBildSperre.Text             ok
+  btnKaBildSperre.Width            ok
+  conKaBildKarte.Fill              ok
+  conKaBildKarte.Height            ok
+  conKaBildKarte.RadiusBottomLeft  ok
+  conKaBildKarte.RadiusBottomRight ok
+  conKaBildKarte.RadiusTopLeft     ok
+  conKaBildKarte.RadiusTopRight    ok
+  conKaBildKarte.Width             ok
+  conKaBildKarte.X                 ok
+  conKaBildKarte.Y                 ok
+  lblKaBildTitel.Color             ok
+  lblKaBildTitel.Font              ok
+  lblKaBildTitel.FontWeight        ok
+  lblKaBildTitel.Height            ok
+  lblKaBildTitel.Size              ok
+  lblKaBildTitel.Text              ok
+  lblKaBildTitel.Width             ok
+  lblKaBildTitel.X                 ok
+  lblKaBildTitel.Y                 ok
+  imgKaBild.AccessibleLabel        ok
+  imgKaBild.Height                 ok
+  imgKaBild.Image                  ok
+  imgKaBild.ImagePosition          ok
+  imgKaBild.Width                  ok
+  imgKaBild.X                      ok
+  imgKaBild.Y                      ok
+  btnKaBildSchliessen.BorderThickness ok
+  btnKaBildSchliessen.Color        ok
+  btnKaBildSchliessen.Fill         ok
+  btnKaBildSchliessen.Font         ok
+  btnKaBildSchliessen.Height       ok
+  btnKaBildSchliessen.HoverFill    ok
+  btnKaBildSchliessen.OnSelect     ok
+  btnKaBildSchliessen.PressedFill  ok
+  btnKaBildSchliessen.Size         ok
+  btnKaBildSchliessen.Text         ok
+  btnKaBildSchliessen.Width        ok
+  btnKaBildSchliessen.X            ok
+  btnKaBildSchliessen.Y            ok
+  Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
+  Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
+  Paket 3: colAntworten hat in allen drei Zweigen dieselben 19 Felder
+  Paket 4: colAntworten hat in allen drei Zweigen dieselben 22 Felder
+  Paket 5: colAntworten hat in allen drei Zweigen dieselben 22 Felder
+  Paket 6: colAntworten hat in allen drei Zweigen dieselben 23 Felder
+Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
+Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
+  btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
+  btnKaFoto                      93 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto *'
+  lblKaFotoHinweis              536 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.'
+  lblKaFotoHinweis              632 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Keine Personen fotografieren. Fotos werden beim „Speichern“ hochgeladen.'
+  addKaFoto                     343 px (+10 %) / 660 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Foto aufnehmen / auswählen'
+  txtKaKommentar (Hinweis)      341 px (+10 %) / 500 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Kommentar zum Mangel (Pflicht)'
+  txtKaKommentar (Hinweis)      207 px (+10 %) / 500 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Kommentar (Pflicht)'
+  lblKaZahlInfo                 653 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb des Sollbereichs'
+  lblKaZahlInfo                 649 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb, bitte begründen'
+  lblKaZahlInfo                 620 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  unzulässig, bitte prüfen'
+  cboKaMehrfach (Platzhalter)   307 px (+10 %) / 400 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Auswählen (mehrere möglich)'
+  btnKaBild                     102 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Beispielbild'
+  btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
+
+Fehler gesamt: 0

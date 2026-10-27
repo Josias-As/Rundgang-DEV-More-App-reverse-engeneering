@@ -1,0 +1,60 @@
+Rückwärtsgleichheit: 4158 Kombinationen gleich (fnFehlt alt = neu bei Foto Aus/keine Kommentarpflicht/Mangel, fnZahlBewertung alt = neu bei Mangel), in allen Paketständen
+
+P1  ok    Foto Pflicht, kein Foto, sonst alles ausgefüllt                        erwartet 'Foto'       ist 'Foto'
+P1  ok    Foto Pflicht, 1 neues Foto (colFotos)                                  erwartet ''           ist ''
+P1  ok    Foto Pflicht, Foto schon gespeichert (Link)                            erwartet ''           ist ''
+P1  ok    Foto Pflicht, Punkt nicht Pflicht und unbeantwortet                    erwartet 'Foto'       ist 'Foto'
+P1  ok    Foto Optional, kein Foto                                               erwartet ''           ist ''
+P1  ok    n.i.O. ohne Kommentar und Foto Pflicht ohne Foto: Kommentar zuerst     erwartet 'Kommentar'  ist 'Kommentar'
+P1  ok    Pflicht-Wert fehlt vor allem anderen                                   erwartet 'Wert'       ist 'Wert'
+P1  ok    fnFotoModus: Spalte leer, FotoMoeglich Ja -> Optional                  erwartet 'Optional'   ist 'Optional'
+P1  ok    fnFotoModus: Spalte leer, FotoMoeglich Nein -> Aus                     erwartet 'Aus'        ist 'Aus'
+P1  ok    fnFotoModus: Spalte Aus schlägt FotoMoeglich Ja                        erwartet 'Aus'        ist 'Aus'
+P1  ok    fnLinkAnzahl leer                                                      erwartet 0            ist 0
+P1  ok    fnLinkAnzahl zwei Links                                                erwartet 2            ist 2
+P2  ok    Kommentarpflicht, i.O., kein Kommentar                                 erwartet 'Kommentar'  ist 'Kommentar'
+P2  ok    Kommentarpflicht, i.O., mit Kommentar                                  erwartet ''           ist ''
+P2  ok    Kommentarpflicht, optionaler Punkt unbeantwortet                       erwartet ''           ist ''
+P2  ok    Kommentarpflicht, Text-Punkt mit Eingabe ohne Kommentar                erwartet 'Kommentar'  ist 'Kommentar'
+P2  ok    ohne Kommentarpflicht, i.O. ohne Kommentar                             erwartet ''           ist ''
+P2  ok    Kommentar leeren beim Speichern: i.O. ohne Pflicht -> leeren           erwartet False        ist False
+P2  ok    Kommentar leeren beim Speichern: i.O. mit Pflicht -> behalten          erwartet True         ist True
+P3  ok    Mangel: 18,5 bei Soll 6–16 -> n.i.O.                                   erwartet 'NIO'        ist 'NIO'
+P3  ok    Warnen: 18,5 bei Soll 6–16 -> i.O. (kein Mangel)                       erwartet 'IO'         ist 'IO'
+P3  ok    Sperren: 18,5 bei Soll 6–16 -> unbewertet                              erwartet ''           ist ''
+P3  ok    Warnen: Wert im Bereich -> i.O.                                        erwartet 'IO'         ist 'IO'
+P3  ok    Warnen außerhalb: Kommentar Pflicht                                    erwartet 'Kommentar'  ist 'Kommentar'
+P3  ok    Warnen außerhalb mit Kommentar: vollständig                            erwartet ''           ist ''
+P3  ok    Sperren außerhalb: unzulässig, Speichern gesperrt                      erwartet 'Bereich'    ist 'Bereich'
+P3  ok    Sperren außerhalb mit Kommentar: trotzdem gesperrt                     erwartet 'Bereich'    ist 'Bereich'
+P3  ok    Sperren im Bereich: vollständig                                        erwartet ''           ist ''
+P3  ok    Grenze genau auf Min (6) ist im Bereich                                erwartet 'IO'         ist 'IO'
+P3  ok    fnGrenzmodus: leere Spalte -> Mangel                                   erwartet 'Mangel'     ist 'Mangel'
+P3  ok    fnGrenzmodus: unbekannter Wert -> Mangel                               erwartet 'Mangel'     ist 'Mangel'
+P4  ok    Bedingung NIO, A ist n.i.O. -> B sichtbar                              erwartet True         ist True
+P4  ok    Bedingung NIO, A ist i.O. -> B ausgeblendet                            erwartet False        ist False
+P4  ok    Bedingung NIO, A unbeantwortet -> B ausgeblendet                       erwartet False        ist False
+P4  ok    Bedingung klein geschrieben (nio)                                      erwartet True         ist True
+P4  ok    Bedingung * und A hat Text                                             erwartet True         ist True
+P4  ok    Bedingung * und A leer                                                 erwartet False        ist False
+P4  ok    Bedingung Auswahlwert                                                  erwartet True         ist True
+P4  ok    Bedingung Wert in Mehrfachauswahl                                      erwartet True         ist True
+P4  ok    Fehlkonfiguration: Punkt A nicht in der Kategorie -> B sichtbar        erwartet True         ist True
+P4  ok    Fehlkonfiguration: A selbst bedingt (Kette) -> B sichtbar              erwartet True         ist True
+P4  ok    Fehlkonfiguration: Bedingungswert leer -> B sichtbar                   erwartet True         ist True
+P4  ok    A deaktiviert (mitgeführt) -> B sichtbar                               erwartet True         ist True
+P4  ok    keine Bedingung (0) -> sichtbar                                        erwartet True         ist True
+P5  ok    Mehrfach Pflicht leer                                                  erwartet 'Wert'       ist 'Wert'
+P5  ok    Mehrfach Pflicht zwei Werte                                            erwartet ''           ist ''
+P5  ok    Datum Pflicht leer                                                     erwartet 'Wert'       ist 'Wert'
+P5  ok    Datum gesetzt                                                          erwartet ''           ist ''
+P5  ok    Datum+Uhrzeit nur Datum                                                erwartet 'Uhrzeit'    ist 'Uhrzeit'
+P5  ok    Datum+Uhrzeit optional, nur Datum -> trotzdem unvollständig            erwartet 'Uhrzeit'    ist 'Uhrzeit'
+P5  ok    Datum+Uhrzeit vollständig                                              erwartet ''           ist ''
+P5  ok    Datum+Uhrzeit optional leer                                            erwartet ''           ist ''
+P5  ok    fnDatumText nur Datum (DATUM)                                          erwartet '27.10.2026' ist '27.10.2026'
+P5  ok    fnDatumText Datum + Zeit                                               erwartet '27.10.2026 07:05' ist '27.10.2026 07:05'
+P5  ok    fnDatumText Zeit ohne Minute                                           erwartet '27.10.2026' ist '27.10.2026'
+P5  ok    fnDatumText ohne Datum                                                 erwartet ''           ist ''
+
+Szenarien: 56, Fehler: 0
