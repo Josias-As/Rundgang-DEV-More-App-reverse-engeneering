@@ -275,7 +275,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
             ForAll(Sequence(CountRows(qs)) As i,
                 With({q: Index(qs, i.Value)},
                     {Alt: q.ID,
-                     Neu: IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: q.Title & varKopieZusatz, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(colB, RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: varZielBAktiv, QuelleID: q.ID}).ID, 0)}
+                     Neu: IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: Left(q.Title & varKopieZusatz, 255), RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(colB, RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: varZielBAktiv, QuelleID: q.ID}).ID, 0)}
                 )
             )
         )
@@ -286,7 +286,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQB), varZielB, Coalesce(LookUp(colMapB, Alt = q.BereichID).Neu, 0))},
                         {Alt: q.ID,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: q.Title & If(IsEmpty(colQB), varKopieZusatz, ""), BereichID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQB) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colK, BereichID = varZielB), RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: true, QuelleID: q.ID}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: Left(q.Title & If(IsEmpty(colQB), varKopieZusatz, ""), 255), BereichID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQB) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colK, BereichID = varZielB), RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: true, QuelleID: q.ID}).ID, 0))}
                     )
                 )
             )
@@ -298,7 +298,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0)}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0)}).ID, 0))}
                     )
                 )
             )

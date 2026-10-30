@@ -1,0 +1,12 @@
+Ausgangslage: 0 Fehler
+Variable ohne Startwert                  gefunden
+Spalte im Patch falsch                   gefunden
+Auswahlspalte ohne {Value:}              gefunden
+Klammer fehlt                            gefunden
+Steuerelement unbekannt                  gefunden
+Funktion mit falscher Argumentanzahl     gefunden
+Sammlung nie gefüllt                     gefunden
+Kommentar in Formel                      gefunden
+Feld nach Punkt falsch                   gefunden
+Bildschirm unbekannt                     gefunden
+Ergebnis: 10/10
