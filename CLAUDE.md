@@ -24,6 +24,7 @@ Stand: 27.10.2026. Kennzeichnung: **belegt** (Export/Dokument), **gemessen**, **
 - `werkzeuge/logik_probe.py`: Python-Nachbildung der UDFs, Rückwärtsgleichheit und Szenarien.
 - `werkzeuge/mutation_baukasten.py`: Mutationstest der Prüfungen (9/9).
 - `werkzeuge/doc_baukasten.py` + `baukasten_text.py`: Paket- und Prüfdokumente in `pakete/`.
+- `werkzeuge/einbau_seite.py <Schlüssel>`: erzeugt `pakete/EINBAU_ASSISTENT.html` (Einbau-Seite mit Kopierfeldern, farbig markierten Änderungen, Häkchen). Nach jedem neuen Export `baukasten.py`, `doc_baukasten.py`, dann `einbau_seite.py` laufen lassen und die Seite neu veröffentlichen.
 
 ## 4. Formelregeln (Rundgang)
 - YAML-Quelltext englisch (`,` / `;`), Formelleiste deutsch (`;` / `;;`, Dezimalkomma). Immer die ganze Property.
