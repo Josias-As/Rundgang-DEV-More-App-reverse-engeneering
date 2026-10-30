@@ -238,12 +238,18 @@
   btnKaBildSchliessen.Width        ok
   btnKaBildSchliessen.X            ok
   btnKaBildSchliessen.Y            ok
+== Paket 7: 4 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  btnKaFoto.Visible                ok
+  btnKaFoto.Text                   ok
+  lblKaFotoHinweis.Text            ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
   Paket 4: colAntworten hat in allen drei Zweigen dieselben 23 Felder
   Paket 5: colAntworten hat in allen drei Zweigen dieselben 23 Felder
   Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
+  Paket 7: colAntworten hat in allen drei Zweigen dieselben 24 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
@@ -260,6 +266,7 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
   btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
   btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
+  lblKaFotoHinweis              559 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Mangel: mindestens ein Foto Pflicht. Keine Personen fotografieren.'
   lblKaBildTitel                734 px (+10 %) / 670 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen'
 
 Fehler gesamt: 0

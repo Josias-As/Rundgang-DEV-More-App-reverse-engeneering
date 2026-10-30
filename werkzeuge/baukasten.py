@@ -1,4 +1,4 @@
-"""Baukasten-Pakete 1-6 für die Rundgang-App aus dem Export erzeugen und prüfen.
+"""Baukasten-Pakete 1-7 für die Rundgang-App aus dem Export erzeugen und prüfen.
 
 Aufruf:  python3 -I werkzeuge/baukasten.py <Export-Schlüssel> [--simulation-0844]
 Jedes Paket baut auf dem Stand nach dem vorigen Paket auf. Jede Änderung ist eine exakte
@@ -560,7 +560,33 @@ def paket6(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6]
+# ---------------------------------------------------------------- Paket 7
+
+def paket7(st):
+    p = {"nr": 7, "props": [], "neu": []}
+    st.sp.append(("RG_Pruefpunkte", "Foto (+Bei Mangel Pflicht)", "Auswahl"))
+
+    def formulas(t):
+        t = rep(t, 'fnFotoModus(f: Text, alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht", f, alt, "Optional", "Aus");',
+                'fnFotoModus(f: Text, alt: Boolean): Text = If(f = "Aus" || f = "Optional" || f = "Pflicht", f, f = "Bei Mangel Pflicht", "BeiMangel", alt, "Optional", "Aus");')
+        t = rep(t, '    foto = "Pflicht" && fanz < 1, "Foto",',
+                '    (foto = "Pflicht" || (foto = "BeiMangel" && bew = "NIO")) && fanz < 1, "Foto",')
+        return t
+    aendern(st, p, "7.2", "App.Formulas", formulas)
+    aendern(st, p, "7.3", "btnKaFoto.Visible", lambda t: rep(
+        t, 'ThisItem.FotoModus <> "Aus"', '(ThisItem.FotoModus <> "Aus" && ThisItem.FotoModus <> "BeiMangel")'))
+    aendern(st, p, "7.3", "btnKaFoto.Text", lambda t: rep(
+        t, 'ThisItem.FotoModus = "Pflicht" && !varNurLesen',
+        '(ThisItem.FotoModus = "Pflicht" || (ThisItem.FotoModus = "BeiMangel" && ThisItem.Bewertung = "NIO")) && !varNurLesen'))
+    aendern(st, p, "7.3", "lblKaFotoHinweis.Text", lambda t: rep(
+        t, 'LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus = "Pflicht", "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.",',
+        'LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus = "Pflicht", "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.", '
+        'LookUp(colAntworten, PruefpunktID = varFotoPP).FotoModus = "BeiMangel" && LookUp(colAntworten, PruefpunktID = varFotoPP).Bewertung = "NIO", '
+        '"Mangel: mindestens ein Foto Pflicht. Keine Personen fotografieren.",'))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -793,6 +819,7 @@ TEXTE = [
     ("btnKaBild", "Bild", 14, 64, 1, 20),
     ("btnKaDatumLeeren", "✕", 16, 56, 1, 20),
     ("btnKaBildSchliessen", "Schließen", 17, 200, 1, 20),
+    ("lblKaFotoHinweis", "Mangel: mindestens ein Foto Pflicht. Keine Personen fotografieren.", 13, 680, 1, 10),
     ("lblKaBildTitel", "Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen", 16, 680, 2, 10),
 ]
 

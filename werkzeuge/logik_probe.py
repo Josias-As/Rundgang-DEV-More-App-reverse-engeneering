@@ -37,9 +37,11 @@ def fnLinkAnzahl(t):
     return len([s for s in (t or "").split(" | ") if s.strip() != ""])
 
 
-def fnFotoModus(f, alt):
+def fnFotoModus(f, alt, paket=7):
     if f in ("Aus", "Optional", "Pflicht"):
         return f
+    if paket >= 7 and f == "Bei Mangel Pflicht":
+        return "BeiMangel"
     return "Optional" if alt else "Aus"
 
 
@@ -73,7 +75,7 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
         return "Bereich"
     if fnKommentarNoetig(paket, typ, bew, wt, wz, kpfl, gm, mi, ma) and trim(kom) == "":
         return "Kommentar"
-    if foto == "Pflicht" and fanz < 1:
+    if (foto == "Pflicht" or (paket >= 7 and foto == "BeiMangel" and bew == "NIO")) and fanz < 1:
         return "Foto"
     return ""
 
@@ -227,11 +229,21 @@ SZENARIEN = [
     (5, "fnDatumText Datum + Zeit", "datum", ("27.10.2026", "07", "05", True), "27.10.2026 07:05"),
     (5, "fnDatumText Zeit ohne Minute", "datum", ("27.10.2026", "07", "", True), "27.10.2026"),
     (5, "fnDatumText ohne Datum", "datum", (None, "07", "05", True), ""),
+    (7, "fnFotoModus: Bei Mangel Pflicht -> BeiMangel", "foto", ("Bei Mangel Pflicht", False), "BeiMangel"),
+    (7, "Bei Mangel Pflicht, i.O., kein Foto -> vollständig", "grund", ("IONIO", True, "IO", "", None, "", "BeiMangel", 0, False, "Mangel", None, None), ""),
+    (7, "Bei Mangel Pflicht, n.i.O. mit Kommentar, kein Foto -> Foto", "grund", ("IONIO", True, "NIO", "", None, "Riss", "BeiMangel", 0, False, "Mangel", None, None), "Foto"),
+    (7, "Bei Mangel Pflicht, n.i.O. mit Kommentar und Foto -> vollständig", "grund", ("IONIO", True, "NIO", "", None, "Riss", "BeiMangel", 1, False, "Mangel", None, None), ""),
+    (7, "Bei Mangel Pflicht, n.i.O. ohne Kommentar -> Kommentar zuerst", "grund", ("IONIO", True, "NIO", "", None, "", "BeiMangel", 0, False, "Mangel", None, None), "Kommentar"),
+    (7, "Bei Mangel Pflicht, Zahl außerhalb (Mangel) mit Kommentar ohne Foto -> Foto", "grund", ("ZAHL", True, "NIO", "", 50, "zu wenig", "BeiMangel", 0, False, "Mangel", 100, 1000), "Foto"),
+    (7, "Bei Mangel Pflicht, Zahl außerhalb bei Warnen (i.O.) -> kein Foto nötig", "grund", ("ZAHL", True, "IO", "", 50, "Grund", "BeiMangel", 0, False, "Warnen", 100, 1000), ""),
+    (7, "Bei Mangel Pflicht, unbeantwortet optional -> nichts fehlt", "grund", ("IONIO", False, "", "", None, "", "BeiMangel", 0, False, "Mangel", None, None), ""),
+    (7, "fnFotoNeuErlaubt: i.O. und BeiMangel -> nein", "neu", ("IO", "BeiMangel"), False),
+    (7, "fnFotoNeuErlaubt: n.i.O. und BeiMangel -> ja", "neu", ("NIO", "BeiMangel"), True),
 ]
 
 
 def fuehre(paket, art, args):
-    p = min(paket, 5)
+    p = 7 if paket >= 7 else min(paket, 5)
     if art == "grund":
         return fnFehltGrund(p, *args)
     if art == "komm":
@@ -239,7 +251,7 @@ def fuehre(paket, art, args):
     if art == "zahl":
         return fnZahlBewertung(p, *args)
     if art == "foto":
-        return fnFotoModus(*args)
+        return fnFotoModus(*args, paket=p)
     if art == "links":
         return fnLinkAnzahl(*args)
     if art == "gm":
@@ -265,7 +277,7 @@ def main():
         zeilen.append("P%d  %-4s  %-70s erwartet %-12r ist %r" % (paket, "ok" if ok else "FEHLER", text, erwartet, ist))
     # spätere Pakete dürfen frühere Szenarien nicht brechen
     for paket, text, art, args, erwartet in SZENARIEN:
-        for spaeter in range(paket, 7):
+        for spaeter in range(paket, 8):
             if fuehre(spaeter, art, args) != erwartet:
                 fehler += 1
                 zeilen.append("FEHLER: Szenario P%d '%s' ändert sich in Paket %d" % (paket, text, spaeter))

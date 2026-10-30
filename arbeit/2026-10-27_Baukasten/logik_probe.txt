@@ -71,5 +71,15 @@ P5  ok    fnDatumText nur Datum (DATUM)                                         
 P5  ok    fnDatumText Datum + Zeit                                               erwartet '27.10.2026 07:05' ist '27.10.2026 07:05'
 P5  ok    fnDatumText Zeit ohne Minute                                           erwartet '27.10.2026' ist '27.10.2026'
 P5  ok    fnDatumText ohne Datum                                                 erwartet ''           ist ''
+P7  ok    fnFotoModus: Bei Mangel Pflicht -> BeiMangel                           erwartet 'BeiMangel'  ist 'BeiMangel'
+P7  ok    Bei Mangel Pflicht, i.O., kein Foto -> vollständig                     erwartet ''           ist ''
+P7  ok    Bei Mangel Pflicht, n.i.O. mit Kommentar, kein Foto -> Foto            erwartet 'Foto'       ist 'Foto'
+P7  ok    Bei Mangel Pflicht, n.i.O. mit Kommentar und Foto -> vollständig       erwartet ''           ist ''
+P7  ok    Bei Mangel Pflicht, n.i.O. ohne Kommentar -> Kommentar zuerst          erwartet 'Kommentar'  ist 'Kommentar'
+P7  ok    Bei Mangel Pflicht, Zahl außerhalb (Mangel) mit Kommentar ohne Foto -> Foto erwartet 'Foto'       ist 'Foto'
+P7  ok    Bei Mangel Pflicht, Zahl außerhalb bei Warnen (i.O.) -> kein Foto nötig erwartet ''           ist ''
+P7  ok    Bei Mangel Pflicht, unbeantwortet optional -> nichts fehlt             erwartet ''           ist ''
+P7  ok    fnFotoNeuErlaubt: i.O. und BeiMangel -> nein                           erwartet False        ist False
+P7  ok    fnFotoNeuErlaubt: n.i.O. und BeiMangel -> ja                           erwartet True         ist True
 
-Szenarien: 71, Fehler: 0
+Szenarien: 81, Fehler: 0

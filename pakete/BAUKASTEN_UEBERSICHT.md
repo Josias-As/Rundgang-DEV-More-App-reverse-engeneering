@@ -1,4 +1,4 @@
-# Baukasten-Pakete 1–6 – Übersicht
+# Baukasten-Pakete 1–7 – Übersicht
 
 ## Reihenfolge
 
@@ -12,11 +12,13 @@ Pakete **nur in dieser Reihenfolge**, jedes ganz (atomar), nach jedem Paket App-
 | 4 | Bedingte Fragen | BedingungPunkt (Zahl), BedingungWert (Text) | 10 | – |
 | 5 | Neue Typen: Mehrfachauswahl, Datum, Datum + Uhrzeit | Eingabetyp + 3 Werte | 1 | cboKaMehrfach, dpKaDatum, ddKaStunde, ddKaMinute, btnKaDatumLeeren |
 | 6 | Hinweis mit Beispielbild | Bibliothek RG_Hinweisbilder, HinweisBildID (Zahl) | 2 | btnKaBild, conKaBild, btnKaBildSperre, conKaBildKarte, lblKaBildTitel, imgKaBild, btnKaBildSchliessen |
+| 7 | Foto „Bei Mangel Pflicht“ | Foto + Wert „Bei Mangel Pflicht“ | 4 | – |
 
 ## Prüfstand
 
-- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.
+- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 81 Szenarien ohne Fehler.
 - Unabhängige Prüfung: Runde 1 (Pakete 1–4), Runde 2 (alle sechs) und Runde 3 (Pakete 1, 2, 5, 6) eingearbeitet, siehe PRUEFUNG_n. In Runde 3 fand kein Prüfer einen Code-Fehler, nur Testbogen- und Doku-Befunde (eingearbeitet).
+- **Paket 7** (30.10., für den Rundgang-Builder): maschinell geprüft und Logik-Gegenprobe, Teil der unabhängigen Prüfung des Builders (siehe `pakete/builder/`).
 - Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) hat am 30.10. ein gezielter unabhängiger Prüfer durchgesehen: kein mittlerer oder hoher Befund, ein niedriger Hinweis (N1, harmlos). Nicht für jedes Paket liegt eine Gesamtprüfung der letzten Fassung vor (3 und 4 nur gezielt auf die geänderten Stellen); die letzten Befunde waren Testbogen/Doku.
 
 ## Entscheidungen und Annahmen (bitte bestätigen)

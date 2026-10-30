@@ -364,6 +364,41 @@ PAKET_TEXT = {
         ],
         "rueck": ["- Version wiederherstellen, oder `conKaBild` und `btnKaBild` löschen und die Vorher-Blöcke einfügen. Spalte und Bibliothek dürfen bleiben."],
     },
+    7: {
+        "titel": "Foto „Bei Mangel Pflicht“",
+        "datei": "FotoBeiMangel",
+        "datum": "30.10.2026",
+        "kurz": [
+            "Neuer Wert **„Bei Mangel Pflicht“** in der Auswahlspalte `Foto`: Bei n.i.O. (oder Zahl außerhalb mit Grenzmodus Mangel) braucht der Punkt mindestens ein Foto, bei i.O. keins.",
+            "Vor n.i.O. ist der Foto-Knopf ausgeblendet (wie bei „Aus“), nach n.i.O. trägt er einen Stern, „Noch offen“ nennt „(Foto)“.",
+            "Grenzmodus Warnen ist kein Mangel → kein Foto nötig. Alte Werte (Aus/Optional/Pflicht) verhalten sich unverändert (Logik-Gegenprobe).",
+            "Der Rundgang-Builder bietet den Wert an; deshalb **vor** der ersten Nutzung des Builders einfügen.",
+        ],
+        "voraus": ["Pakete 1–6 eingefügt und getestet.", "Die Blöcke sind aus dem Export 27.10.2026 09:09 + Paketen 1–6 erzeugt. Hat sich die App seitdem geändert, erst einen neuen Export schicken."],
+        "schritte": [
+            dict(SICHERUNG, nr="7.1"),
+            {"nr": "7.2", "titel": "SharePoint-Wert und App.Formulas", "text": [
+                "RG_Pruefpunkte → Spalte **Foto** → Spalte bearbeiten → Auswahl hinzufügen: **Bei Mangel Pflicht** (genau so geschrieben, mit Leerzeichen). Speichern.",
+                "Studio: **Daten** → `RG_Pruefpunkte` → … → **Aktualisieren**.",
+                "Dann `App.Formulas` ganz ersetzen (zwei Stellen geändert: `fnFotoModus`, Zeile „Foto“ in `fnFehltGrund`)."]},
+            {"nr": "7.3", "titel": "Foto-Knopf und Hinweis", "text": ["Drei Properties in `scrKategorie` ersetzen."]},
+            pruefung_schritt("7.4"),
+        ],
+        "test": [
+            "Vorbereitung: Prüfpunkt Id 10 (Thermometer) in SharePoint auf Foto = **Bei Mangel Pflicht**, Studio-Daten aktualisieren, Vorschau neu starten.",
+            "",
+            "| # | Klickfolge | erwartet |",
+            "|---|---|---|",
+            "| T7.1 | Kategorie mit P10 öffnen | kein Foto-Knopf an P10 (noch nicht bewertet) |",
+            "| T7.2 | P10 auf i.O. | kein Foto-Knopf, P10 nicht in „Noch offen“ |",
+            "| T7.3 | P10 auf n.i.O., Kommentar eintragen | Foto-Knopf „📷 Foto *“, „Noch offen“ nennt P10 (Foto), Speichern springt zu P10 |",
+            "| T7.4 | Foto-Knopf → Fenster | Hinweis „Mangel: mindestens ein Foto Pflicht …“, Foto hinzufügen möglich |",
+            "| T7.5 | ein Foto hinzufügen, Fenster zu | Knopf „📷 Foto (1)“, P10 nicht mehr offen, Speichern geht |",
+            "| T7.6 | P10 danach auf i.O. zurück | Foto-Knopf bleibt sichtbar (Foto vorhanden), nichts offen; das neue Foto wird beim Speichern nicht hochgeladen (Upload nur bei n.i.O./Optional/Pflicht, wie bisher) |",
+            "| T7.7 | Zum Schluss P10 wieder auf den alten Wert setzen | – |",
+        ],
+        "rueck": ["- Version wiederherstellen oder die vier Vorher-Blöcke einfügen. Der Auswahlwert darf bleiben (ohne Paket 7 gilt er wie leer, also FotoMoeglich)."],
+    },
 }
 
 
@@ -630,6 +665,33 @@ PRUEF_TEXT = {
         "f": FALLEN_ALLG + ["Container-YAML auf dem Bildschirm einfügen; danach Ebene prüfen (ganz oben)."],
         "g": ["- Vorab-Test 6.3 und T6.1–T6.7 in der Vorschau."],
     },
+    7: {
+        "b": [
+            "- `Foto` bleibt eine Auswahlspalte, gelesen nur über `fnFotoModus(p.Foto.Value; …)`. Der neue Text „Bei Mangel Pflicht“ wird dort auf den internen Wert `BeiMangel` abgebildet; alle anderen Stellen vergleichen nur `FotoModus`.",
+            "- Kein neues Feld in colAntworten (Schema in allen drei Zweigen unverändert, maschinell geprüft).",
+        ],
+        "c": ["1. Auswahlwert in SharePoint und Daten aktualisieren.", "2. App.Formulas.", "3. Knopf und Hinweis."],
+        "d": [
+            ("App.Formulas (fnFotoModus, fnFehltGrund)", "ja", "neuer Wert, Foto-Pflicht nur bei NIO"),
+            ("btnKaSpeichern: Prüfung und Sprung", "ja (über fnFehlt)", "Foto fehlt bei n.i.O."),
+            ("btnKaFoto.Visible/Text, lblKaFotoHinweis", "ja", "Knopf erst bei n.i.O., Stern, Hinweis"),
+            ("Foto-Upload (fnFotoNeuErlaubt)", "nein", "BeiMangel lädt nur bei n.i.O. hoch (wie Aus)"),
+            ("JSON, Mängel, Protokoll", "nein", ""),
+        ],
+        "e": [
+            ("neuer Punkt ohne Daten", "kein Knopf, nichts offen", "T7.1"),
+            ("alter gespeicherter Punkt (JSON ohne neues Feld)", "unverändert", "–"),
+            ("inaktiver Punkt", "FotoModus Aus (dritter Zweig)", "Code"),
+            ("Rundgang abgeschlossen (Nur-Lesen)", "Knopf nur bei gespeicherten Fotos", "Code"),
+            ("Wechsel n.i.O. → i.O. → n.i.O.", "Pflicht folgt der Bewertung", "T7.3, T7.6"),
+            ("Kategorie zweimal speichern", "nicht betroffen", "–"),
+            ("Abbruch mitten im Speichern", "nicht betroffen", "–"),
+            ("Netzfehler", "nicht betroffen", "–"),
+            ("zwei Prüfer gleichzeitig", "nicht betroffen", "–"),
+        ],
+        "f": FALLEN_ALLG + ["Den Auswahlwert in SharePoint genau als „Bei Mangel Pflicht“ anlegen (sonst gilt er als leer → FotoMoeglich)."],
+        "g": ["- T7.1–T7.7 in der Vorschau. Logik-Gegenprobe: 10 neue Szenarien (P7), frühere Szenarien unverändert."],
+    },
 }
 
 
@@ -753,7 +815,7 @@ for _k, _v in RUNDE3_34.items():
 
 
 def UEBERSICHT(d):
-    z = ["# Baukasten-Pakete 1–6 – Übersicht", ""]
+    z = ["# Baukasten-Pakete 1–7 – Übersicht", ""]
     if d["simulation"]:
         z += ["> **ENTWURF.** Erzeugt aus dem Export 27.10. 08:24 mit einer Simulation der Änderung von 08:44 (`UpdateIf(colAntworten; Bewertung <> \"NIO\"; {Kommentar: \"\"})`). "
               "Vor dem Einfügen: frischen Export hochladen, `python3 -I werkzeuge/baukasten.py <Schlüssel>` ohne Simulation laufen lassen. "
@@ -762,12 +824,13 @@ def UEBERSICHT(d):
           "Pakete **nur in dieser Reihenfolge**, jedes ganz (atomar), nach jedem Paket App-Prüfung = 0, Test, speichern. Erst nach Paket 1 und erfolgreichem Test weitermachen.", "",
           "| Paket | Inhalt | SharePoint | Properties | neue Steuerelemente |", "|---|---|---|---|---|"]
     sp_je = {1: "Foto (Auswahl)", 2: "KommentarPflicht (Ja/Nein)", 3: "Grenzmodus (Auswahl)", 4: "BedingungPunkt (Zahl), BedingungWert (Text)",
-             5: "Eingabetyp + 3 Werte", 6: "Bibliothek RG_Hinweisbilder, HinweisBildID (Zahl)"}
+             5: "Eingabetyp + 3 Werte", 6: "Bibliothek RG_Hinweisbilder, HinweisBildID (Zahl)", 7: "Foto + Wert „Bei Mangel Pflicht“"}
     for p in d["pakete"]:
         z.append("| %d | %s | %s | %d | %s |" % (p["nr"], PAKET_TEXT[p["nr"]]["titel"], sp_je[p["nr"]], len(p["props"]), ", ".join(p["neu"]) or "–"))
     z += ["", "## Prüfstand", "",
-          "- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.",
+          "- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 81 Szenarien ohne Fehler.",
           "- Unabhängige Prüfung: Runde 1 (Pakete 1–4), Runde 2 (alle sechs) und Runde 3 (Pakete 1, 2, 5, 6) eingearbeitet, siehe PRUEFUNG_n. In Runde 3 fand kein Prüfer einen Code-Fehler, nur Testbogen- und Doku-Befunde (eingearbeitet).",
+          "- **Paket 7** (30.10., für den Rundgang-Builder): maschinell geprüft und Logik-Gegenprobe, Teil der unabhängigen Prüfung des Builders (siehe `pakete/builder/`).",
           "- Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) hat am 30.10. ein gezielter unabhängiger Prüfer durchgesehen: kein mittlerer oder hoher Befund, ein niedriger Hinweis (N1, harmlos). Nicht für jedes Paket liegt eine Gesamtprüfung der letzten Fassung vor (3 und 4 nur gezielt auf die geänderten Stellen); die letzten Befunde waren Testbogen/Doku.",
           ]
     z += ["", "## Entscheidungen und Annahmen (bitte bestätigen)", "",

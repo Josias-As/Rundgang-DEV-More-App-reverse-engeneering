@@ -80,32 +80,6 @@ Jede Property im Paket wurde gegen den Export geprüft: Klammern, keine Kommenta
   btnKaBildSchliessen.Width        ok
   btnKaBildSchliessen.X            ok
   btnKaBildSchliessen.Y            ok
-  Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
-  Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
-  Paket 4: colAntworten hat in allen drei Zweigen dieselben 23 Felder
-  Paket 5: colAntworten hat in allen drei Zweigen dieselben 23 Felder
-  Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
-Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
-Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
-  btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
-  btnKaFoto                      93 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto *'
-  lblKaFotoHinweis              536 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.'
-  lblKaFotoHinweis              632 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Keine Personen fotografieren. Fotos werden beim „Speichern“ hochgeladen.'
-  addKaFoto                     343 px (+10 %) / 660 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Foto aufnehmen / auswählen'
-  txtKaKommentar (Hinweis)      341 px (+10 %) / 500 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Kommentar zum Mangel (Pflicht)'
-  txtKaKommentar (Hinweis)      207 px (+10 %) / 500 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Kommentar (Pflicht)'
-  lblKaZahlInfo                 653 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb des Sollbereichs'
-  lblKaZahlInfo                 649 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  außerhalb, bitte begründen'
-  lblKaZahlInfo                 620 px (+10 %) / 454 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Betriebsstunden  ·  Soll ab 1000 bis 99999  ·  unzulässig, bitte prüfen'
-  cboKaMehrfach (Platzhalter)   307 px (+10 %) / 400 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Auswählen (mehrere möglich)'
-  btnKaBild                      33 px (+10 %) / 44 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Bild'
-  btnKaDatumLeeren               29 px (+10 %) / 36 px, 1 Zeile(n) nötig, erlaubt 1  ok  '✕'
-  btnKaBildSchliessen           107 px (+10 %) / 180 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Schließen'
-  lblKaBildTitel                734 px (+10 %) / 670 px, 2 Zeile(n) nötig, erlaubt 2  ok  'Beispiel – ZZ Test Thermometer Serverraum (Foto der Anzeige) prüfen'
-
-Fehler gesamt: 0
-
   Paket 6: colAntworten hat in allen drei Zweigen dieselben 24 Felder
 ```
 
