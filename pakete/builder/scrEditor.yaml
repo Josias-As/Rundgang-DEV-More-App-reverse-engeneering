@@ -4100,3 +4100,46 @@ Screens:
                   Width: =Parent.Width
                   X: =0
                   Y: =(Parent.Height - 60) / 2
+            - lblEdLadenHinweis:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =12
+                  Text: ="Hängt das länger als eine Minute? Dann:"
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =(Parent.Height - 60) / 2 + 80
+            - btnEdLadenAusweg:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =Set(varJob, "");
+                    Set(varArbeitStart, false);
+                    Set(varIsLoading, false);
+                    Navigate(scrListe, ScreenTransition.None)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="Zur Übersicht"
+                  Width: =200
+                  X: =(Parent.Width - 200) / 2
+                  Y: =(Parent.Height - 60) / 2 + 108

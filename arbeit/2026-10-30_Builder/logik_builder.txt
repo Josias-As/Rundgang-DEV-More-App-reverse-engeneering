@@ -1,0 +1,29 @@
+ok      S1 Vorbereiten ändert nichts an dem, was die Rundgang-App startet
+ok      S1 Vorbereiten setzt Fassung 1 und RundgangID an allen Zeilen
+ok      S2 neue Fassung = 2, Entwurf am Rundgang
+ok      S2 Kopie nur aktive Teile (2 Bereiche, 2 Kategorien, 3 Prüfpunkte)
+ok      S2 Entwurfs-Bereiche inaktiv, Rundgang-App startet unverändert
+ok      S3 Bedingung zeigt auf die neue Frage A der Fassung 2
+ok      S4 Änderung im Entwurf wirkt nicht auf die laufende Durchführung
+ok      S5 Duplizieren in derselben Kategorie behält die Bedingung auf A
+ok      S5 Kopie in eine andere Kategorie löscht die Bedingung
+ok      S6 Schreibprüfung: offener Entwurf darf schreiben
+ok      S7 Aktivieren ok
+ok      S7 Start nach dem Aktivieren nimmt nur Kategorien der Fassung 2
+ok      S7 laufende Durchführung (Momentaufnahme) öffnet weiter die alten Fragen
+ok      S8 veraltetes Fenster: Schreibprüfung verweigert
+ok      S8 veraltetes Fenster: Laden zeigt nur lesen
+ok      S8 nochmal Aktivieren aus veraltetem Fenster: verweigert
+ok      S9 halbes Aktivieren (Abbruch vor dem Rundgang-Patch)
+ok      S9 Verwerfen einer teilweise aktiven Fassung: verweigert
+ok      S9 Laden erkennt den Zwischenstand
+ok      S9 erneutes Aktivieren schließt ab
+ok      S10 Verwerfen eines normalen Entwurfs löscht nur dessen Zeilen
+ok      S11 Kopierfehler bei neuer Fassung: Entwurf zurückgenommen
+ok      S12 Reaktivieren lässt Fassung leer (Vorbereiten läuft danach noch)
+ok      S13 Kopie als neuer Rundgang: nichts startbar vor dem Aktivieren
+ok      S13 Aktivieren des neuen Rundgangs
+ok      S14 Aktivieren des einen Rundgangs ändert den anderen nicht
+ok      S15 Vorlagen-Rundgang wird nie gestartet
+
+Szenarien: 27, Fehler: 0

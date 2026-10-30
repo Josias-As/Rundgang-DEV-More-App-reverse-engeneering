@@ -24,7 +24,7 @@ Stand: 27.10.2026. Kennzeichnung: **belegt** (Export/Dokument), **gemessen**, **
 - `werkzeuge/logik_probe.py`: Python-Nachbildung der UDFs, Rückwärtsgleichheit und Szenarien.
 - `werkzeuge/mutation_baukasten.py`: Mutationstest der Prüfungen (9/9).
 - `werkzeuge/doc_baukasten.py` + `baukasten_text.py`: Paket- und Prüfdokumente in `pakete/`.
-- `werkzeuge/builder.py`: erzeugt die Builder-App (3 Bildschirme als YAML, App.Formulas/OnStart deutsch) nach `pakete/builder/` und prüft (Namen, Klammern, Rückübersetzung, Startwerte aller Variablen, Sammlungen, Steuerelemente, Patch-Felder gegen Spalten, Auswahlspalten `{Value:}`, Argumentanzahl, YAML zurücklesen, Textbreiten). `werkzeuge/doc_builder.py` → `pakete/builder/EINBAU_BUILDER.md`.
+- `werkzeuge/builder.py`: erzeugt die Builder-App (3 Bildschirme als YAML, App.Formulas/OnStart deutsch) nach `pakete/builder/` und prüft (Namen, Klammern, Rückübersetzung, Startwerte aller Variablen, Sammlungen, Steuerelemente, Patch-Felder gegen Spalten, Auswahlspalten `{Value:}`, Argumentanzahl, YAML zurücklesen, Textbreiten). `werkzeuge/doc_builder.py` → `pakete/builder/EINBAU_BUILDER.md`. `werkzeuge/mutation_builder.py` (10/10), `werkzeuge/logik_builder.py` (Abläufe gegen die Leselogik der Rundgang-App, 27 Szenarien).
 - `werkzeuge/einbau_seite.py <Schlüssel>`: erzeugt `pakete/EINBAU_ASSISTENT.html` (Einbau-Seite mit Kopierfeldern, farbig markierten Änderungen, Häkchen). Nach jedem neuen Export `baukasten.py`, `doc_baukasten.py`, dann `einbau_seite.py` laufen lassen und die Seite neu veröffentlichen.
 
 ## 4. Formelregeln (Rundgang)

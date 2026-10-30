@@ -1,7 +1,7 @@
-Rundgang-Builder: 3 Bildschirme, 227 Steuerelemente, 3195 Properties, 49 Variablen, 17 Funktionen
+Rundgang-Builder: 3 Bildschirme, 229 Steuerelemente, 3228 Properties, 49 Variablen, 17 Funktionen
 Patch-Felder geprüft: 237
 YAML scrListe: 565 Properties zeichengleich zurückgelesen
-YAML scrEditor: 2257 Properties zeichengleich zurückgelesen
+YAML scrEditor: 2290 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
@@ -66,6 +66,7 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   lblMehrTitel            329 px (+10 %) /  552 px, 1 Zeile(n), erlaubt 1  ok  'Mehrere Prüfpunkte anlegen'
   lblBildTitel            353 px (+10 %) /  872 px, 1 Zeile(n), erlaubt 1  ok  'Beispielbild wählen (anklicken)'
   lblAktTitel             259 px (+10 %) /  572 px, 1 Zeile(n), erlaubt 1  ok  'Fassung 12 aktivieren'
+  btnEdLadenAusweg        114 px (+10 %) /  184 px, 1 Zeile(n), erlaubt 1  ok  'Zur Übersicht'
 
 Abfragen auf SharePoint (Delegation nachlesen):
   btnLiVorlagen.OnSelect         LookUp(RG_Rundgaenge, Status = "Vorlage"))

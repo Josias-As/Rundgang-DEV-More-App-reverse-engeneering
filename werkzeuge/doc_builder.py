@@ -98,7 +98,7 @@ def main():
           "| U4 | Auswahl-Steuerelemente (Classic Dropdown) lösen `OnChange` auch beim Wechsel der Auswahl aus | T5–T8 | unkritisch: Jede `OnChange`-Formel schreibt nur, wenn sich der Wert wirklich ändert |",
           "| U5 | Reihenfolge der Ereignisse: Text ändern und sofort links einen anderen Punkt antippen speichert beim **alten** Punkt | T5 (letzte Zeile) | Ich baue ein Speichern beim Verlassen der Auswahl |",
           "| U6 | `fnMontag` (Startwoche) und Datumsspalten: Speichern als Datum ohne Zeitverschiebung | T13 | Datum in SharePoint ansehen |",
-          "| U7 | Der Arbeits-Zeitgeber `tmrArbeit` startet nach dem Öffnen des Editors (Wechsel von `varArbeitStart` false → true) | T2, T3 | Bleibt „Bitte warten …“ stehen: Vorschau neu starten, mir Bescheid geben (dann Knopf „Abbrechen“) |",
+          "| U7 | Der Arbeits-Zeitgeber `tmrArbeit` startet nach dem Öffnen des Editors (Wechsel von `varArbeitStart` false → true) | T2, T3 | Bleibt „Bitte warten …“ stehen: Knopf „Zur Übersicht“ unter der Meldung, dann erneut öffnen; tritt es wieder auf, mir Bescheid geben |",
           "| U8 | Ein zweites Fenster mit demselben Entwurf: nach dem Aktivieren im ersten schreibt das zweite nichts mehr | T11b | – |", "",
           "## 10. Testbogen (Zeitachse)", "",
           "Mit dem bestehenden Testrundgang „ZZ Test Objektrundgang TCC“ und neuen Rundgängen, die mit **ZZ Test** beginnen (die Rundgang-App legt dafür Testdatensätze an). Reihenfolge einhalten.", "",
@@ -135,7 +135,7 @@ def main():
           "", "## 13. Prüfstand", "",
           "- Maschinell (`arbeit/2026-10-30_Builder/pruefung.txt`): Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Name bekannt, jede Variable mit Startwert in App.OnStart, jede Sammlung gefüllt, jedes Steuerelement vorhanden, "
           "jedes Patch-Feld ist eine Spalte der Liste (Auswahlspalten als `{Value: …}`), Argumentanzahl der Funktionen, YAML zeichengleich zurückgelesen, Textbreiten geschätzt. " + fehler + ".",
-          "- Mutationstest `werkzeuge/mutation_builder.py`: 10/10.",
+          "- Mutationstest `werkzeuge/mutation_builder.py`: 10/10. Logik-Gegenprobe der Abläufe `werkzeuge/logik_builder.py`: 27 Szenarien ohne Fehler.",
           "- Unabhängige Prüfung: 8 Befunde (1 hoch, 5 mittel), alle behoben oder als UNSICHER im Testbogen – siehe `pakete/builder/PRUEFUNG_BUILDER.md`.",
           "- In Studio getestet: **nein** (Testbogen).", ""]
     open(os.path.join(AUS, "EINBAU_BUILDER.md"), "w", encoding="utf-8").write("\n".join(z) + "\n")

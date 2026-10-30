@@ -5,7 +5,7 @@ Stand: 30.10.2026 · erzeugt mit `werkzeuge/builder.py` (Formeln und Bildschirme
 ## Kurzfassung
 
 - **Neue Canvas-App „Rundgang Builder“** (Tablet-Format quer, 1366 × 768, für den PC gedacht) mit drei Bildschirmen: **Übersicht** (alle Rundgänge), **Editor** (Gliederung · Bearbeiten · Vorschau und Prüfung) und **Plan**.
-- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 227 Steuerelemente, 3195 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
+- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 229 Steuerelemente, 3228 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
 - **Die Rundgang-App wird nicht geändert** (außer Paket 7, das vorher eingefügt sein muss). Der Builder schreibt nur Daten, die die Rundgang-App schon richtig liest.
 - **Fassungen:** Ein aktiver Rundgang wird nie direkt geändert. „Bearbeiten“ legt einen Entwurf (neue Fassung) an. „Aktivieren“ schaltet die Bereiche der alten Fassung aus und die der neuen an. Rundgang-Nummer, Plan und Auswertung bleiben gleich. Laufende Rundgänge von heute werden mit der alten Fassung beendet.
 - **Vorlagen** sind ein eigener Rundgang „Vorlagen (Builder)“ mit 10 Startvorlagen; „Aus Vorlage holen“ kopiert Prüfpunkte, Kategorien oder ganze Bereiche – auch aus anderen Rundgängen.
@@ -195,7 +195,7 @@ Wichtig: In der Strukturansicht müssen die Fenster (`conNeu`, `conAkt`, `conHol
 | U4 | Auswahl-Steuerelemente (Classic Dropdown) lösen `OnChange` auch beim Wechsel der Auswahl aus | T5–T8 | unkritisch: Jede `OnChange`-Formel schreibt nur, wenn sich der Wert wirklich ändert |
 | U5 | Reihenfolge der Ereignisse: Text ändern und sofort links einen anderen Punkt antippen speichert beim **alten** Punkt | T5 (letzte Zeile) | Ich baue ein Speichern beim Verlassen der Auswahl |
 | U6 | `fnMontag` (Startwoche) und Datumsspalten: Speichern als Datum ohne Zeitverschiebung | T13 | Datum in SharePoint ansehen |
-| U7 | Der Arbeits-Zeitgeber `tmrArbeit` startet nach dem Öffnen des Editors (Wechsel von `varArbeitStart` false → true) | T2, T3 | Bleibt „Bitte warten …“ stehen: Vorschau neu starten, mir Bescheid geben (dann Knopf „Abbrechen“) |
+| U7 | Der Arbeits-Zeitgeber `tmrArbeit` startet nach dem Öffnen des Editors (Wechsel von `varArbeitStart` false → true) | T2, T3 | Bleibt „Bitte warten …“ stehen: Knopf „Zur Übersicht“ unter der Meldung, dann erneut öffnen; tritt es wieder auf, mir Bescheid geben |
 | U8 | Ein zweites Fenster mit demselben Entwurf: nach dem Aktivieren im ersten schreibt das zweite nichts mehr | T11b | – |
 
 ## 10. Testbogen (Zeitachse)
@@ -241,7 +241,7 @@ Nach dem Test: Testrundgänge archivieren oder löschen. Ihre Durchführungen si
 ## 13. Prüfstand
 
 - Maschinell (`arbeit/2026-10-30_Builder/pruefung.txt`): Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Name bekannt, jede Variable mit Startwert in App.OnStart, jede Sammlung gefüllt, jedes Steuerelement vorhanden, jedes Patch-Feld ist eine Spalte der Liste (Auswahlspalten als `{Value: …}`), Argumentanzahl der Funktionen, YAML zeichengleich zurückgelesen, Textbreiten geschätzt. Fehler gesamt: 0.
-- Mutationstest `werkzeuge/mutation_builder.py`: 10/10.
+- Mutationstest `werkzeuge/mutation_builder.py`: 10/10. Logik-Gegenprobe der Abläufe `werkzeuge/logik_builder.py`: 27 Szenarien ohne Fehler.
 - Unabhängige Prüfung: 8 Befunde (1 hoch, 5 mittel), alle behoben oder als UNSICHER im Testbogen – siehe `pakete/builder/PRUEFUNG_BUILDER.md`.
 - In Studio getestet: **nein** (Testbogen).
 

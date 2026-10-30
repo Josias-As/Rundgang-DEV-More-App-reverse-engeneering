@@ -613,14 +613,21 @@ def overlay(name, sichtbar, karte_w, karte_h, kinder, titel, zu):
     ])
 
 
-def laden_overlay(name):
-    return con(name, {"Fill": "RGBA(255, 255, 255, 0.7)", "Width": "Parent.Width", "Height": "Parent.Height", "Visible": "varIsLoading"}, [
+def laden_overlay(name, ausweg=False):
+    kinder = [
         btn("btn" + name[3:] + "Sperre", '""', "0", "0", "Parent.Width", "Parent.Height", "false", art="kopf",
             Fill="RGBA(0, 0, 0, 0)", HoverFill="RGBA(0, 0, 0, 0)", PressedFill="RGBA(0, 0, 0, 0)", DisabledFill="RGBA(0, 0, 0, 0)",
             DisplayMode="DisplayMode.Edit", **radius(0)),
         lbl("lbl" + name[3:] + "Text", 'If(varLadeText = "", "Bitte warten …", varLadeText)', "0", "(Parent.Height - 60) / 2",
             "Parent.Width", "60", size=18, color="clrPrimaer", bold=True, Align="Align.Center"),
-    ])
+    ]
+    if ausweg:
+        kinder.append(lbl("lbl" + name[3:] + "Hinweis", '"Hängt das länger als eine Minute? Dann:"', "0", "(Parent.Height - 60) / 2 + 80",
+                          "Parent.Width", "24", size=12, color="clrTextGrau", Align="Align.Center"))
+        kinder.append(btn("btn" + name[3:] + "Ausweg", '"Zur Übersicht"', "(Parent.Width - 200) / 2", "(Parent.Height - 60) / 2 + 108", "200", "40",
+                          "Set(varJob, \"\");\nSet(varArbeitStart, false);\nSet(varIsLoading, false);\nNavigate(scrListe, ScreenTransition.None)",
+                          art="sekundaer", size=13, DisplayMode="DisplayMode.Edit"))
+    return con(name, {"Fill": "RGBA(255, 255, 255, 0.7)", "Width": "Parent.Width", "Height": "Parent.Height", "Visible": "varIsLoading"}, kinder)
 
 
 # ---------------------------------------------------------------- Bildschirm 1: Übersicht
@@ -1452,7 +1459,7 @@ scr_editor = C("scrEditor", "Screen", {
     ed_rechts,
     tmr_arbeit,
     con_akt, con_holen, con_mehr, con_bild,
-    laden_overlay("conEdLaden"),
+    laden_overlay("conEdLaden", ausweg=True),
 ])
 
 
@@ -1835,7 +1842,7 @@ TEXTE = [
     ("lblPlTermin", "Donnerstag, 31.12.2026  (heute)", 13, 328, 0, 1), ("lblPlKopf3", "Startwoche (Montag)", 12, 170, 0, 1),
     ("lblNeuTitel", "Neuer Rundgang", 18, 552, 0, 1), ("lblHolenTitel", "Aus Vorlage oder anderem Rundgang holen", 18, 872 - 60, 0, 1),
     ("lblMehrTitel", "Mehrere Prüfpunkte anlegen", 18, 612 - 60, 0, 1), ("lblBildTitel", "Beispielbild wählen (anklicken)", 18, 932 - 60, 0, 1),
-    ("lblAktTitel", "Fassung 12 aktivieren", 18, 632 - 60, 0, 1),
+    ("lblAktTitel", "Fassung 12 aktivieren", 18, 632 - 60, 0, 1), ("btnEdLadenAusweg", "Zur Übersicht", 13, 200, 16, 1),
 ]
 
 
