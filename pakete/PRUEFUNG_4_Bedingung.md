@@ -132,6 +132,13 @@ P4  ok    Bedingung NIO bei Text-Punkt A (ungültig) -> B sichtbar              
 | MEHRFACH erst ab Paket 5 | im Hinweis vermerkt |
 | Kette, verworfene Werte/Fotos, Dateien ohne Verweis | gewollt bzw. bekannt, dokumentiert |
 
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Gezielte Prüfung (30.10.) des Speicherns aus der Kopie: kein mittlerer oder hoher Befund | Reihenfolge colVersteckt → Upload → Kommentar leeren → Warnung → colSpeichern → JSON → Patch stimmt, alle If-Zweige liefern denselben Datensatztyp, Abschluss-Plausibilität stimmt, Abbruch lässt colAntworten unverändert. Geschlussfolgert, nicht in Studio getestet: Patch(Datensatz; Datensatz) in ForAll (Schritt 4.8 und T4.5–T4.8 zeigen es) |
+| N1 niedrig: hochgeladene Datei ohne Verweis nach Abbruch | harmlos, dokumentiert |
+
 ## Offene Befunde
 
 Keine.

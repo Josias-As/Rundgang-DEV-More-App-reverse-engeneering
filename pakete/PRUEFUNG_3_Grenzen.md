@@ -121,6 +121,12 @@ P3  ok    Warnen ohne Min/Max: nie außerhalb                                   
 | Warnen/Mangel bei Min > Max | vorhandenes Verhalten (alles außerhalb), Pflegeregel „Min nie größer als Max“ |
 | lblKaZahlInfo auf schmalen Geräten | App ist für Tablet hochkant (768) gebaut; dort 2 Zeilen geprüft |
 
+## Unabhängige Prüfung – Runde 3 und Umgang
+
+| Befund | Umgang |
+|---|---|
+| Gezielte Prüfung (30.10.) von Feld Warnung, Nur-Ansicht und Protokoll: kein Befund | alle drei Zweige von OnVisible haben das Feld, Speichern setzt es vor dem JSON, Nur-Ansicht liest nur das Feld, altes JSON → false. Zwei Punkte geschlussfolgert, nicht in Studio getestet: UpdateIf mit Feldverweisen im Änderungsdatensatz (Schritt 3.8 und T3.10 zeigen es) |
+
 ## Offene Befunde
 
 - Fachliche Annahme „Warnen verlangt Begründung“ ist von Josias zu bestätigen (kein technischer Befund).

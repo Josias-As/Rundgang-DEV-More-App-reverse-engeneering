@@ -705,6 +705,12 @@ RUNDE3_12 = {
         ("Nr. 3/4: Hinweistext bei gefülltem Feld nicht sichtbar; eine Durchführung je Tag", "T2.1, T2.5, T2.6 angepasst")],
 }
 
+RUNDE3_34 = {
+    3: [("Gezielte Prüfung (30.10.) von Feld Warnung, Nur-Ansicht und Protokoll: kein Befund", "alle drei Zweige von OnVisible haben das Feld, Speichern setzt es vor dem JSON, Nur-Ansicht liest nur das Feld, altes JSON → false. Zwei Punkte geschlussfolgert, nicht in Studio getestet: UpdateIf mit Feldverweisen im Änderungsdatensatz (Schritt 3.8 und T3.10 zeigen es)")],
+    4: [("Gezielte Prüfung (30.10.) des Speicherns aus der Kopie: kein mittlerer oder hoher Befund", "Reihenfolge colVersteckt → Upload → Kommentar leeren → Warnung → colSpeichern → JSON → Patch stimmt, alle If-Zweige liefern denselben Datensatztyp, Abschluss-Plausibilität stimmt, Abbruch lässt colAntworten unverändert. Geschlussfolgert, nicht in Studio getestet: Patch(Datensatz; Datensatz) in ForAll (Schritt 4.8 und T4.5–T4.8 zeigen es)"),
+        ("N1 niedrig: hochgeladene Datei ohne Verweis nach Abbruch", "harmlos, dokumentiert")],
+}
+
 RUNDE2 = {
     1: [("Nr. 1 mittel: Erwartung „ohne Kommentar“ bei i.O. nicht sichtbar", "Test B6a: Punkt auf n.i.O. tippen, Kommentarfeld muss leer sein"),
         ("Nr. 2/3/4/6/13: Testbogen (Reihenfolge der Kategorien, Namen, Prüfhinweis 1.6, Daten aktualisieren, Foto = Aus bei FotoMoeglich Ja)", "ergänzt (A9, Hinweise im Bogen, Prüfhinweis 1.6)"),
@@ -742,6 +748,8 @@ for _k, _v in RUNDE2_34.items():
 
 for _k, _v in RUNDE3_12.items():
     RUNDE3[_k] = _v
+for _k, _v in RUNDE3_34.items():
+    RUNDE3[_k] = _v
 
 
 def UEBERSICHT(d):
@@ -760,7 +768,7 @@ def UEBERSICHT(d):
     z += ["", "## Prüfstand", "",
           "- Erzeugt aus dem frischen Export 27.10.2026 09:09 (ohne Simulation). Maschinelle Prüfung 0 Fehler, Mutationstest 9/9, Logik-Gegenprobe 71 Szenarien ohne Fehler.",
           "- Unabhängige Prüfung: Runde 1 (Pakete 1–4), Runde 2 (alle sechs) und Runde 3 (Pakete 1, 2, 5, 6) eingearbeitet, siehe PRUEFUNG_n. In Runde 3 fand kein Prüfer einen Code-Fehler, nur Testbogen- und Doku-Befunde (eingearbeitet).",
-          "- **Nicht erfüllt:** Paket 3+4 ist in Runde 3 nicht geprüft (Prüfer auf Josias' Wunsch gestoppt, Guthaben). Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) sind damit nur maschinell und von mir geprüft. Eine Prüfung ohne jeden Befund liegt für keines der sechs Pakete vor; die letzten Befunde waren Testbogen/Doku.",
+          "- Die Änderungen aus Runde 2 an Paket 3 (Feld Warnung) und Paket 4 (Speichern aus der Kopie colSpeichern) hat am 30.10. ein gezielter unabhängiger Prüfer durchgesehen: kein mittlerer oder hoher Befund, ein niedriger Hinweis (N1, harmlos). Nicht für jedes Paket liegt eine Gesamtprüfung der letzten Fassung vor (3 und 4 nur gezielt auf die geänderten Stellen); die letzten Befunde waren Testbogen/Doku.",
           ]
     z += ["", "## Entscheidungen und Annahmen (bitte bestätigen)", "",
           "- **Foto-Pflicht gilt immer**, auch wenn der Punkt selbst nicht Pflicht ist (Nachweis, z. B. Thermometer).",
