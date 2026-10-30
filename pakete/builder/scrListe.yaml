@@ -450,7 +450,7 @@ Screens:
                                   If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Aktiv",
                                       IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Archiviert", Aktiv: false}), Set(varPatchFehler, true)),
                                       fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Archiviert",
-                                      IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Aktiv", Aktiv: true, Fassung: fnAktiveFassung(ThisItem.Fassung)}), Set(varPatchFehler, true)),
+                                      IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Aktiv", Aktiv: true}), Set(varPatchFehler, true)),
                                       fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf" && Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Fassung, 0) = 0 && !Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Aktiv, false),
                                       IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
                                       IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
@@ -500,10 +500,13 @@ Screens:
                                   Set(varIsLoading, true);
                                   Set(varPatchFehler, false);
                                   With({f: Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).EntwurfFassung, 0)},
-                                      If(f > 0 && f <> fnAktiveFassung(ThisItem.Fassung),
+                                      If(f > 0 && f <> fnAktiveFassung(ThisItem.Fassung) && CountRows(Filter(Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f), Coalesce(Aktiv, false))) = 0,
                                           IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));
                                           IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));
-                                          IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))
+                                          IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true)),
+                                          f > 0,
+                                          Notify("Diese Fassung ist schon teilweise aktiv und wird nicht gelöscht. Bitte „Bearbeiten“ und dann „Aktivieren …“ erneut tippen.", NotificationType.Error);
+                                          Set(varPatchFehler, true)
                                       )
                                   );
                                   If(!varPatchFehler, IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true)));

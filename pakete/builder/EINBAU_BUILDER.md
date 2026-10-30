@@ -152,6 +152,8 @@ Set(varQuelleNurAktiv; false);;
 Set(varHeuteLaeuft; false);;
 Set(varPlanRgID; 0);;
 Set(varPlanRg; Defaults(RG_Rundgaenge));;
+Set(varEntwurfOk; true);;
+Set(varAktivRest; false);;
 Set(varVorlageNeu; Defaults(RG_Rundgaenge))
 ```
 
@@ -193,6 +195,8 @@ Wichtig: In der Strukturansicht müssen die Fenster (`conNeu`, `conAkt`, `conHol
 | U4 | Auswahl-Steuerelemente (Classic Dropdown) lösen `OnChange` auch beim Wechsel der Auswahl aus | T5–T8 | unkritisch: Jede `OnChange`-Formel schreibt nur, wenn sich der Wert wirklich ändert |
 | U5 | Reihenfolge der Ereignisse: Text ändern und sofort links einen anderen Punkt antippen speichert beim **alten** Punkt | T5 (letzte Zeile) | Ich baue ein Speichern beim Verlassen der Auswahl |
 | U6 | `fnMontag` (Startwoche) und Datumsspalten: Speichern als Datum ohne Zeitverschiebung | T13 | Datum in SharePoint ansehen |
+| U7 | Der Arbeits-Zeitgeber `tmrArbeit` startet nach dem Öffnen des Editors (Wechsel von `varArbeitStart` false → true) | T2, T3 | Bleibt „Bitte warten …“ stehen: Vorschau neu starten, mir Bescheid geben (dann Knopf „Abbrechen“) |
+| U8 | Ein zweites Fenster mit demselben Entwurf: nach dem Aktivieren im ersten schreibt das zweite nichts mehr | T11b | – |
 
 ## 10. Testbogen (Zeitachse)
 
@@ -211,6 +215,7 @@ Mit dem bestehenden Testrundgang „ZZ Test Objektrundgang TCC“ und neuen Rund
 | T9 | „Bild wählen“ → Bild antippen | Vorschaubild neben dem Knopf, Vorschau „mit Beispielbild“ (U3) |
 | T10 | Übersicht → „Vorlagen bearbeiten“ | Rundgang „Vorlagen (Builder)“ mit Bereich „Vorlagen“, 3 Kategorien, 10 Prüfpunkten. Zurück, Testrundgang bearbeiten, „Aus Vorlage holen“ → Prüfpunkt „Temperatur“ → übernehmen | erscheint am Ende der gewählten Kategorie |
 | T11 | „Aktivieren …“ | Fenster: neu/geändert/entfernt mit Liste, Hinweis „Heute läuft noch ein Rundgang …“ (wegen T4). „Jetzt aktivieren“ → Übersicht „aktive Fassung 2“ |
+| T11b | Vor T11 den Builder in einem zweiten Browser-Fenster mit demselben Entwurf offen lassen; nach T11 dort eine Frage ändern | Meldung „Dieser Entwurf ist nicht mehr offen …“, nichts geändert, Editor nur lesen |
 | T12 | Rundgang-App: den Rundgang aus T4 weiter bearbeiten | Kategorien und Fragen der **alten** Fassung, Speichern geht |
 | T13 | Neuer Rundgang „ZZ Test Builder“ (leer): Bereich, Kategorie, 2 Prüfpunkte; Plan: heutiger Wochentag, jede Woche, Startwoche diese Woche; aktivieren | Plan zeigt heute unter „Nächste Termine“; Rundgang-App zeigt ihn heute; Durchführung und Protokoll gehen; in SharePoint ist `StartMontag` ein Montag (U6) |
 | T14 | Neuer Rundgang als „Kopie eines Rundgangs“ von ZZ Test Objektrundgang TCC | gleiche Gliederung, Bedingungen zeigen auf die neuen Fragen, Plan leer |
@@ -236,6 +241,7 @@ Nach dem Test: Testrundgänge archivieren oder löschen. Ihre Durchführungen si
 ## 13. Prüfstand
 
 - Maschinell (`arbeit/2026-10-30_Builder/pruefung.txt`): Klammern, keine Kommentare, Rückübersetzung deutsch → englisch zeichengleich, jeder Name bekannt, jede Variable mit Startwert in App.OnStart, jede Sammlung gefüllt, jedes Steuerelement vorhanden, jedes Patch-Feld ist eine Spalte der Liste (Auswahlspalten als `{Value: …}`), Argumentanzahl der Funktionen, YAML zeichengleich zurückgelesen, Textbreiten geschätzt. Fehler gesamt: 0.
-- Unabhängige Prüfung: siehe `pakete/builder/PRUEFUNG_BUILDER.md`.
+- Mutationstest `werkzeuge/mutation_builder.py`: 10/10.
+- Unabhängige Prüfung: 8 Befunde (1 hoch, 5 mittel), alle behoben oder als UNSICHER im Testbogen – siehe `pakete/builder/PRUEFUNG_BUILDER.md`.
 - In Studio getestet: **nein** (Testbogen).
 

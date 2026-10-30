@@ -1,5 +1,5 @@
-Rundgang-Builder: 3 Bildschirme, 227 Steuerelemente, 3195 Properties, 47 Variablen, 17 Funktionen
-Patch-Felder geprüft: 236
+Rundgang-Builder: 3 Bildschirme, 227 Steuerelemente, 3195 Properties, 49 Variablen, 17 Funktionen
+Patch-Felder geprüft: 237
 YAML scrListe: 565 Properties zeichengleich zurückgelesen
 YAML scrEditor: 2257 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
@@ -71,7 +71,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnLiVorlagen.OnSelect         LookUp(RG_Rundgaenge, Status = "Vorlage"))
   btnLiAktion.OnSelect           LookUp(RG_Durchfuehrungen, Title = "R" & ThisItem.ID & "-" & Text(Today(), "yyyy-mm-dd"))}, Set(varHeuteLaeuft, !IsBlank(d) && d.Status 
   btnLiAktion.OnSelect           LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Archiviert", Aktiv: false}), Set(varPatchFehler, true)),
-  btnLiAktion.OnSelect           LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Aktiv", Aktiv: true, Fassung: fnAktiveFassung(ThisItem.Fassung)}), Set(varPatchF
+  btnLiAktion.OnSelect           LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Aktiv", Aktiv: true}), Set(varPatchFehler, true)),
   btnLiAktion.OnSelect           LookUp(RG_Rundgaenge, ID = ThisItem.ID).Fassung, 0) = 0 && !Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Aktiv, false),
   btnLiAktion.OnSelect           Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID)), Set(varPatchFehler, true))
   btnLiAktion.OnSelect           Filter(RG_Kategorien, RundgangID = ThisItem.ID)), Set(varPatchFehler, true))
@@ -79,28 +79,36 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnLiAktion.OnSelect           Filter(RG_Plan, RundgangID = ThisItem.ID)), Set(varPatchFehler, true))
   btnLiAktion.OnSelect           LookUp(RG_Rundgaenge, ID = ThisItem.ID)), Set(varPatchFehler, true)))
   btnLiVerwerfen.OnSelect        LookUp(RG_Rundgaenge, ID = ThisItem.ID).EntwurfFassung, 0)},
+  btnLiVerwerfen.OnSelect        Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f), Coalesce(Aktiv, false))) = 0,
   btnLiVerwerfen.OnSelect        Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))
   btnLiVerwerfen.OnSelect        Filter(RG_Kategorien, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))
-  btnLiVerwerfen.OnSelect        Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))
+  btnLiVerwerfen.OnSelect        Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true)),
   btnLiVerwerfen.OnSelect        LookUp(RG_Rundgaenge, ID = ThisItem.ID), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true)))
   btnNeuAnlegen.OnSelect         Filter(RG_Rundgaenge, Title = Left(Trim(txtNeuName.Text), 255)), ID, SortOrder.Descending)))
   txtEdName.OnChange             LookUp(RG_Rundgaenge, ID = varRgID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtEdName.OnChange             LookUp(RG_Rundgaenge, ID = varRgID))
   btnEdAktivieren.OnSelect       Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = fa))
   btnEdAktivieren.OnSelect       LookUp(RG_Durchfuehrungen, Title = "R" & varRgID & "-" & Text(Today(), "yyyy-mm-dd"))}, Set(varHeuteLaeuft, !IsBlank(d) && d.Status <> "
+  btnGlNeuB.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnGlNeuB.OnSelect             LookUp(RG_Bereiche, ID = varNeuID))
+  btnGlNeuK.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnGlNeuK.OnSelect             LookUp(RG_Kategorien, ID = varNeuID))
+  btnGlNeuP.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnGlNeuP.OnSelect             LookUp(RG_Pruefpunkte, ID = varNeuID))
   btnGlHolen.OnSelect            Filter(RG_Bereiche, RundgangID = s.ID && Fassung = f)),
   btnGlHolen.OnSelect            Filter(RG_Kategorien, RundgangID = s.ID && Fassung = f)),
   btnGlHolen.OnSelect            Filter(RG_Pruefpunkte, RundgangID = s.ID && Fassung = f))
-  btnEdHoch.OnSelect             LookUp(RG_Bereiche, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdHoch.OnSelect             LookUp(RG_Kategorien, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdHoch.OnSelect             LookUp(RG_Pruefpunkte, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdRunter.OnSelect           LookUp(RG_Bereiche, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdRunter.OnSelect           LookUp(RG_Kategorien, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdRunter.OnSelect           LookUp(RG_Pruefpunkte, ID = u.ID), {RgReihenfolge: u.Neu}))}))
-  btnEdEntf.OnSelect             LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: ""}))
+  btnEdHoch.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnEdHoch.OnSelect             LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdHoch.OnSelect             LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdHoch.OnSelect             LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdRunter.OnSelect           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnEdRunter.OnSelect           LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdRunter.OnSelect           LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdRunter.OnSelect           LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}))
+  btnEdDupl.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnEdEntf.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnEdEntf.OnSelect             LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}))
   btnEdEntf.OnSelect             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung)),
   btnEdEntf.OnSelect             Filter(RG_Pruefpunkte, KategorieID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung))
   btnEdEntf.OnSelect             LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung)),
@@ -110,41 +118,58 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnEdEntf.OnSelect             Filter(RG_Bereiche, RundgangID = varRgID && Fassung = varFassung)),
   btnEdEntf.OnSelect             Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung)),
   btnEdEntf.OnSelect             Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
-  txtBName.OnChange              LookUp(RG_Bereiche, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtBName.OnChange              LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtBName.OnChange              LookUp(RG_Bereiche, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set
   txtBName.OnChange              LookUp(RG_Bereiche, ID = varAuswahlID))
-  txtKName.OnChange              LookUp(RG_Kategorien, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKName.OnChange              LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtKName.OnChange              LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set
   txtKName.OnChange              LookUp(RG_Kategorien, ID = varAuswahlID))
-  ddKBereich.OnChange            LookUp(RG_Kategorien, ID = varAuswahlID), {BereichID: ziel, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = ziel), RgReihenfol
+  ddKBereich.OnChange            LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddKBereich.OnChange            LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BereichID: ziel, RgReihenfolge: Coalesce
   ddKBereich.OnChange            Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung))
-  txtPFrage.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtPFrage.OnChange             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPFrage.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set
   txtPFrage.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Eingabetyp: {Value: ThisItem.W}}), Set(varPatchFehler, true))
+  btnPTyp.OnSelect               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}}), Set(v
   btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnPPflicht.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Pflicht: ThisItem.W = "ja"}), Set(varPatchFehler, true))
+  btnPPflicht.OnSelect           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnPPflicht.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Pflicht: ThisItem.W = "ja"}), Set(varPat
   btnPPflicht.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnPKomm.OnSelect              LookUp(RG_Pruefpunkte, ID = varAuswahlID), {KommentarPflicht: ThisItem.W = "immer"}), Set(varPatchFehler, true))
+  btnPKomm.OnSelect              LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnPKomm.OnSelect              LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KommentarPflicht: ThisItem.W = "immer"})
   btnPKomm.OnSelect              LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  txtPEinheit.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Einheit: Trim(Self.Text)}), Set(varPatchFehler, true))
+  txtPEinheit.OnChange           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPEinheit.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Einheit: Trim(Self.Text)}), Set(varPatch
   txtPEinheit.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  txtPMin.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {MinWert: v}), Set(varPatchFehler, true))
+  txtPMin.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPMin.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {MinWert: v}), Set(varPatchFehler, true))
   txtPMin.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  txtPMax.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {MaxWert: v}), Set(varPatchFehler, true))
+  txtPMax.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPMax.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {MaxWert: v}), Set(varPatchFehler, true))
   txtPMax.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnPGrenz.OnSelect             LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Grenzmodus: {Value: ThisItem.W}}), Set(varPatchFehler, true))
+  btnPGrenz.OnSelect             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnPGrenz.OnSelect             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Grenzmodus: {Value: ThisItem.W}}), Set(v
   btnPGrenz.OnSelect             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Auswahlwerte: neu}), Set(varPatchFehler, true))
+  txtPWerte.OnChange             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler,
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Foto: {Value: Self.Selected.W}}), Set(varPatchFehler, true))
+  ddPFoto.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Foto: {Value: Self.Selected.W}}), Set(va
   ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  ddPBedA.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {BedingungPunkt: Self.Selected.ID, BedingungWert: If(Self.Selected.ID = 0, "", With({a: L
+  ddPBedA.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddPBedA.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: Self.Selected.ID, Beding
   ddPBedA.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  ddPBedW.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID), {BedingungWert: Self.Selected.W}), Set(varPatchFehler, true))
+  ddPBedW.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddPBedW.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BedingungWert: Self.Selected.W}), Set(va
   ddPBedW.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  txtPHinweis.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Hinweis: Self.Text}), Set(varPatchFehler, true))
+  txtPHinweis.OnChange           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPHinweis.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Hinweis: Self.Text}), Set(varPatchFehler
   txtPHinweis.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   imgPBild.Image                 LookUp(RG_Hinweisbilder, ID = LookUp(colP, ID = varAuswahlID).HinweisBildID).Thumbnail.Small)
-  ddPKategorie.OnChange          LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: ""}))
-  ddPKategorie.OnChange          LookUp(RG_Pruefpunkte, ID = varAuswahlID), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihe
+  ddPKategorie.OnChange          LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddPKategorie.OnChange          LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}))
+  ddPKategorie.OnChange          LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KategorieID: ziel, RgReihenfolge: Coales
   ddPKategorie.OnChange          Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID))
   tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varRgID))
@@ -156,6 +181,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID), {Fassung: 1, EntwurfFassung: 0, EntwurfVon: "", Status: If(Coalesce(varRg.Aktiv, false), "Akti
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID))
   tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varRgID))
+  tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varRgID), Fassung, SortOrder.Descending)).Fassung, 0), Coalesce(First(Sort(Filter(RG_Pruefpunkte
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID), {EntwurfFassung: varZielF, EntwurfVon: User().FullName}), Set(varPatchFehler, true))
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varRgID && Fassung = fnAktiveFassung(varRg.Fassung)))
   tmrArbeit.OnTimerEnd           Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = fnAktiveFassung(varRg.Fassung)))
@@ -163,6 +189,12 @@ Abfragen auf SharePoint (Delegation nachlesen):
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varQuelleR && Fassung = varQuelleF)),
   tmrArbeit.OnTimerEnd           Filter(RG_Pruefpunkte, RundgangID = varQuelleR && Fassung = varQuelleF))
   tmrArbeit.OnTimerEnd           LookUp(RG_Pruefpunkte, ID = m.Neu), {BedingungPunkt: neuA, BedingungWert: m.BedWert})))}
+  tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) = 0 || varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+  tmrArbeit.OnTimerEnd           Filter(RG_Pruefpunkte, RundgangID = varZielR && Fassung = varZielF))
+  tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varZielR && Fassung = varZielF))
+  tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varZielR && Fassung = varZielF))
+  tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) > 0 && varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+  tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varZielR), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true))
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID))
   tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varRgID && Fassung = varFassung)),
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung)),
@@ -182,11 +214,15 @@ Abfragen auf SharePoint (Delegation nachlesen):
   ddHolenQuelle.OnChange         Filter(RG_Bereiche, RundgangID = s.ID && Fassung = f)),
   ddHolenQuelle.OnChange         Filter(RG_Kategorien, RundgangID = s.ID && Fassung = f)),
   ddHolenQuelle.OnChange         Filter(RG_Pruefpunkte, RundgangID = s.ID && Fassung = f))
+  btnHolenUebernehmen.OnSelect   LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnMehrAnlegen.OnSelect        LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnMehrAnlegen.OnSelect        Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
   galBild.Items                  Filter(RG_Hinweisbilder, ID = -1))
-  btnBi.OnSelect                 LookUp(RG_Pruefpunkte, ID = varAuswahlID), {HinweisBildID: ThisItem.ID}), Set(varPatchFehler, true))
+  btnBi.OnSelect                 LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnBi.OnSelect                 LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: ThisItem.ID}), Set(varPat
   btnBi.OnSelect                 LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnBildKeins.OnSelect          LookUp(RG_Pruefpunkte, ID = varAuswahlID), {HinweisBildID: 0}), Set(varPatchFehler, true))
+  btnBildKeins.OnSelect          LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnBildKeins.OnSelect          LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: 0}), Set(varPatchFehler, 
   btnBildKeins.OnSelect          LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   scrPlan.OnVisible              LookUp(RG_Rundgaenge, ID = varPlanRgID))
   scrPlan.OnVisible              Filter(RG_Plan, RundgangID = varPlanRgID))

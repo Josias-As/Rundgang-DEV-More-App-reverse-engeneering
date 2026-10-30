@@ -69,7 +69,7 @@ Screens:
                             Reset(txtEdName),
                             Set(varPatchFehler, false);
                             IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varRgID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
-                            If(varPatchFehler, Notify("Name nicht gespeichert.", NotificationType.Error), Set(varRg, LookUp(RG_Rundgaenge, ID = varRgID)); Set(varGespeichertText, "Name gespeichert " & Text(Now(), "hh:mm:ss")))
+                            If(varPatchFehler, Notify("Name nicht gespeichert.", NotificationType.Error), Set(varRg, LookUp(RG_Rundgaenge, ID = varRgID)); Set(varGespeichertText, "Name gespeichert " & Text(Now(), "hh:mm:ss")); Notify("Der Name gilt sofort, auch für die aktive Fassung.", NotificationType.Information))
                         ),
                         Trim(Self.Text) = "",
                         Reset(txtEdName)
@@ -99,7 +99,7 @@ Screens:
                   Font: =Font.'Segoe UI'
                   Height: =56
                   Size: =12
-                  Text: =If(varIstVorlage, "Vorlagen – Änderungen gelten sofort", varSchreibbar, "Entwurf Fassung " & varFassung & If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", " · noch nie aktiviert", " · aktiv ist Fassung " & fnAktiveFassung(varRg.Fassung)), "Ansicht der aktiven Fassung " & varFassung & " (nur lesen)") & Char(10) & varGespeichertText
+                  Text: =If(varAktivRest, "Aktivieren von Fassung " & varFassung & " unvollständig – bitte erneut aktivieren", varIstVorlage, "Vorlagen – Änderungen gelten sofort", varSchreibbar, "Entwurf Fassung " & varFassung & If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", " · noch nie aktiviert", " · aktiv ist Fassung " & fnAktiveFassung(varRg.Fassung)), "Ansicht der aktiven Fassung " & varFassung & " (nur lesen)") & Char(10) & varGespeichertText
                   Width: =420
                   X: =540
                   Y: =4
@@ -112,7 +112,7 @@ Screens:
                   Height: =40
                   Size: =13
                   Text: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, CountRows(Filter(galPr.AllItems, Art = "Fehler")) & " Fehler", "keine Fehler")
-                  Visible: =varSchreibbar && !varIstVorlage
+                  Visible: =(varSchreibbar && !varIstVorlage) || varAktivRest
                   Width: =180
                   X: =Parent.Width - 400
                   Y: =12
@@ -153,7 +153,7 @@ Screens:
                   RadiusTopRight: =6
                   Size: =14
                   Text: ="Aktivieren …"
-                  Visible: =varSchreibbar && !varIstVorlage
+                  Visible: =(varSchreibbar && !varIstVorlage) || varAktivRest
                   Width: =190
                   X: =Parent.Width - 206
                   Y: =12
@@ -188,7 +188,7 @@ Screens:
                   RadiusTopRight: =6
                   Size: =14
                   Text: ="Neue Fassung bearbeiten"
-                  Visible: =!varSchreibbar && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"
+                  Visible: =!varSchreibbar && !varAktivRest && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"
                   Width: =270
                   X: =Parent.Width - 286
                   Y: =12
@@ -413,7 +413,12 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(false,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  false,
+                                  false,
                                   Notify("", NotificationType.Warning),
                                   Set(varNeuID, IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0}).ID, 0));
                                   If(varNeuID = 0,
@@ -468,7 +473,12 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(varCtxB = 0,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  false,
+                                  varCtxB = 0,
                                   Notify("Links zuerst einen Bereich antippen.", NotificationType.Warning),
                                   Set(varNeuID, IfError(Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Neue Kategorie", BereichID: varCtxB, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = varCtxB), RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: true, QuelleID: 0}).ID, 0));
                                   If(varNeuID = 0,
@@ -523,7 +533,12 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(varCtxK = 0,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  false,
+                                  varCtxK = 0,
                                   Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
                                   Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0}).ID, 0));
                                   If(varNeuID = 0,
@@ -696,14 +711,19 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(varAuswahlEbene = 1,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  false,
+                                  varAuswahlEbene = 1,
                                   With({cur: LookUp(colB, ID = varAuswahlID)},
                                       With({s: Sort(colB, RgReihenfolge * 1000000 + ID)},
                                           With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
                                               If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
                                                   Notify("Steht schon ganz oben.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colB, LookUp(colB, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -717,7 +737,7 @@ Screens:
                                               If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
                                                   Notify("Steht schon ganz oben.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colK, LookUp(colK, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -731,7 +751,7 @@ Screens:
                                               If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
                                                   Notify("Steht schon ganz oben.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colP, LookUp(colP, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -770,14 +790,19 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(varAuswahlEbene = 1,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  false,
+                                  varAuswahlEbene = 1,
                                   With({cur: LookUp(colB, ID = varAuswahlID)},
                                       With({s: Sort(colB, RgReihenfolge * 1000000 + ID)},
                                           With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
                                               If(pos + (1) < 1 || pos + (1) > CountRows(s),
                                                   Notify("Steht schon ganz unten.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colB, LookUp(colB, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -791,7 +816,7 @@ Screens:
                                               If(pos + (1) < 1 || pos + (1) > CountRows(s),
                                                   Notify("Steht schon ganz unten.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colK, LookUp(colK, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -805,7 +830,7 @@ Screens:
                                               If(pos + (1) < 1 || pos + (1) > CountRows(s),
                                                   Notify("Steht schon ganz unten.", NotificationType.Information),
                                                   ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID), {RgReihenfolge: u.Neu}))}));
+                                                  ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
                                                   ForAll(colUmsort As u, Patch(colP, LookUp(colP, ID = u.ID), {RgReihenfolge: u.Neu}));
                                                   If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
                                               )
@@ -844,6 +869,10 @@ Screens:
                         OnSelect: |-
                           =If(varSchreibbar && varAuswahlEbene > 0 && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(varEntwurfOk,
                               ClearCollect(colQB, Filter(colB, varAuswahlEbene = 1 && ID = varAuswahlID));
                               ClearCollect(colQK, Filter(colK, (varAuswahlEbene = 2 && ID = varAuswahlID) || (varAuswahlEbene = 1 && BereichID = varAuswahlID)));
                               ClearCollect(colQP, Filter(colP, (varAuswahlEbene = 3 && ID = varAuswahlID) || KategorieID in colQK.ID));
@@ -858,6 +887,7 @@ Screens:
                               Set(varJob, "kopie");
                               Set(varIsLoading, true);
                               Set(varArbeitStart, true)
+                              )
                           )
                         PressedColor: =clrPrimaer
                         PressedFill: =clrPrimaerHell
@@ -892,9 +922,13 @@ Screens:
                                       Set(varFrage, "del" & varAuswahlEbene & "-" & varAuswahlID);
                                       Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),
                                       Set(varFrage, "");
-                                      Set(varIsLoading, true);
+                                      Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(varEntwurfOk,
+                              Set(varIsLoading, true);
                               If(varAuswahlEbene = 3,
-                                  ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: ""}));
+                                  ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}));
                                   Remove(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung)),
                                   varAuswahlEbene = 2,
                                   Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, KategorieID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
@@ -968,6 +1002,7 @@ Screens:
                                   Reset(ddPBedW)
                               );
                               Set(varIsLoading, false)
+                              )
                                   )
                               ))
                         PressedColor: =clrFehler
@@ -1047,13 +1082,18 @@ Screens:
                           =If(Trim(Self.Text) = "",
                               Reset(txtBName),
                               Self.Text <> LookUp(colB, ID = varAuswahlID).Title,
-                              If(varSchreibbar,
-                                  Set(varPatchFehler, false);
-                                  IfError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
-                                  If(varPatchFehler,
-                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                      Patch(colB, LookUp(colB, ID = varAuswahlID), LookUp(RG_Bereiche, ID = varAuswahlID));
-                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                              If(varSchreibbar && varAuswahlEbene = 1,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colB, LookUp(colB, ID = varAuswahlID), LookUp(RG_Bereiche, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
                                   )
                               )
                           )
@@ -1115,13 +1155,18 @@ Screens:
                           =If(Trim(Self.Text) = "",
                               Reset(txtKName),
                               Self.Text <> LookUp(colK, ID = varAuswahlID).Title,
-                              If(varSchreibbar,
-                                  Set(varPatchFehler, false);
-                                  IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
-                                  If(varPatchFehler,
-                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                      Patch(colK, LookUp(colK, ID = varAuswahlID), LookUp(RG_Kategorien, ID = varAuswahlID));
-                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                              If(varSchreibbar && varAuswahlEbene = 2,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colK, LookUp(colK, ID = varAuswahlID), LookUp(RG_Kategorien, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
                                   )
                               )
                           )
@@ -1151,20 +1196,25 @@ Screens:
                         ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
                         ChevronHoverFill: =Color.White
                         Color: =clrText
-                        Default: =LookUp(colB, ID = LookUp(colK, ID = varAuswahlID).BereichID).Title
+                        Default: |-
+                          =With({b: LookUp(colB, ID = LookUp(colK, ID = varAuswahlID).BereichID)}, b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""))
                         DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                         Fill: =clrKarte
                         Font: =Font.'Segoe UI'
                         Height: =36
                         HoverFill: =clrPrimaerHell
                         Items: |-
-                          =Sort(ForAll(colB As b, {ID: b.ID, N: b.Title, S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")}), S)
+                          =Sort(ForAll(colB As b, {ID: b.ID, N: b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")}), S)
                         Items.Value: =N
                         OnChange: |-
                           =If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colK, ID = varAuswahlID).BereichID && varSchreibbar,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(varEntwurfOk,
                               With({ziel: Self.Selected.ID},
                                   Set(varPatchFehler, false);
-                                  IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID), {BereichID: ziel, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = ziel), RgReihenfolge), 0) + 10}), Set(varPatchFehler, true));
+                                  IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BereichID: ziel, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = ziel), RgReihenfolge), 0) + 10}), Set(varPatchFehler, true));
                                   ClearCollect(colK, Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung));
                                   If(varPatchFehler, Notify("Verschieben hat nicht geklappt.", NotificationType.Error), Notify("Verschoben (ans Ende des Bereichs).", NotificationType.Success));
                                   Set(varAuswahlEbene, 2);
@@ -1184,7 +1234,7 @@ Screens:
                                   Reset(ddPKategorie);
                                   Reset(ddPBedA);
                                   Reset(ddPBedW)
-                              )
+                              ))
                           )
                         PaddingLeft: =10
                         PressedColor: =Color.White
@@ -1249,13 +1299,18 @@ Screens:
                           =If(Trim(Self.Text) = "",
                               Reset(txtPFrage),
                               Self.Text <> LookUp(colP, ID = varAuswahlID).Title,
-                              If(varSchreibbar,
-                                  Set(varPatchFehler, false);
-                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
-                                  If(varPatchFehler,
-                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                      Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
                                   )
                               )
                           )
@@ -1307,13 +1362,18 @@ Screens:
                               HoverFill: =If(ThisItem.W = LookUp(colP, ID = varAuswahlID).Eingabetyp.Value, ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                               OnSelect: |-
                                 =If(ThisItem.W <> LookUp(colP, ID = varAuswahlID).Eingabetyp.Value,
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Eingabetyp: {Value: ThisItem.W}}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1372,13 +1432,18 @@ Screens:
                               HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                               OnSelect: |-
                                 =If((ThisItem.W = "ja") <> Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Pflicht: ThisItem.W = "ja"}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Pflicht: ThisItem.W = "ja"}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1437,13 +1502,18 @@ Screens:
                               HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false), "immer", "mangel"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                               OnSelect: |-
                                 =If((ThisItem.W = "immer") <> Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {KommentarPflicht: ThisItem.W = "immer"}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KommentarPflicht: ThisItem.W = "immer"}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1519,13 +1589,18 @@ Screens:
                               HoverBorderColor: =clrPrimaer
                               OnChange: |-
                                 =If(Trim(Self.Text) <> Coalesce(LookUp(colP, ID = varAuswahlID).Einheit, ""),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Einheit: Trim(Self.Text)}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Einheit: Trim(Self.Text)}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1554,13 +1629,18 @@ Screens:
                                         Notify("Bitte eine Zahl eingeben.", NotificationType.Warning);
                                         Reset(txtPMin),
                                         Text(v) <> Text(LookUp(colP, ID = varAuswahlID).MinWert),
-                                        If(varSchreibbar,
-                                            Set(varPatchFehler, false);
-                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {MinWert: v}), Set(varPatchFehler, true));
-                                            If(varPatchFehler,
-                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                        If(varSchreibbar && varAuswahlEbene = 3,
+                                            Refresh(RG_Rundgaenge);
+                                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                            If(varEntwurfOk,
+                                                Set(varPatchFehler, false);
+                                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {MinWert: v}), Set(varPatchFehler, true));
+                                                If(varPatchFehler,
+                                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                                )
                                             )
                                         )
                                     )
@@ -1590,13 +1670,18 @@ Screens:
                                         Notify("Bitte eine Zahl eingeben.", NotificationType.Warning);
                                         Reset(txtPMax),
                                         Text(v) <> Text(LookUp(colP, ID = varAuswahlID).MaxWert),
-                                        If(varSchreibbar,
-                                            Set(varPatchFehler, false);
-                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {MaxWert: v}), Set(varPatchFehler, true));
-                                            If(varPatchFehler,
-                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                        If(varSchreibbar && varAuswahlEbene = 3,
+                                            Refresh(RG_Rundgaenge);
+                                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                            If(varEntwurfOk,
+                                                Set(varPatchFehler, false);
+                                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {MaxWert: v}), Set(varPatchFehler, true));
+                                                If(varPatchFehler,
+                                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                                )
                                             )
                                         )
                                     )
@@ -1649,13 +1734,18 @@ Screens:
                                     HoverFill: =If(ThisItem.W = fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                                     OnSelect: |-
                                       =If(ThisItem.W <> fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value),
-                                          If(varSchreibbar,
-                                              Set(varPatchFehler, false);
-                                              IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Grenzmodus: {Value: ThisItem.W}}), Set(varPatchFehler, true));
-                                              If(varPatchFehler,
-                                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                                  Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                                  Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                          If(varSchreibbar && varAuswahlEbene = 3,
+                                              Refresh(RG_Rundgaenge);
+                                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                              If(varEntwurfOk,
+                                                  Set(varPatchFehler, false);
+                                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Grenzmodus: {Value: ThisItem.W}}), Set(varPatchFehler, true));
+                                                  If(varPatchFehler,
+                                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                      Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                                  )
                                               )
                                           )
                                       )
@@ -1711,13 +1801,18 @@ Screens:
                               OnChange: |-
                                 =With({neu: Concat(Filter(ForAll(Split(Substitute(Self.Text, Char(13), ""), Char(10)) As z, {W: Trim(Substitute(z.Value, ";", ","))}), W <> "") As w, w.W, ";")},
                                     If(neu <> Coalesce(LookUp(colP, ID = varAuswahlID).Auswahlwerte, ""),
-                                        If(varSchreibbar,
-                                            Set(varPatchFehler, false);
-                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Auswahlwerte: neu}), Set(varPatchFehler, true));
-                                            If(varPatchFehler,
-                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                        If(varSchreibbar && varAuswahlEbene = 3,
+                                            Refresh(RG_Rundgaenge);
+                                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                            If(varEntwurfOk,
+                                                Set(varPatchFehler, false);
+                                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler, true));
+                                                If(varPatchFehler,
+                                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                                )
                                             )
                                         )
                                     )
@@ -1771,13 +1866,18 @@ Screens:
                               Items.Value: =N
                               OnChange: |-
                                 =If(!IsBlank(Self.Selected) && Self.Selected.W <> fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false)),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Foto: {Value: Self.Selected.W}}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Foto: {Value: Self.Selected.W}}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1814,24 +1914,30 @@ Screens:
                               ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
                               ChevronHoverFill: =Color.White
                               Color: =clrText
-                              Default: =If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) = 0, "— immer zeigen —", Coalesce(LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title, "— immer zeigen —"))
+                              Default: |-
+                                =If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) = 0, "— immer zeigen —", Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0 && IsBlank(LookUp(ForAll(Sort(Filter(colP As a, a.KategorieID = LookUp(colP, ID = varAuswahlID).KategorieID && a.ID <> varAuswahlID && Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < LookUp(colP, ID = varAuswahlID).RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")}), ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)), Coalesce(LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title, "Frage #" & LookUp(colP, ID = varAuswahlID).BedingungPunkt) & " (ungültig)", With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")))
                               DisplayMode: =If(varSchreibbar && !varIsLoading && !!IsBlank(LookUp(colP As d, d.BedingungPunkt = varAuswahlID)), DisplayMode.Edit, DisplayMode.Disabled)
                               Fill: =clrKarte
                               Font: =Font.'Segoe UI'
                               Height: =36
                               HoverFill: =clrPrimaerHell
                               Items: |-
-                                =Ungroup(Table({T: Table({ID: 0, N: "— immer zeigen —"})}, {T: ForAll(Sort(Filter(colP As a, a.KategorieID = LookUp(colP, ID = varAuswahlID).KategorieID && a.ID <> varAuswahlID && Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < LookUp(colP, ID = varAuswahlID).RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title})}), T)
+                                =Ungroup(Table({T: Table({ID: 0, N: "— immer zeigen —"})}, {T: ForAll(Sort(Filter(colP As a, a.KategorieID = LookUp(colP, ID = varAuswahlID).KategorieID && a.ID <> varAuswahlID && Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < LookUp(colP, ID = varAuswahlID).RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")})}, {T: Filter(Table({ID: Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0), N: Coalesce(LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title, "Frage #" & LookUp(colP, ID = varAuswahlID).BedingungPunkt) & " (ungültig)"}), Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0 && IsBlank(LookUp(ForAll(Sort(Filter(colP As a, a.KategorieID = LookUp(colP, ID = varAuswahlID).KategorieID && a.ID <> varAuswahlID && Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < LookUp(colP, ID = varAuswahlID).RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")}), ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)))}), T)
                               Items.Value: =N
                               OnChange: |-
                                 =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {BedingungPunkt: Self.Selected.ID, BedingungWert: If(Self.Selected.ID = 0, "", With({a: LookUp(colP, ID = Self.Selected.ID)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", "NIO", (a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH") && fnWerte(a.Auswahlwerte) > 0, Trim(First(Filter(Split(a.Auswahlwerte, ";"), Trim(Value) <> "")).Value), "*")))}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: Self.Selected.ID, BedingungWert: If(Self.Selected.ID = 0, "", With({a: LookUp(colP, ID = Self.Selected.ID)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", "NIO", (a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH") && fnWerte(a.Auswahlwerte) > 0, Trim(First(Filter(Split(a.Auswahlwerte, ";"), Trim(Value) <> "")).Value), "*")))}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     );
                                     Reset(ddPBedW)
@@ -1858,24 +1964,29 @@ Screens:
                               ChevronHoverFill: =Color.White
                               Color: =clrText
                               Default: |-
-                                =Coalesce(LookUp(With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"}))), fnBedNorm(W) = fnBedNorm(LookUp(colP, ID = varAuswahlID).BedingungWert)).N, fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert))
+                                =Coalesce(LookUp(Ungroup(Table({T: With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"})))}, {T: Filter(Table({W: Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, ""), N: Trim(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, "")) & " (passt nicht)"}), Trim(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, "")) <> "" && IsBlank(LookUp(With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"}))), fnBedNorm(W) = fnBedNorm(LookUp(colP, ID = varAuswahlID).BedingungWert))))}), T), fnBedNorm(W) = fnBedNorm(LookUp(colP, ID = varAuswahlID).BedingungWert)).N, fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert))
                               DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                               Fill: =clrKarte
                               Font: =Font.'Segoe UI'
                               Height: =36
                               HoverFill: =clrPrimaerHell
                               Items: |-
-                                =With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"})))
+                                =Ungroup(Table({T: With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"})))}, {T: Filter(Table({W: Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, ""), N: Trim(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, "")) & " (passt nicht)"}), Trim(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungWert, "")) <> "" && IsBlank(LookUp(With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), Table({W: "*", N: "beantwortet"}))), fnBedNorm(W) = fnBedNorm(LookUp(colP, ID = varAuswahlID).BedingungWert))))}), T)
                               Items.Value: =N
                               OnChange: |-
                                 =If(!IsBlank(Self.Selected) && fnBedNorm(Self.Selected.W) <> fnBedNorm(LookUp(colP, ID = varAuswahlID).BedingungWert),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {BedingungWert: Self.Selected.W}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {BedingungWert: Self.Selected.W}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -1917,13 +2028,18 @@ Screens:
                               Mode: =TextMode.MultiLine
                               OnChange: |-
                                 =If(Self.Text <> Coalesce(LookUp(colP, ID = varAuswahlID).Hinweis, ""),
-                                    If(varSchreibbar,
-                                        Set(varPatchFehler, false);
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {Hinweis: Self.Text}), Set(varPatchFehler, true));
-                                        If(varPatchFehler,
-                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Hinweis: Self.Text}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
                                         )
                                     )
                                 )
@@ -2002,21 +2118,25 @@ Screens:
                               ChevronHoverFill: =Color.White
                               Color: =clrText
                               Default: |-
-                                =With({k: LookUp(colK, ID = LookUp(colP, ID = varAuswahlID).KategorieID)}, LookUp(colB, ID = k.BereichID).Title & " › " & k.Title)
+                                =With({k: LookUp(colK, ID = LookUp(colP, ID = varAuswahlID).KategorieID)}, LookUp(colB As b0, b0.ID = k.BereichID).Title & " › " & k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " (#" & k.ID & ")", ""))
                               DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                               Fill: =clrKarte
                               Font: =Font.'Segoe UI'
                               Height: =36
                               HoverFill: =clrPrimaerHell
                               Items: |-
-                                =Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: b.Title & " › " & k.Title, S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)
+                                =Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: LookUp(colB As b0, b0.ID = k.BereichID).Title & " › " & k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " (#" & k.ID & ")", ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)
                               Items.Value: =N
                               OnChange: |-
                                 =If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colP, ID = varAuswahlID).KategorieID && varSchreibbar,
+                                    Refresh(RG_Rundgaenge);
+                                    Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                    If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                    If(varEntwurfOk,
                                     With({ziel: Self.Selected.ID, abh: CountRows(Filter(colP, BedingungPunkt = varAuswahlID))},
                                         Set(varPatchFehler, false);
-                                        ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: ""}));
-                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: ""}), Set(varPatchFehler, true));
+                                        ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}));
+                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: ""}), Set(varPatchFehler, true));
                                         ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung));
                                         If(varPatchFehler,
                                             Notify("Verschieben hat nicht geklappt.", NotificationType.Error),
@@ -2039,7 +2159,7 @@ Screens:
                                         Reset(ddPKategorie);
                                         Reset(ddPBedA);
                                         Reset(ddPBedW)
-                                    )
+                                    ))
                                 )
                               PaddingLeft: =10
                               PressedColor: =Color.White
@@ -2497,7 +2617,7 @@ Screens:
                       Notify("Es gibt schon einen Entwurf – er wird geöffnet.", NotificationType.Information);
                       Set(varJob, "laden"),
                       ClearCollect(colAlleB, Filter(RG_Bereiche, RundgangID = varRgID));
-                      Set(varZielF, Max(Coalesce(Max(colAlleB, Coalesce(Fassung, 0)), 0), fnAktiveFassung(varRg.Fassung)) + 1);
+                      Set(varZielF, Max(Coalesce(Max(colAlleB, Coalesce(Fassung, 0)), 0), Coalesce(First(Sort(Filter(RG_Kategorien, RundgangID = varRgID), Fassung, SortOrder.Descending)).Fassung, 0), Coalesce(First(Sort(Filter(RG_Pruefpunkte, RundgangID = varRgID), Fassung, SortOrder.Descending)).Fassung, 0), fnAktiveFassung(varRg.Fassung)) + 1);
                       Set(varPatchFehler, false);
                       IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varRgID), {EntwurfFassung: varZielF, EntwurfVon: User().FullName}), Set(varPatchFehler, true));
                       If(varPatchFehler,
@@ -2592,11 +2712,23 @@ Screens:
                       )
                   );
                   Set(varKopieFehler, CountRows(Filter(colMapB, Neu = 0)) + CountRows(Filter(colMapK, Neu = 0)) + CountRows(Filter(colMapP, Neu = 0)) + CountRows(Filter(colBedErg, !Ok)));
-                  If(varKopieFehler > 0,
-                      Notify("Kopieren unvollständig: " & varKopieFehler & " Teile fehlen. Bitte die Gliederung prüfen.", NotificationType.Error),
-                      Notify("Kopiert: " & CountRows(colMapP) & " Prüfpunkte.", NotificationType.Success)
-                  );
-                  Set(varJob, varKopieNach)
+                  If(varKopieFehler > 0 && varKopieNach = "laden",
+                      If(Coalesce(LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) = 0 || varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+                          Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = varZielR && Fassung = varZielF));
+                          Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = varZielR && Fassung = varZielF));
+                          Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = varZielR && Fassung = varZielF))
+                      );
+                      If(Coalesce(LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) > 0 && varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+                          IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varZielR), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true))
+                      );
+                      Notify("Kopieren fehlgeschlagen (" & varKopieFehler & " Teile fehlen). Der Entwurf wurde zurückgenommen. Bitte erneut versuchen.", NotificationType.Error);
+                      Set(varJob, "zurueck"),
+                      varKopieFehler > 0,
+                      Notify("Kopieren unvollständig: " & varKopieFehler & " Teile fehlen. Bitte die Gliederung prüfen.", NotificationType.Error);
+                      Set(varJob, varKopieNach),
+                      Notify("Kopiert: " & CountRows(colMapP) & " Prüfpunkte.", NotificationType.Success);
+                      Set(varJob, varKopieNach)
+                  )
               );
               If(varJob = "laden",
                   Set(varLadeText, "Rundgang wird geladen …");
@@ -2609,7 +2741,17 @@ Screens:
                       ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
                   );
                   ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varRgID));
-                  If(!varSchreibbar,
+                  Set(varAktivRest, false);
+                  If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung, 0) <> varFassung,
+                      Set(varSchreibbar, false);
+                      Notify("Dieser Entwurf ist nicht mehr offen. Er wird nur zum Lesen gezeigt.", NotificationType.Warning)
+                  );
+                  If(varSchreibbar && !varIstVorlage && CountRows(Filter(colB, Coalesce(Aktiv, false))) > 0,
+                      Set(varSchreibbar, false);
+                      Set(varAktivRest, true);
+                      Notify("Das Aktivieren dieser Fassung ist unvollständig. Bitte oben „Aktivieren …“ erneut tippen.", NotificationType.Error)
+                  );
+                  If(!varSchreibbar && !varAktivRest,
                       RemoveIf(colB, !Coalesce(Aktiv, false));
                       RemoveIf(colK, !Coalesce(Aktiv, false));
                       RemoveIf(colP, !Coalesce(Aktiv, false));
@@ -2697,7 +2839,9 @@ Screens:
                           Set(varPatchFehler, true)
                       );
                       If(varPatchFehler,
-                          Notify("Aktivieren unvollständig. Bitte noch einmal „Aktivieren“ tippen – das ist gefahrlos.", NotificationType.Error);
+                          Notify("Aktivieren unvollständig. Bitte noch einmal „Aktivieren …“ tippen – das ist gefahrlos.", NotificationType.Error);
+                          Set(varSchreibbar, false);
+                          Set(varAktivRest, true);
                           Set(varJob, ""),
                           Notify("Fassung " & varFassung & " ist aktiv. Laufende Rundgänge von heute werden mit der alten Fassung beendet.", NotificationType.Success);
                           Set(varJob, "zurueck")
@@ -3217,7 +3361,12 @@ Screens:
                         OnSelect: |-
                           =If(!varIsLoading && Now() >= varSperreBis && varHolenID > 0 && varSchreibbar,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                              If(varHolenEbene = 3 && varCtxK = 0,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  Set(varHolenOffen, false),
+                                  varHolenEbene = 3 && varCtxK = 0,
                                   Notify("Links zuerst eine Kategorie antippen, in die der Prüfpunkt soll.", NotificationType.Warning),
                                   varHolenEbene = 2 && varCtxB = 0,
                                   Notify("Links zuerst einen Bereich antippen, in den die Kategorie soll.", NotificationType.Warning),
@@ -3534,7 +3683,12 @@ Screens:
                           =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
                               Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
                               ClearCollect(colMehr, Filter(ForAll(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10)) As z, {F: Left(Trim(z.Value), 255)}), F <> ""));
-                              If(varCtxK = 0,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(!varEntwurfOk,
+                                  Set(varMehrereOffen, false),
+                                  varCtxK = 0,
                                   Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
                                   IsEmpty(colMehr),
                                   Notify("Bitte mindestens eine Frage eintragen.", NotificationType.Warning),
@@ -3710,13 +3864,18 @@ Screens:
                               HoverColor: =Color.White
                               HoverFill: =RGBA(23, 20, 150, 0.08)
                               OnSelect: |-
-                                =If(varSchreibbar,
-                                    Set(varPatchFehler, false);
-                                    IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {HinweisBildID: ThisItem.ID}), Set(varPatchFehler, true));
-                                    If(varPatchFehler,
-                                        Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                        Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                        Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                =If(varSchreibbar && varAuswahlEbene = 3,
+                                    Refresh(RG_Rundgaenge);
+                                    Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                    If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                    If(varEntwurfOk,
+                                        Set(varPatchFehler, false);
+                                        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: ThisItem.ID}), Set(varPatchFehler, true));
+                                        If(varPatchFehler,
+                                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                            Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                            Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                        )
                                     )
                                 );
                                 Set(varBildOffen, false)
@@ -3759,13 +3918,18 @@ Screens:
                         HoverColor: =clrPrimaer
                         HoverFill: =clrPrimaerHell
                         OnSelect: |-
-                          =If(varSchreibbar,
-                              Set(varPatchFehler, false);
-                              IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {HinweisBildID: 0}), Set(varPatchFehler, true));
-                              If(varPatchFehler,
-                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
-                                  Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
-                                  Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                          =If(varSchreibbar && varAuswahlEbene = 3,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(varEntwurfOk,
+                                  Set(varPatchFehler, false);
+                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: 0}), Set(varPatchFehler, true));
+                                  If(varPatchFehler,
+                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                      Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                  )
                               )
                           );
                           Set(varBildOffen, false)

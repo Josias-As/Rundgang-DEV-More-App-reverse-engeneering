@@ -25,6 +25,10 @@ CURK = "LookUp(colK, ID = varAuswahlID)"
 CURB = "LookUp(colB, ID = varAuswahlID)"
 LOCK = "Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds))"
 FREI = "!varIsLoading && Now() >= varSperreBis"
+CHECK = ('Refresh(RG_Rundgaenge);\n'
+         'Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);\n'
+         'If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error))')
+SICHER = " && RundgangID = varRgID && Fassung = varFassung"
 EDIT = "If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)"
 BTN_DM = "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)"
 NEU_SPALTEN = {
@@ -86,7 +90,7 @@ ONSTART_VARS = [
     ("varZielF", "0"), ("varZielB", "0"), ("varZielK", "0"), ("varZielBAktiv", "false"), ("varKopieBehalteR", "false"),
     ("varKopieZusatz", '""'), ("varKopieFehler", "0"), ("varQuelleR", "0"), ("varQuelleF", "0"),
     ("varQuelleNurAktiv", "false"), ("varHeuteLaeuft", "false"), ("varPlanRgID", "0"),
-    ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
+    ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varEntwurfOk", "true"), ("varAktivRest", "false"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
 ]
 ONSTART = ";\n".join("Set(%s, %s)" % kv for kv in ONSTART_VARS)
 
@@ -102,15 +106,19 @@ def sel(e, i, b, k):
 
 def patch_feld(ds, col, felder, idx="varAuswahlID"):
     """Ein Feld eines Datensatzes im Entwurf speichern (frisch gelesen) und die Sammlung nachziehen."""
-    return ("If(varSchreibbar,\n"
-            "    Set(varPatchFehler, false);\n"
-            "    IfError(Patch({ds}, LookUp({ds}, ID = {i}), {f}), Set(varPatchFehler, true));\n"
-            "    If(varPatchFehler,\n"
-            "        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
-            "        Patch({col}, LookUp({col}, ID = {i}), LookUp({ds}, ID = {i}));\n"
-            "        Set(varGespeichertText, \"Gespeichert \" & Text(Now(), \"hh:mm:ss\"))\n"
+    e = {"RG_Bereiche": "1", "RG_Kategorien": "2", "RG_Pruefpunkte": "3"}[ds]
+    return ("If(varSchreibbar && varAuswahlEbene = " + e + ",\n"
+            "    " + CHECK.replace("\n", "\n    ") + ";\n"
+            "    If(varEntwurfOk,\n"
+            "        Set(varPatchFehler, false);\n"
+            "        IfError(Patch(DS, LookUp(DS, ID = IDX" + SICHER + "), FELDER), Set(varPatchFehler, true));\n"
+            "        If(varPatchFehler,\n"
+            "            Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+            "            Patch(COL, LookUp(COL, ID = IDX), LookUp(DS, ID = IDX));\n"
+            "            Set(varGespeichertText, \"Gespeichert \" & Text(Now(), \"hh:mm:ss\"))\n"
+            "        )\n"
             "    )\n"
-            ")").format(ds=ds, col=col, f=felder, i=idx)
+            ")").replace("FELDER", felder).replace("DS", ds).replace("COL", col).replace("IDX", idx)
 
 
 def laden_baum(ziel_b="colB", ziel_k="colK", ziel_p="colP", r="varRgID", f="varFassung"):
@@ -227,7 +235,7 @@ STUFE_NEUE_FASSUNG = '''If(varJob = "neueFassung",
         Notify("Es gibt schon einen Entwurf – er wird geöffnet.", NotificationType.Information);
         Set(varJob, "laden"),
         ClearCollect(colAlleB, Filter(RG_Bereiche, RundgangID = varRgID));
-        Set(varZielF, Max(Coalesce(Max(colAlleB, Coalesce(Fassung, 0)), 0), fnAktiveFassung(varRg.Fassung)) + 1);
+        Set(varZielF, Max(Coalesce(Max(colAlleB, Coalesce(Fassung, 0)), 0), Coalesce(First(Sort(Filter(RG_Kategorien, RundgangID = varRgID), Fassung, SortOrder.Descending)).Fassung, 0), Coalesce(First(Sort(Filter(RG_Pruefpunkte, RundgangID = varRgID), Fassung, SortOrder.Descending)).Fassung, 0), fnAktiveFassung(varRg.Fassung)) + 1);
         Set(varPatchFehler, false);
         IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varRgID), {EntwurfFassung: varZielF, EntwurfVon: User().FullName}), Set(varPatchFehler, true));
         If(varPatchFehler,
@@ -314,11 +322,23 @@ STUFE_KOPIE = '''If(varJob = "kopie",
         )
     );
     Set(varKopieFehler, CountRows(Filter(colMapB, Neu = 0)) + CountRows(Filter(colMapK, Neu = 0)) + CountRows(Filter(colMapP, Neu = 0)) + CountRows(Filter(colBedErg, !Ok)));
-    If(varKopieFehler > 0,
-        Notify("Kopieren unvollständig: " & varKopieFehler & " Teile fehlen. Bitte die Gliederung prüfen.", NotificationType.Error),
-        Notify("Kopiert: " & CountRows(colMapP) & " Prüfpunkte.", NotificationType.Success)
-    );
-    Set(varJob, varKopieNach)
+    If(varKopieFehler > 0 && varKopieNach = "laden",
+        If(Coalesce(LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) = 0 || varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+            Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = varZielR && Fassung = varZielF));
+            Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = varZielR && Fassung = varZielF));
+            Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = varZielR && Fassung = varZielF))
+        );
+        If(Coalesce(LookUp(RG_Rundgaenge, ID = varZielR).Fassung, 0) > 0 && varZielF <> fnAktiveFassung(LookUp(RG_Rundgaenge, ID = varZielR).Fassung),
+            IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varZielR), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true))
+        );
+        Notify("Kopieren fehlgeschlagen (" & varKopieFehler & " Teile fehlen). Der Entwurf wurde zurückgenommen. Bitte erneut versuchen.", NotificationType.Error);
+        Set(varJob, "zurueck"),
+        varKopieFehler > 0,
+        Notify("Kopieren unvollständig: " & varKopieFehler & " Teile fehlen. Bitte die Gliederung prüfen.", NotificationType.Error);
+        Set(varJob, varKopieNach),
+        Notify("Kopiert: " & CountRows(colMapP) & " Prüfpunkte.", NotificationType.Success);
+        Set(varJob, varKopieNach)
+    )
 );
 '''
 
@@ -329,7 +349,17 @@ STUFE_LADEN = '''If(varJob = "laden",
     Set(varIstVorlage, fnStatus(varRg.Status, varRg.Aktiv) = "Vorlage");
     ''' + laden_baum().replace("\n", "\n    ") + ''';
     ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varRgID));
-    If(!varSchreibbar,
+    Set(varAktivRest, false);
+    If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung, 0) <> varFassung,
+        Set(varSchreibbar, false);
+        Notify("Dieser Entwurf ist nicht mehr offen. Er wird nur zum Lesen gezeigt.", NotificationType.Warning)
+    );
+    If(varSchreibbar && !varIstVorlage && CountRows(Filter(colB, Coalesce(Aktiv, false))) > 0,
+        Set(varSchreibbar, false);
+        Set(varAktivRest, true);
+        Notify("Das Aktivieren dieser Fassung ist unvollständig. Bitte oben „Aktivieren …“ erneut tippen.", NotificationType.Error)
+    );
+    If(!varSchreibbar && !varAktivRest,
         ''' + nur_aktive("colB", "colK", "colP").replace("\n", "\n        ") + '''
     );
     Set(varGespeichertText, "");
@@ -381,7 +411,9 @@ STUFE_AKTIVIEREN = '''If(varJob = "aktivieren",
             Set(varPatchFehler, true)
         );
         If(varPatchFehler,
-            Notify("Aktivieren unvollständig. Bitte noch einmal „Aktivieren“ tippen – das ist gefahrlos.", NotificationType.Error);
+            Notify("Aktivieren unvollständig. Bitte noch einmal „Aktivieren …“ tippen – das ist gefahrlos.", NotificationType.Error);
+            Set(varSchreibbar, false);
+            Set(varAktivRest, true);
             Set(varJob, ""),
             Notify("Fassung " & varFassung & " ist aktiv. Laufende Rundgänge von heute werden mit der alten Fassung beendet.", NotificationType.Success);
             Set(varJob, "zurueck")
@@ -644,7 +676,7 @@ LI_AKTION = ("If(" + FREI + ",\n"
              "        If(" + ST + " = \"Aktiv\",\n"
              "            IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: \"Archiviert\", Aktiv: false}), Set(varPatchFehler, true)),\n"
              "            " + ST + " = \"Archiviert\",\n"
-             "            IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: \"Aktiv\", Aktiv: true, Fassung: fnAktiveFassung(ThisItem.Fassung)}), Set(varPatchFehler, true)),\n"
+             "            IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: \"Aktiv\", Aktiv: true}), Set(varPatchFehler, true)),\n"
              "            " + ST + " = \"Entwurf\" && Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Fassung, 0) = 0 && !Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Aktiv, false),\n"
              "            IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));\n"
              "            IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));\n"
@@ -661,10 +693,13 @@ LI_VERWERFEN = zweimal('"verwerfen" & ThisItem.ID',
                        "Set(varIsLoading, true);\n"
                        "        Set(varPatchFehler, false);\n"
                        "        With({f: Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).EntwurfFassung, 0)},\n"
-                       "            If(f > 0 && f <> fnAktiveFassung(ThisItem.Fassung),\n"
+                       "            If(f > 0 && f <> fnAktiveFassung(ThisItem.Fassung) && CountRows(Filter(Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f), Coalesce(Aktiv, false))) = 0,\n"
                        "                IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));\n"
                        "                IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));\n"
-                       "                IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))\n"
+                       "                IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true)),\n"
+                       "                f > 0,\n"
+                       "                Notify(\"Diese Fassung ist schon teilweise aktiv und wird nicht gelöscht. Bitte „Bearbeiten“ und dann „Aktivieren …“ erneut tippen.\", NotificationType.Error);\n"
+                       "                Set(varPatchFehler, true)\n"
                        "            )\n"
                        "        );\n"
                        "        If(!varPatchFehler, IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {EntwurfFassung: 0, EntwurfVon: \"\"}), Set(varPatchFehler, true)));\n"
@@ -874,7 +909,8 @@ GL_INFO = 'If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, T
 def neu_eintrag(ds, col, felder, ebene, b, k, fokus, bedingung, meldung):
     return ("If(varSchreibbar && " + FREI + ",\n"
             "    " + LOCK + ";\n"
-            "    If(" + bedingung + ",\n"
+            "    " + ind(CHECK, 4) + ";\n"
+            "    If(!varEntwurfOk,\n        false,\n        " + bedingung + ",\n"
             "        Notify(\"" + meldung + "\", NotificationType.Warning),\n"
             "        Set(varNeuID, IfError(Patch(" + ds + ", Defaults(" + ds + "), {" + felder + "}).ID, 0));\n"
             "        If(varNeuID = 0,\n"
@@ -906,7 +942,7 @@ def umsort(ds, col, sibs, d):
             "            If(pos + (" + d + ") < 1 || pos + (" + d + ") > CountRows(s),\n"
             "                Notify(\"Steht schon ganz " + ("oben" if d == "-1" else "unten") + ".\", NotificationType.Information),\n"
             "                ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (" + d + "), i.Value = pos + (" + d + "), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));\n"
-            "                ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(" + ds + ", LookUp(" + ds + ", ID = u.ID), {RgReihenfolge: u.Neu}))}));\n"
+            "                ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(" + ds + ", LookUp(" + ds + ", ID = u.ID" + SICHER + "), {RgReihenfolge: u.Neu}))}));\n"
             "                ForAll(colUmsort As u, Patch(" + col + ", LookUp(" + col + ", ID = u.ID), {RgReihenfolge: u.Neu}));\n"
             "                If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify(\"Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.\", NotificationType.Error))\n"
             "            )\n"
@@ -918,7 +954,8 @@ def umsort(ds, col, sibs, d):
 def schieben(d):
     return ("If(varSchreibbar && " + FREI + ",\n"
             "    " + LOCK + ";\n"
-            "    If(varAuswahlEbene = 1,\n"
+            "    " + ind(CHECK, 4) + ";\n"
+            "    If(!varEntwurfOk,\n        false,\n        varAuswahlEbene = 1,\n"
             "        " + ind(umsort("RG_Bereiche", "colB", "colB", d), 8) + ",\n"
             "        varAuswahlEbene = 2,\n"
             "        " + ind(umsort("RG_Kategorien", "colK", "Filter(colK, BereichID = cur.BereichID)", d), 8) + ",\n"
@@ -930,20 +967,23 @@ def schieben(d):
 
 DUPLIZIEREN = ("If(varSchreibbar && varAuswahlEbene > 0 && " + FREI + ",\n"
                "    " + LOCK + ";\n"
+               "    " + ind(CHECK, 4) + ";\n"
+               "    If(varEntwurfOk,\n"
                "    ClearCollect(colQB, Filter(colB, varAuswahlEbene = 1 && ID = varAuswahlID));\n"
                "    ClearCollect(colQK, Filter(colK, (varAuswahlEbene = 2 && ID = varAuswahlID) || (varAuswahlEbene = 1 && BereichID = varAuswahlID)));\n"
                "    ClearCollect(colQP, Filter(colP, (varAuswahlEbene = 3 && ID = varAuswahlID) || KategorieID in colQK.ID));\n"
                "    Set(varZielR, varRgID);\n    Set(varZielF, varFassung);\n    Set(varZielB, varCtxB);\n    Set(varZielK, varCtxK);\n"
                "    Set(varZielBAktiv, false);\n    Set(varKopieBehalteR, false);\n    Set(varKopieZusatz, \" (Kopie)\");\n"
                "    Set(varKopieNach, \"auswahl\");\n    Set(varJob, \"kopie\");\n    Set(varIsLoading, true);\n    Set(varArbeitStart, true)\n"
+               "    )\n"
                ")")
 
 DEL_KEY = '"del" & varAuswahlEbene & "-" & varAuswahlID'
-SICHER = " && RundgangID = varRgID && Fassung = varFassung"
 ENTFERNEN = ("If(varSchreibbar && varAuswahlEbene > 0, " + ind(zweimal(DEL_KEY,
+             CHECK + ";\nIf(varEntwurfOk,\n"
              "Set(varIsLoading, true);\n"
              "If(varAuswahlEbene = 3,\n"
-             "    ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: \"\"}));\n"
+             "    ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID" + SICHER + "), {BedingungPunkt: 0, BedingungWert: \"\"}));\n"
              "    Remove(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID" + SICHER + ")),\n"
              "    varAuswahlEbene = 2,\n"
              "    Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, KategorieID = varAuswahlID" + SICHER + "));\n"
@@ -962,7 +1002,7 @@ ENTFERNEN = ("If(varSchreibbar && varAuswahlEbene > 0, " + ind(zweimal(DEL_KEY,
              "    varAuswahlEbene = 2,\n    " + ind(sel("1", "varCtxB", "varCtxB", "0"), 4) + ",\n"
              "    " + ind(sel("0", "0", "0", "0"), 4) + "\n"
              ");\n"
-             "Set(varIsLoading, false)"), 4) + ")")
+             "Set(varIsLoading, false)\n)"), 4) + ")")
 ENTF_TEXT = ('If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & '
              'CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", '
              'varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", '
@@ -975,41 +1015,51 @@ TYP_ITEMS = ('Table({W: "IONIO", N: "✓ i.O./n.i.O."}, {W: "ZAHL", N: "123 Zahl
 FOTO_ITEMS = ('Table({W: "Aus", N: "kein Foto (bei n.i.O. möglich)"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, '
               '{W: "Bei Mangel Pflicht", N: "Foto Pflicht bei Mangel (n.i.O.)"})')
 FOTO_IST = 'fnFotoWert(%s.Foto.Value, Coalesce(%s.FotoMoeglich, false))' % (CUR, CUR)
-BED_A_ITEMS = ('Ungroup(Table({T: Table({ID: 0, N: "— immer zeigen —"})}, {T: ForAll(Sort(Filter(colP As a, a.KategorieID = ' + CUR + '.KategorieID && a.ID <> varAuswahlID && '
-               'Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < ' + CUR + '.RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title})}), T)')
+A_N = lambda a: '%(a)s.Title & If(CountRows(Filter(colP As x, x.KategorieID = %(a)s.KategorieID && x.Title = %(a)s.Title)) > 1, " (#" & %(a)s.ID & ")", "")' % {"a": a}  # noqa: E731
+BED_A_BASIS = ('ForAll(Sort(Filter(colP As a, a.KategorieID = ' + CUR + '.KategorieID && a.ID <> varAuswahlID && '
+               'Coalesce(a.BedingungPunkt, 0) = 0 && a.RgReihenfolge * 1000000 + a.ID < ' + CUR + '.RgReihenfolge * 1000000 + varAuswahlID), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: ' + A_N("a") + '})')
+BED_A_UNG = ('Coalesce(' + CUR + '.BedingungPunkt, 0) <> 0 && IsBlank(LookUp(' + BED_A_BASIS + ', ID = ' + CUR + '.BedingungPunkt))')
+BED_A_UNG_N = 'Coalesce(LookUp(colP, ID = ' + CUR + '.BedingungPunkt).Title, "Frage #" & ' + CUR + '.BedingungPunkt) & " (ungültig)"'
+BED_A_ITEMS = ('Ungroup(Table({T: Table({ID: 0, N: "— immer zeigen —"})}, {T: ' + BED_A_BASIS + '}, '
+               '{T: Filter(Table({ID: Coalesce(' + CUR + '.BedingungPunkt, 0), N: ' + BED_A_UNG_N + '}), ' + BED_A_UNG + ')}), T)')
 BED_GESPERRT = '!IsBlank(LookUp(colP As d, d.BedingungPunkt = varAuswahlID))'
 BED_A_CHANGE = ('If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(' + CUR + '.BedingungPunkt, 0),\n    '
                 + ind(PP('{BedingungPunkt: Self.Selected.ID, BedingungWert: If(Self.Selected.ID = 0, "", With({a: LookUp(colP, ID = Self.Selected.ID)}, '
                          'If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", "NIO", (a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH") && fnWerte(a.Auswahlwerte) > 0, '
                          'Trim(First(Filter(Split(a.Auswahlwerte, ";"), Trim(Value) <> "")).Value), "*")))}'), 4) + ';\n    Reset(ddPBedW)\n)')
-BED_W_ITEMS = ('With({a: LookUp(colP, ID = ' + CUR + '.BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", '
+BED_W_BASIS = ('With({a: LookUp(colP, ID = ' + CUR + '.BedingungPunkt)}, If(a.Eingabetyp.Value = "IONIO" || a.Eingabetyp.Value = "ZAHL", '
                'Table({W: "NIO", N: "n.i.O. (Mangel)"}, {W: "IO", N: "i.O."}, {W: "*", N: "beantwortet"}), '
                'a.Eingabetyp.Value = "AUSWAHL" || a.Eingabetyp.Value = "MEHRFACH", '
                'Ungroup(Table({T: ForAll(Filter(Split(Coalesce(a.Auswahlwerte, ""), ";") As s, Trim(s.Value) <> "") As s, {W: Trim(s.Value), N: Trim(s.Value)})}, {T: Table({W: "*", N: "beantwortet"})}), T), '
                'Table({W: "*", N: "beantwortet"})))')
-KAT_ITEMS = ('Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: b.Title & " › " & k.Title, '
+BED_W_ITEMS = ('Ungroup(Table({T: ' + BED_W_BASIS + '}, {T: Filter(Table({W: Coalesce(' + CUR + '.BedingungWert, ""), N: Trim(Coalesce(' + CUR + '.BedingungWert, "")) & " (passt nicht)"}), '
+               'Trim(Coalesce(' + CUR + '.BedingungWert, "")) <> "" && IsBlank(LookUp(' + BED_W_BASIS + ', fnBedNorm(W) = fnBedNorm(' + CUR + '.BedingungWert))))}), T)')
+KAT_N = lambda k: ('LookUp(colB As b0, b0.ID = %(k)s.BereichID).Title & " › " & %(k)s.Title & If(CountRows(Filter(colK As x, x.Title = %(k)s.Title)) > 1, " (#" & %(k)s.ID & ")", "")' % {"k": k})  # noqa: E731
+KAT_ITEMS = ('Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: ' + KAT_N("k") + ', '
              'S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)')
 P_VERSCHIEBEN = ('If(!IsBlank(Self.Selected) && Self.Selected.ID <> ' + CUR + '.KategorieID && varSchreibbar,\n'
+                 '    ' + ind(CHECK, 4) + ';\n    If(varEntwurfOk,\n'
                  '    With({ziel: Self.Selected.ID, abh: CountRows(Filter(colP, BedingungPunkt = varAuswahlID))},\n'
                  '        Set(varPatchFehler, false);\n'
-                 '        ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID), {BedingungPunkt: 0, BedingungWert: ""}));\n'
-                 '        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: ""}), Set(varPatchFehler, true));\n'
+                 '        ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID' + SICHER + '), {BedingungPunkt: 0, BedingungWert: ""}));\n'
+                 '        IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID' + SICHER + '), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: ""}), Set(varPatchFehler, true));\n'
                  '        ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung));\n'
                  '        If(varPatchFehler,\n'
                  '            Notify("Verschieben hat nicht geklappt.", NotificationType.Error),\n'
                  '            Notify("Verschoben (ans Ende der Kategorie)." & If(abh > 0, " " & abh & " Bedingung(en), die auf diese Frage zeigten, wurden entfernt.", ""), NotificationType.Success)\n'
                  '        );\n'
                  '        ' + ind(sel("3", "varAuswahlID", "LookUp(colK, ID = ziel).BereichID", "ziel"), 8) + '\n'
-                 '    )\n'
+                 '    ))\n'
                  ')')
 K_VERSCHIEBEN = ('If(!IsBlank(Self.Selected) && Self.Selected.ID <> ' + CURK + '.BereichID && varSchreibbar,\n'
+                 '    ' + ind(CHECK, 4) + ';\n    If(varEntwurfOk,\n'
                  '    With({ziel: Self.Selected.ID},\n'
                  '        Set(varPatchFehler, false);\n'
-                 '        IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID), {BereichID: ziel, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = ziel), RgReihenfolge), 0) + 10}), Set(varPatchFehler, true));\n'
+                 '        IfError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID' + SICHER + '), {BereichID: ziel, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = ziel), RgReihenfolge), 0) + 10}), Set(varPatchFehler, true));\n'
                  '        ClearCollect(colK, Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung));\n'
                  '        If(varPatchFehler, Notify("Verschieben hat nicht geklappt.", NotificationType.Error), Notify("Verschoben (ans Ende des Bereichs).", NotificationType.Success));\n'
                  '        ' + ind(sel("2", "varAuswahlID", "ziel", "varAuswahlID"), 8) + '\n'
-                 '    )\n'
+                 '    ))\n'
                  ')')
 
 ZAHL_FELD = lambda feld, ctl: ('With({v: If(Trim(Self.Text) = "", Blank(), IfError(Value(Self.Text), Blank()))},\n'  # noqa: E731
@@ -1075,7 +1125,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         lbl("lblPBed", 'If(%s, "Keine Bedingung möglich: Andere Fragen hängen von dieser ab.", "Nur zeigen, wenn …")' % BED_GESPERRT,
             "0", "62", "528", "20", size=12, color="clrTextGrau"),
         dd("ddPBedA", BED_A_ITEMS, "N",
-           'If(Coalesce(%s.BedingungPunkt, 0) = 0, "— immer zeigen —", Coalesce(LookUp(colP, ID = %s.BedingungPunkt).Title, "— immer zeigen —"))' % (CUR, CUR),
+           'If(Coalesce(%s.BedingungPunkt, 0) = 0, "— immer zeigen —", ' % CUR + BED_A_UNG + ', ' + BED_A_UNG_N + ', With({a: LookUp(colP, ID = ' + CUR + '.BedingungPunkt)}, ' + A_N("a") + '))',
            BED_A_CHANGE, "0", "82", "300", "36", '"Bedingung: Frage"',
            DisplayMode='If(varSchreibbar && !varIsLoading && !%s, DisplayMode.Edit, DisplayMode.Disabled)' % BED_GESPERRT),
         dd("ddPBedW", BED_W_ITEMS, "N", 'Coalesce(LookUp(' + BED_W_ITEMS + ', fnBedNorm(W) = fnBedNorm(%s.BedingungWert)).N, fnBedText(%s.BedingungWert))' % (CUR, CUR),
@@ -1093,7 +1143,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
                                       "Image": 'If(varAuswahlEbene = 3 && Coalesce(%s.HinweisBildID, 0) > 0, LookUp(RG_Hinweisbilder, ID = %s.HinweisBildID).Thumbnail.Small)' % (CUR, CUR)}),
         lbl("lblPKat", '"Gehört zur Kategorie"', "0", "194", "528", "20", size=12, color="clrTextGrau"),
         dd("ddPKategorie", KAT_ITEMS, "N",
-           'With({k: LookUp(colK, ID = %s.KategorieID)}, LookUp(colB, ID = k.BereichID).Title & " › " & k.Title)' % CUR,
+           'With({k: LookUp(colK, ID = %s.KategorieID)}, ' % CUR + KAT_N("k") + ')',
            P_VERSCHIEBEN, "0", "214", "528", "36", '"Kategorie (verschieben)"'),
     ]),
 ])
@@ -1114,8 +1164,8 @@ ed_k = con("conEdK", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         'If(Trim(Self.Text) = "",\n    Reset(txtKName),\n    Self.Text <> %s.Title,\n    %s\n)' % (CURK, ind(patch_feld("RG_Kategorien", "colK", '{Title: Left(Trim(Self.Text), 255)}'), 4)),
         "0", "20", "528", "40", '"z. B. Teilelager"', '"Name der Kategorie"'),
     lbl("lblKBereich", '"Gehört zum Bereich"', "0", "72", "528", "20", size=12, color="clrTextGrau"),
-    dd("ddKBereich", 'Sort(ForAll(colB As b, {ID: b.ID, N: b.Title, S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")}), S)', "N",
-       'LookUp(colB, ID = %s.BereichID).Title' % CURK, K_VERSCHIEBEN, "0", "92", "528", "36", '"Bereich (verschieben)"'),
+    dd("ddKBereich", 'Sort(ForAll(colB As b, {ID: b.ID, N: b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")}), S)', "N",
+       'With({b: LookUp(colB, ID = %s.BereichID)}, b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""))' % CURK, K_VERSCHIEBEN, "0", "92", "528", "36", '"Bereich (verschieben)"'),
     lbl("lblKInfo", 'CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkte." & Char(10) & Char(10) & '
         '"Eine Kategorie ist eine Seite im Rundgang: Der Prüfer füllt sie aus und speichert sie als Ganzes. Die Kategorien werden der Reihe nach freigeschaltet. Neuer Prüfpunkt: links „+ Prüfpunkt“."',
         "0", "140", "528", "140", size=13, color="clrTextGrau", VerticalAlign="VerticalAlign.Top"),
@@ -1235,12 +1285,12 @@ NAME_AENDERN = ('If(varSchreibbar && Trim(Self.Text) <> "" && Self.Text <> varRg
                 '        Reset(txtEdName),\n'
                 '        Set(varPatchFehler, false);\n'
                 '        IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varRgID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));\n'
-                '        If(varPatchFehler, Notify("Name nicht gespeichert.", NotificationType.Error), Set(varRg, LookUp(RG_Rundgaenge, ID = varRgID)); Set(varGespeichertText, "Name gespeichert " & Text(Now(), "hh:mm:ss")))\n'
+                '        If(varPatchFehler, Notify("Name nicht gespeichert.", NotificationType.Error), Set(varRg, LookUp(RG_Rundgaenge, ID = varRgID)); Set(varGespeichertText, "Name gespeichert " & Text(Now(), "hh:mm:ss")); Notify("Der Name gilt sofort, auch für die aktive Fassung.", NotificationType.Information))\n'
                 '    ),\n'
                 '    Trim(Self.Text) = "",\n'
                 '    Reset(txtEdName)\n'
                 ')')
-ED_STATUS = ('If(varIstVorlage, "Vorlagen – Änderungen gelten sofort", varSchreibbar, "Entwurf Fassung " & varFassung & '
+ED_STATUS = ('If(varAktivRest, "Aktivieren von Fassung " & varFassung & " unvollständig – bitte erneut aktivieren", varIstVorlage, "Vorlagen – Änderungen gelten sofort", varSchreibbar, "Entwurf Fassung " & varFassung & '
              'If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", " · noch nie aktiviert", " · aktiv ist Fassung " & fnAktiveFassung(varRg.Fassung)), '
              '"Ansicht der aktiven Fassung " & varFassung & " (nur lesen)") & Char(10) & varGespeichertText')
 
@@ -1252,13 +1302,13 @@ ed_kopf = con("conEdKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Heig
     lbl("lblEdName", "varRg.Title", "168", "12", "360", "40", size=17, color="Color.White", bold=True, Visible="!(varSchreibbar && !varIstVorlage)"),
     lbl("lblEdStatus", ED_STATUS, "540", "4", "420", "56", size=12, color="Color.White"),
     lbl("lblEdPruefZahl", 'If(' + FEHLER_ANZ + ' > 0, ' + FEHLER_ANZ + ' & " Fehler", "keine Fehler")', "Parent.Width - 400", "12", "180", "40",
-        size=13, color="Color.White", Align="Align.Right", Visible="varSchreibbar && !varIstVorlage"),
+        size=13, color="Color.White", Align="Align.Right", Visible="(varSchreibbar && !varIstVorlage) || varAktivRest"),
     btn("btnEdAktivieren", '"Aktivieren …"', "Parent.Width - 206", "12", "190", "40", AKT_OEFFNEN, art="sekundaer",
-        Visible="varSchreibbar && !varIstVorlage", Fill='If(' + FEHLER_ANZ + ' > 0, clrGesperrtHell, clrKarte)',
+        Visible="(varSchreibbar && !varIstVorlage) || varAktivRest", Fill='If(' + FEHLER_ANZ + ' > 0, clrGesperrtHell, clrKarte)',
         Color='If(' + FEHLER_ANZ + ' > 0, clrTextGrau, clrPrimaer)'),
     btn("btnEdBearbeiten", '"Neue Fassung bearbeiten"', "Parent.Width - 286", "12", "270", "40",
         "If(" + FREI + ",\n    " + LOCK + ";\n    Set(varSchreibbar, true);\n    Set(varJob, \"neueFassung\");\n    Set(varIsLoading, true);\n    Set(varArbeitStart, true)\n)",
-        art="sekundaer", Visible='!varSchreibbar && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"'),
+        art="sekundaer", Visible='!varSchreibbar && !varAktivRest && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"'),
 ])
 
 # Fenster: Aktivieren
@@ -1287,7 +1337,8 @@ con_akt = overlay("conAkt", "varAktivOffen", 680, 600, [
 # Fenster: Aus Vorlage oder anderem Rundgang holen
 HOLEN = ("If(" + FREI + " && varHolenID > 0 && varSchreibbar,\n"
          "    " + LOCK + ";\n"
-         "    If(varHolenEbene = 3 && varCtxK = 0,\n"
+         "    " + ind(CHECK, 4) + ";\n"
+         "    If(!varEntwurfOk,\n        Set(varHolenOffen, false),\n        varHolenEbene = 3 && varCtxK = 0,\n"
          "        Notify(\"Links zuerst eine Kategorie antippen, in die der Prüfpunkt soll.\", NotificationType.Warning),\n"
          "        varHolenEbene = 2 && varCtxB = 0,\n"
          "        Notify(\"Links zuerst einen Bereich antippen, in den die Kategorie soll.\", NotificationType.Warning),\n"
@@ -1326,7 +1377,8 @@ MEHR_N = 'CountRows(Filter(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10
 MEHR_ANLEGEN = ("If(varSchreibbar && " + FREI + ",\n"
                 "    " + LOCK + ";\n"
                 "    ClearCollect(colMehr, Filter(ForAll(Split(Substitute(txtMehr.Text, Char(13), \"\"), Char(10)) As z, {F: Left(Trim(z.Value), 255)}), F <> \"\"));\n"
-                "    If(varCtxK = 0,\n"
+                "    " + ind(CHECK, 4) + ";\n"
+                "    If(!varEntwurfOk,\n        Set(varMehrereOffen, false),\n        varCtxK = 0,\n"
                 "        Notify(\"Links zuerst eine Kategorie antippen.\", NotificationType.Warning),\n"
                 "        IsEmpty(colMehr),\n"
                 "        Notify(\"Bitte mindestens eine Frage eintragen.\", NotificationType.Warning),\n"
