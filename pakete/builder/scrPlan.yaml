@@ -1,0 +1,538 @@
+Screens:
+  scrPlan:
+    Properties:
+      Fill: =clrHintergrund
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        Set(varLadeText, "");
+        Concurrent(Refresh(RG_Plan), Refresh(RG_Rundgaenge));
+        Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
+        ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varPlanRgID));
+        Set(varIsLoading, false)
+    Children:
+      - conPlKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrPrimaer
+            Height: =64
+            Width: =Parent.Width
+          Children:
+            - btnPlZurueck:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(255, 255, 255, 0.12)
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.24)
+                  OnSelect: =If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.32)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="← Übersicht"
+                  Width: =140
+                  X: =16
+                  Y: =12
+            - lblPlTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =64
+                  Size: =20
+                  Text: ="Plan – " & varPlanRg.Title
+                  Width: =900
+                  X: =172
+                  Y: =0
+      - lblPlHinweis:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =44
+            Size: =13
+            Text: |-
+              ="Wann ist der Rundgang dran? Änderungen gelten sofort, auch für einen aktiven Rundgang." & If(!Coalesce(varPlanRg.Aktiv, false), " Der Rundgang ist nicht aktiv: Er erscheint erst nach dem Aktivieren auf der Startseite.", "")
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =72
+      - lblPlKopf1:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Wochentag"
+            Width: =180
+            X: =40
+            Y: =116
+      - lblPlKopf2:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Rhythmus"
+            Width: =180
+            X: =228
+            Y: =116
+      - lblPlKopf3:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Startwoche (Montag)"
+            Width: =170
+            X: =452
+            Y: =116
+      - lblPlKopf4:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Gültig bis"
+            Width: =150
+            X: =640
+            Y: =116
+      - lblPlKopf5:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Status"
+            Width: =100
+            X: =838
+            Y: =116
+      - galPl:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            AccessibleLabel: ="Planzeilen"
+            Height: =Parent.Height - 220
+            Items: =Sort(colPlanR, ID)
+            ShowScrollbar: =true
+            TemplatePadding: =0
+            TemplateSize: =72
+            Width: =934
+            X: =24
+            Y: =140
+          Children:
+            - conPlKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  Fill: =If(Coalesce(ThisItem.Aktiv, false), clrKarte, clrGesperrtHell)
+                  Height: =Parent.TemplateHeight - 8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =4
+                Children:
+                  - ddPlTag:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: ="Wochentag"
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: =fnWochentag(ThisItem.Wochentag)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverFill: =clrPrimaerHell
+                        Items: |-
+                          =Table({W: 1, N: "Montag"}, {W: 2, N: "Dienstag"}, {W: 3, N: "Mittwoch"}, {W: 4, N: "Donnerstag"}, {W: 5, N: "Freitag"}, {W: 6, N: "Samstag"}, {W: 7, N: "Sonntag"})
+                        Items.Value: =N
+                        OnChange: |-
+                          =If(!IsBlank(Self.Selected) && Self.Selected.W <> ThisItem.Wochentag,
+                              Set(varPatchFehler, false);
+                              IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {Wochentag: Self.Selected.W, Title: Left(varPlanRg.Title & " – " & Self.Selected.N, 255)}), Set(varPatchFehler, true));
+                              If(varPatchFehler,
+                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                  Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                              )
+                          )
+                        PaddingLeft: =10
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =14
+                        Width: =180
+                        X: =16
+                        Y: =14
+                  - ddPlZyklus:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: ="Rhythmus"
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: =fnZyklus(ThisItem.ZyklusWochen)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverFill: =clrPrimaerHell
+                        Items: |-
+                          =Table({W: 1, N: "jede Woche"}, {W: 2, N: "alle 2 Wochen"}, {W: 3, N: "alle 3 Wochen"}, {W: 4, N: "alle 4 Wochen"})
+                        Items.Value: =N
+                        OnChange: |-
+                          =If(!IsBlank(Self.Selected) && Self.Selected.W <> Coalesce(ThisItem.ZyklusWochen, 1),
+                              Set(varPatchFehler, false);
+                              IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {ZyklusWochen: Self.Selected.W}), Set(varPatchFehler, true));
+                              If(varPatchFehler,
+                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                  Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                              )
+                          )
+                        PaddingLeft: =10
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =14
+                        Width: =190
+                        X: =204
+                        Y: =14
+                  - lblPlAb:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Size: =13
+                        Text: ="ab"
+                        Width: =26
+                        X: =400
+                        Y: =14
+                  - dpPlStart:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        AccessibleLabel: ="Startwoche (es zählt der Montag)"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        DefaultDate: =ThisItem.StartMontag
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Font: =Font.'Segoe UI'
+                        Format: =DateTimeFormat.ShortDate
+                        Height: =40
+                        IconBackground: =clrPrimaer
+                        IconFill: =Color.White
+                        OnChange: |-
+                          =If(!IsBlank(Self.SelectedDate) && fnMontag(Self.SelectedDate) <> ThisItem.StartMontag,
+                              Set(varPatchFehler, false);
+                              IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {StartMontag: fnMontag(Self.SelectedDate)}), Set(varPatchFehler, true));
+                              If(varPatchFehler,
+                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                  Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                              )
+                          )
+                        Size: =14
+                        StartOfWeek: =StartOfWeek.Monday
+                        Width: =150
+                        X: =428
+                        Y: =14
+                  - lblPlBis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Size: =13
+                        Text: ="bis"
+                        Width: =30
+                        X: =584
+                        Y: =14
+                  - dpPlBis:
+                      Control: Classic/DatePicker@2.6.0
+                      Properties:
+                        AccessibleLabel: ="Gültig bis (leer = unbegrenzt)"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        DefaultDate: =ThisItem.GueltigBis
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Font: =Font.'Segoe UI'
+                        Format: =DateTimeFormat.ShortDate
+                        Height: =40
+                        IconBackground: =clrPrimaer
+                        IconFill: =Color.White
+                        InputTextPlaceholder: ="unbegrenzt"
+                        OnChange: |-
+                          =If(!IsBlank(Self.SelectedDate) && Self.SelectedDate <> ThisItem.GueltigBis,
+                              Set(varPatchFehler, false);
+                              IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {GueltigBis: Self.SelectedDate}), Set(varPatchFehler, true));
+                              If(varPatchFehler,
+                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                  Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                              )
+                          )
+                        Size: =14
+                        StartOfWeek: =StartOfWeek.Monday
+                        Width: =150
+                        X: =616
+                        Y: =14
+                  - btnPlBisWeg:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!IsBlank(ThisItem.GueltigBis),
+                              Set(varPatchFehler, false);
+                              IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {GueltigBis: Blank()}), Set(varPatchFehler, true));
+                              If(varPatchFehler,
+                                  Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                  Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                              );
+                              Reset(dpPlBis)
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: ="✕"
+                        Width: =36
+                        X: =770
+                        Y: =14
+                  - btnPlAktiv:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(Coalesce(ThisItem.Aktiv, false), clrErfolg, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(Coalesce(ThisItem.Aktiv, false), clrErfolg, clrTextGrau)
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(Coalesce(ThisItem.Aktiv, false), clrErfolgHell, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =Set(varPatchFehler, false);
+                          IfError(Patch(RG_Plan, LookUp(RG_Plan, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true));
+                          If(varPatchFehler,
+                              Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                              Patch(colPlanR, LookUp(colPlanR, ID = ThisItem.ID), LookUp(RG_Plan, ID = ThisItem.ID))
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =If(Coalesce(ThisItem.Aktiv, false), "aktiv", "pausiert")
+                        Width: =100
+                        X: =814
+                        Y: =14
+      - lblPlLeer:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =40
+            Size: =14
+            Text: ="Noch kein Plan. „+ Termin hinzufügen“ legt einen an (Montag, jede Woche)."
+            Visible: =IsEmpty(colPlanR) && !varIsLoading
+            Width: =934
+            X: =24
+            Y: =150
+      - btnPlNeu:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =48
+            HoverColor: =Color.White
+            HoverFill: =ColorFade(clrPrimaer, -20%)
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                  Set(varPatchFehler, false);
+                  IfError(Patch(RG_Plan, Defaults(RG_Plan), {Title: Left(varPlanRg.Title & " – Montag", 255), RundgangID: varPlanRgID, Wochentag: 1, ZyklusWochen: 1, StartMontag: fnMontag(Today()), Aktiv: true}), Set(varPatchFehler, true));
+                  ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varPlanRgID));
+                  If(varPatchFehler, Notify("Anlegen fehlgeschlagen.", NotificationType.Error))
+              )
+            PressedColor: =Color.White
+            PressedFill: =ColorFade(clrPrimaer, -35%)
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="+ Termin hinzufügen"
+            Width: =240
+            X: =24
+            Y: =Parent.Height - 68
+      - conPlTermine:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            Fill: =clrKarte
+            Height: =Parent.Height - 140
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            Width: =Parent.Width - 1006
+            X: =982
+            Y: =116
+          Children:
+            - lblPlTermineTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =32
+                  Size: =15
+                  Text: ="Nächste Termine"
+                  Width: =Parent.Width - 32
+                  X: =16
+                  Y: =8
+            - galPlTermine:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Nächste Termine"
+                  Height: =Parent.Height - 52
+                  Items: |-
+                    =FirstN(Filter(ForAll(Sequence(120, 0) As i, {D: DateAdd(Today(), i.Value, TimeUnit.Days)}), CountRows(Filter(colPlanR As p, Coalesce(p.Aktiv, false) && fnPlanPasst(p.StartMontag, p.GueltigBis, p.Wochentag, p.ZyklusWochen, D))) > 0), 12)
+                  ShowScrollbar: =true
+                  TemplatePadding: =0
+                  TemplateSize: =34
+                  Width: =Parent.Width - 32
+                  X: =16
+                  Y: =44
+                Children:
+                  - lblPlTermin:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        Height: =34
+                        Size: =13
+                        Text: =Text(ThisItem.D, "dddd, dd.mm.yyyy", "de-DE") & If(ThisItem.D = Today(), "  (heute)", "")
+                        Width: =Parent.TemplateWidth
+                        X: =0
+                        Y: =0
+            - lblPlKeine:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  Size: =13
+                  Text: ="Keine Termine in den nächsten 120 Tagen."
+                  Visible: =IsEmpty(galPlTermine.AllItems)
+                  Width: =Parent.Width - 32
+                  X: =16
+                  Y: =48
+      - conPlLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(255, 255, 255, 0.7)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnPlLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - lblPlLadenText:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =60
+                  Size: =18
+                  Text: =If(varLadeText = "", "Bitte warten …", varLadeText)
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =(Parent.Height - 60) / 2

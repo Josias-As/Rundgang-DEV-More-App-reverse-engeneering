@@ -1,0 +1,897 @@
+Screens:
+  scrListe:
+    Properties:
+      Fill: =clrHintergrund
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        Set(varLadeText, "");
+        Set(varFrage, "");
+        Set(varNeuOffen, false);
+        Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
+        Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
+        Set(varIsLoading, false)
+    Children:
+      - conLiKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrPrimaer
+            Height: =64
+            Width: =Parent.Width
+          Children:
+            - lblLiTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =64
+                  Size: =22
+                  Text: ="Rundgang-Builder"
+                  Width: =500
+                  X: =24
+                  Y: =0
+            - lblLiNutzer:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  Size: =13
+                  Text: =User().FullName
+                  Width: =400
+                  X: =Parent.Width - 424
+                  Y: =0
+      - btnLiNeu:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =Color.White
+            HoverFill: =ColorFade(clrPrimaer, -20%)
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varFrage, "");
+                  Set(varNeuLeer, true);
+                  Reset(txtNeuName);
+                  Set(varNeuOffen, true)
+              )
+            PressedColor: =Color.White
+            PressedFill: =ColorFade(clrPrimaer, -35%)
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="+ Neuer Rundgang"
+            Width: =220
+            X: =24
+            Y: =84
+      - btnLiVorlagen:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                  Set(varFrage, "");
+                  If(IsBlank(LookUp(colRg, Status = "Vorlage")),
+                      Set(varIsLoading, true);
+                      Set(varPatchFehler, false);
+                      IfError(Patch(RG_Rundgaenge, Defaults(RG_Rundgaenge), {Title: "Vorlagen (Builder)", Beschreibung: "Vorlagen für den Rundgang-Builder. Wird nie aktiviert.", RgReihenfolge: 99999, Aktiv: false, Status: "Vorlage", Fassung: 0, EntwurfFassung: 1, EntwurfVon: ""}), Set(varPatchFehler, true));
+                      Refresh(RG_Rundgaenge);
+                      Set(varVorlageNeu, LookUp(RG_Rundgaenge, Status = "Vorlage"));
+                      If(!varPatchFehler && !IsBlank(varVorlageNeu.ID),
+                          With({b: Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Vorlagen", RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 10, Hinweis: "", Aktiv: false, QuelleID: 0})},
+                              With({k1: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Sichtprüfung", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 10, Hinweis: "", Aktiv: true, QuelleID: 0})},
+                              With({k2: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Messwerte", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 20, Hinweis: "", Aktiv: true, QuelleID: 0})},
+                              With({k3: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Sonstiges", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 30, Hinweis: "", Aktiv: true, QuelleID: 0})},
+                              ForAll(Table(
+                                  {K: 1, R: 10, T: "Bereich sauber und ordentlich?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
+                                  {K: 1, R: 20, T: "Keine Schäden sichtbar?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
+                                  {K: 1, R: 30, T: "Fluchtweg und Notausgang frei?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
+                                  {K: 1, R: 40, T: "Zustand", Typ: "AUSWAHL", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: "gut;mäßig;schlecht"},
+                                  {K: 2, R: 50, T: "Temperatur", Typ: "ZAHL", Pfl: true, Foto: "Aus", Einh: "°C", Mi: 15, Ma: 25, Gm: "Warnen", W: ""},
+                                  {K: 2, R: 60, T: "Zählerstand", Typ: "ZAHL", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
+                                  {K: 2, R: 70, T: "Anzahl im Regal", Typ: "ZAHL", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "Stück", Mi: 100, Ma: 1000, Gm: "Mangel", W: ""},
+                                  {K: 3, R: 80, T: "Datum der letzten Wartung", Typ: "DATUM", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
+                                  {K: 3, R: 90, T: "Schäden an", Typ: "MEHRFACH", Pfl: false, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: "Boden;Wand;Decke;Tür;Fenster"},
+                                  {K: 3, R: 100, T: "Bemerkung", Typ: "TEXT", Pfl: false, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""}
+                              ) As v,
+                                  Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: v.T, KategorieID: Switch(v.K, 1, k1.ID, 2, k2.ID, k3.ID), RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: v.R, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: v.Typ}, Pflicht: v.Pfl, Auswahlwerte: v.W, Einheit: v.Einh, MinWert: If(v.Mi = -999999, Blank(), v.Mi), MaxWert: If(v.Ma = -999999, Blank(), v.Ma), Hinweis: "", FotoMoeglich: false, Foto: {Value: v.Foto}, KommentarPflicht: false, Grenzmodus: {Value: v.Gm}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0})
+                              ))))
+                          )
+                      );
+                      Set(varIsLoading, true);
+                      Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
+                      Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
+                      Set(varIsLoading, false)
+                  );
+                  If(IsBlank(LookUp(colRg, Status = "Vorlage")),
+                      Notify("Die Vorlagen konnten nicht angelegt werden.", NotificationType.Error),
+                      Set(varRgID, LookUp(colRg, Status = "Vorlage").ID);
+                      Set(varFassung, Coalesce(LookUp(colRg, Status = "Vorlage").EntwurfFassung, 1));
+                      Set(varSchreibbar, true);
+                      Set(varJob, "laden");
+                      Set(varArbeitStart, false);
+                      Set(varIsLoading, true);
+                      Set(varLadeText, "");
+                      Navigate(scrEditor, ScreenTransition.None)
+                  )
+              )
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="Vorlagen bearbeiten"
+            Width: =220
+            X: =256
+            Y: =84
+      - btnLiNeuLaden:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =Set(varIsLoading, true);
+              Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
+              Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
+              Set(varIsLoading, false)
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="↻ Neu laden"
+            Width: =150
+            X: =488
+            Y: =84
+      - btnLiAlle:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =Set(varAlleZeigen, !varAlleZeigen);
+              Set(varFrage, "")
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: =If(varAlleZeigen, "✓ Archivierte zeigen", "Archivierte zeigen")
+            Width: =240
+            X: =Parent.Width - 264
+            Y: =84
+      - galLi:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            AccessibleLabel: ="Rundgänge"
+            Height: =Parent.Height - 160
+            Items: =Sort(Filter(colRg, fnStatus(Status, Aktiv) <> "Vorlage" && (varAlleZeigen || fnStatus(Status, Aktiv) <> "Archiviert")), Switch(fnStatus(Status, Aktiv), "Entwurf", "1", "Aktiv", "2", "3") & Lower(Title))
+            ShowScrollbar: =true
+            TemplatePadding: =0
+            TemplateSize: =116
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =144
+          Children:
+            - conLiKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  Fill: =clrKarte
+                  Height: =Parent.TemplateHeight - 8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =4
+                Children:
+                  - lblLiName:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =30
+                        Size: =17
+                        Text: =ThisItem.Title
+                        Width: =406
+                        X: =120
+                        Y: =8
+                  - lblLiStatus:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =Switch(fnStatus(ThisItem.Status, ThisItem.Aktiv), "Aktiv", clrErfolg, "Entwurf", clrWarnung, clrTextGrau)
+                        Fill: =Switch(fnStatus(ThisItem.Status, ThisItem.Aktiv), "Aktiv", clrErfolgHell, "Entwurf", clrWarnungHell, clrGesperrtHell)
+                        Font: =Font.'Segoe UI'
+                        Height: =24
+                        Size: =12
+                        Text: =fnStatus(ThisItem.Status, ThisItem.Aktiv)
+                        Width: =96
+                        X: =16
+                        Y: =11
+                  - lblLiInfo:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Size: =12
+                        Text: |-
+                          =If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf", "noch nie aktiviert", "aktive Fassung " & fnAktiveFassung(ThisItem.Fassung)) & "  ·  " & With({pl: Filter(colPlanAlle, RundgangID = ThisItem.ID && Coalesce(Aktiv, false))}, If(IsEmpty(pl), "kein Plan", "Plan: " & Concat(pl As x, Left(fnWochentag(x.Wochentag), 2) & " " & fnZyklus(x.ZyklusWochen), ", "))) & If(Coalesce(ThisItem.EntwurfFassung, 0) > 0 && fnStatus(ThisItem.Status, ThisItem.Aktiv) <> "Entwurf", "  ·  Entwurf Fassung " & ThisItem.EntwurfFassung & " in Arbeit" & If(Coalesce(ThisItem.EntwurfVon, "") <> "", " (" & ThisItem.EntwurfVon & ")", ""), "")
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =510
+                        X: =16
+                        Y: =40
+                  - lblLiFrage:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrWarnung
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =22
+                        Size: =12
+                        Text: |-
+                          =Switch(varFrage,
+                              "fassung" & ThisItem.ID, "Nochmal tippen: Es entsteht ein Entwurf (neue Fassung). Der laufende Rundgang bleibt unverändert, bis du ihn aktivierst.",
+                              "aktion" & ThisItem.ID, If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Aktiv", If(varHeuteLaeuft, "Achtung: Heute läuft noch ein Rundgang. Archiviert erscheint er nicht mehr auf der Startseite. Nochmal tippen zum Archivieren.", "Nochmal tippen: Der Rundgang erscheint nicht mehr auf der Startseite."), fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Archiviert", "Nochmal tippen: Der Rundgang erscheint wieder auf der Startseite (laut Plan).", "Nochmal tippen: Der Entwurf wird mit allen Bereichen, Kategorien, Prüfpunkten und Planzeilen gelöscht."),
+                              "verwerfen" & ThisItem.ID, "Nochmal tippen: Der Entwurf wird gelöscht. Die aktive Fassung bleibt.",
+                              ""
+                          )
+                        Visible: =Len(Self.Text) > 0
+                        Width: =Parent.Width - 32
+                        X: =16
+                        Y: =84
+                  - btnLiBearbeiten:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =Color.White
+                        HoverFill: =ColorFade(clrPrimaer, -20%)
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                              If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf" || Coalesce(ThisItem.EntwurfFassung, 0) > 0,
+                                  Set(varFrage, "");
+                                  Set(varRgID, ThisItem.ID);
+                                  Set(varFassung, Coalesce(ThisItem.EntwurfFassung, 1));
+                                  Set(varSchreibbar, true);
+                                  Set(varJob, "laden");
+                                  Set(varArbeitStart, false);
+                                  Set(varIsLoading, true);
+                                  Set(varLadeText, "");
+                                  Navigate(scrEditor, ScreenTransition.None),
+                                  varFrage <> "fassung" & ThisItem.ID,
+                                  Set(varFrage, "fassung" & ThisItem.ID),
+                                  Set(varFrage, "");
+                                  Set(varRgID, ThisItem.ID);
+                                  Set(varFassung, 0);
+                                  Set(varSchreibbar, true);
+                                  Set(varNach, "neueFassung");
+                                  Set(varJob, If(Coalesce(ThisItem.Fassung, 0) = 0, "vorbereiten", "neueFassung"));
+                                  Set(varArbeitStart, false);
+                                  Set(varIsLoading, true);
+                                  Set(varLadeText, "");
+                                  Navigate(scrEditor, ScreenTransition.None)
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: =If(varFrage = "fassung" & ThisItem.ID, "Neue Fassung?", "Bearbeiten")
+                        Width: =170
+                        X: =Parent.Width - 186
+                        Y: =16
+                  - btnLiAnsehen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              Set(varFrage, "");
+                              Set(varRgID, ThisItem.ID);
+                              Set(varFassung, fnAktiveFassung(ThisItem.Fassung));
+                              Set(varSchreibbar, false);
+                              Set(varNach, "laden");
+                              Set(varJob, If(Coalesce(ThisItem.Fassung, 0) = 0, "vorbereiten", "laden"));
+                              Set(varArbeitStart, false);
+                              Set(varIsLoading, true);
+                              Set(varLadeText, "");
+                              Navigate(scrEditor, ScreenTransition.None)
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Ansehen"
+                        Visible: =fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Aktiv" || fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Archiviert"
+                        Width: =110
+                        X: =Parent.Width - 304
+                        Y: =16
+                  - btnLiPlan:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              Set(varFrage, "");
+                              Set(varPlanRgID, ThisItem.ID);
+                              Navigate(scrPlan, ScreenTransition.None)
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Plan"
+                        Width: =90
+                        X: =Parent.Width - 402
+                        Y: =16
+                  - btnLiAktion:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrFehler
+                        BorderThickness: =1
+                        Color: =clrFehler
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =clrFehler
+                        HoverFill: =clrFehlerHell
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              If(varFrage <> "aktion" & ThisItem.ID,
+                                  Set(varFrage, "aktion" & ThisItem.ID);
+                                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                                  If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Aktiv",
+                                      With({d: LookUp(RG_Durchfuehrungen, Title = "R" & ThisItem.ID & "-" & Text(Today(), "yyyy-mm-dd"))}, Set(varHeuteLaeuft, !IsBlank(d) && d.Status <> "Abgeschlossen"))
+                                  ),
+                                  Set(varFrage, "");
+                                  Set(varIsLoading, true);
+                                  Set(varPatchFehler, false);
+                                  If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Aktiv",
+                                      IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Archiviert", Aktiv: false}), Set(varPatchFehler, true)),
+                                      fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Archiviert",
+                                      IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {Status: "Aktiv", Aktiv: true, Fassung: fnAktiveFassung(ThisItem.Fassung)}), Set(varPatchFehler, true)),
+                                      fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf" && Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Fassung, 0) = 0 && !Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).Aktiv, false),
+                                      IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
+                                      IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
+                                      IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
+                                      IfError(Remove(RG_Plan, Filter(RG_Plan, RundgangID = ThisItem.ID)), Set(varPatchFehler, true));
+                                      If(!varPatchFehler, IfError(Remove(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID)), Set(varPatchFehler, true)))
+                                  );
+                                  If(varPatchFehler, Notify("Das hat nicht geklappt. Bitte erneut versuchen.", NotificationType.Error), Notify("Erledigt.", NotificationType.Success));
+                                  Set(varIsLoading, true);
+                                  Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
+                                  Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
+                                  Set(varIsLoading, false)
+                              )
+                          )
+                        PressedColor: =clrFehler
+                        PressedFill: =clrFehlerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: =If(varFrage = "aktion" & ThisItem.ID, "Wirklich?", Switch(fnStatus(ThisItem.Status, ThisItem.Aktiv), "Aktiv", "Archivieren", "Archiviert", "Reaktivieren", "Löschen"))
+                        Width: =150
+                        X: =Parent.Width - 560
+                        Y: =16
+                  - btnLiVerwerfen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrFehler
+                        BorderThickness: =1
+                        Color: =clrFehler
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =clrFehler
+                        HoverFill: =clrFehlerHell
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              If(varFrage <> "verwerfen" & ThisItem.ID,
+                                  Set(varFrage, "verwerfen" & ThisItem.ID);
+                                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),
+                                  Set(varFrage, "");
+                                  Set(varIsLoading, true);
+                                  Set(varPatchFehler, false);
+                                  With({f: Coalesce(LookUp(RG_Rundgaenge, ID = ThisItem.ID).EntwurfFassung, 0)},
+                                      If(f > 0 && f <> fnAktiveFassung(ThisItem.Fassung),
+                                          IfError(Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));
+                                          IfError(Remove(RG_Kategorien, Filter(RG_Kategorien, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true));
+                                          IfError(Remove(RG_Bereiche, Filter(RG_Bereiche, RundgangID = ThisItem.ID && Fassung = f)), Set(varPatchFehler, true))
+                                      )
+                                  );
+                                  If(!varPatchFehler, IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = ThisItem.ID), {EntwurfFassung: 0, EntwurfVon: ""}), Set(varPatchFehler, true)));
+                                  If(varPatchFehler, Notify("Verwerfen unvollständig. Bitte erneut versuchen.", NotificationType.Error), Notify("Entwurf verworfen.", NotificationType.Success));
+                                  Set(varIsLoading, true);
+                                  Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
+                                  Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
+                                  Set(varIsLoading, false)
+                              )
+                          )
+                        PressedColor: =clrFehler
+                        PressedFill: =clrFehlerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: =If(varFrage = "verwerfen" & ThisItem.ID, "Wirklich?", "Entwurf verwerfen")
+                        Visible: =Coalesce(ThisItem.EntwurfFassung, 0) > 0 && fnStatus(ThisItem.Status, ThisItem.Aktiv) <> "Entwurf"
+                        Width: =190
+                        X: =Parent.Width - 758
+                        Y: =16
+      - lblLiLeer:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =40
+            Size: =15
+            Text: ="Noch keine Rundgänge. Lege mit „+ Neuer Rundgang“ den ersten an."
+            Visible: =IsEmpty(galLi.AllItems) && !varIsLoading
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =160
+      - conNeu:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0.45)
+            Height: =Parent.Height
+            Visible: =varNeuOffen
+            Width: =Parent.Width
+          Children:
+            - btnNeuSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - conNeuKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderThickness: =0
+                  Fill: =clrKarte
+                  Height: =420
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =600
+                  X: =(Parent.Width - Self.Width) / 2
+                  Y: =(Parent.Height - Self.Height) / 2
+                Children:
+                  - lblNeuTitel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        Size: =18
+                        Text: ="Neuer Rundgang"
+                        Width: =552
+                        X: =24
+                        Y: =16
+                  - lblNeuName:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =24
+                        Size: =13
+                        Text: ="Name des Rundgangs"
+                        Width: =552
+                        X: =24
+                        Y: =68
+                  - txtNeuName:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: ="Name des neuen Rundgangs"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        Default: =""
+                        DisplayMode: =DisplayMode.Edit
+                        Fill: =clrKarte
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HintText: ="z. B. Objektrundgang Halle 3"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: =false
+                        Size: =14
+                        Width: =552
+                        X: =24
+                        Y: =94
+                  - lblNeuArt:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =24
+                        Size: =13
+                        Text: ="Wie anfangen?"
+                        Width: =552
+                        X: =24
+                        Y: =150
+                  - galNeuArt:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AccessibleLabel: ="Wie anfangen"
+                        Height: =44
+                        Items: |-
+                          =Table({W: "leer", N: "Leer anfangen"}, {W: "kopie", N: "Kopie eines Rundgangs"})
+                        ShowScrollbar: =false
+                        TemplatePadding: =0
+                        TemplateSize: =44
+                        Width: =552
+                        WrapCount: =2
+                        X: =24
+                        Y: =176
+                      Children:
+                        - btnNeuArt:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderColor: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), clrPrimaer, clrRahmen)
+                              BorderThickness: =1
+                              Color: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), Color.White, clrText)
+                              DisabledBorderColor: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), clrPrimaer, clrRahmen)
+                              DisabledColor: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), clrPrimaer, clrTextGrau)
+                              DisabledFill: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), clrPrimaerHell, clrKarte)
+                              DisplayMode: =DisplayMode.Edit
+                              Fill: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), clrPrimaer, clrKarte)
+                              Font: =Font.'Segoe UI'
+                              Height: =40
+                              HoverColor: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), Color.White, clrText)
+                              HoverFill: =If(ThisItem.W = If(varNeuLeer, "leer", "kopie"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                              OnSelect: =Set(varNeuLeer, ThisItem.W = "leer")
+                              PressedColor: =Color.White
+                              PressedFill: =ColorFade(clrPrimaer, -35%)
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =14
+                              Text: =ThisItem.N
+                              Width: =Parent.TemplateWidth - 6
+                              X: =0
+                              Y: =0
+                  - ddNeuQuelle:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: ="Rundgang, der kopiert wird"
+                        AllowEmptySelection: =true
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: =""
+                        DisplayMode: =DisplayMode.Edit
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverFill: =clrPrimaerHell
+                        Items: =Sort(Filter(colRg, fnStatus(Status, Aktiv) <> "Vorlage" && (Coalesce(Fassung, 0) > 0 || fnStatus(Status, Aktiv) = "Entwurf")), Lower(Title))
+                        Items.Value: =Title
+                        OnChange: =false
+                        PaddingLeft: =10
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =14
+                        Visible: =!varNeuLeer
+                        Width: =552
+                        X: =24
+                        Y: =232
+                  - lblNeuHilfe:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =60
+                        Size: =12
+                        Text: =If(varNeuLeer, "Du startest mit einem leeren Rundgang und legst Bereiche, Kategorien und Prüfpunkte an.", "Die Kopie übernimmt Bereiche, Kategorien und Prüfpunkte der aktiven Fassung. Der Plan wird nicht kopiert. Noch nie geöffnete alte Rundgänge erscheinen erst nach einmal „Ansehen“.")
+                        Width: =552
+                        X: =24
+                        Y: =284
+                  - btnNeuAbbrechen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =48
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: =Set(varNeuOffen, false)
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Abbrechen"
+                        Width: =160
+                        X: =24
+                        Y: =352
+                  - btnNeuAnlegen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =48
+                        HoverColor: =Color.White
+                        HoverFill: =ColorFade(clrPrimaer, -20%)
+                        OnSelect: |-
+                          =If(!varIsLoading && Now() >= varSperreBis,
+                              Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                              If(Trim(txtNeuName.Text) = "",
+                                  Notify("Bitte einen Namen eingeben.", NotificationType.Warning),
+                                  !IsBlank(LookUp(colRg, Lower(Trim(Title)) = Lower(Trim(txtNeuName.Text)))),
+                                  Notify("Diesen Namen gibt es schon.", NotificationType.Warning),
+                                  !varNeuLeer && IsBlank(ddNeuQuelle.Selected),
+                                  Notify("Bitte den Rundgang wählen, der kopiert werden soll.", NotificationType.Warning),
+                                  Set(varIsLoading, true);
+                                  Set(varPatchFehler, false);
+                                  IfError(Patch(RG_Rundgaenge, Defaults(RG_Rundgaenge), {Title: Left(Trim(txtNeuName.Text), 255), Beschreibung: "", RgReihenfolge: Coalesce(Max(colRg, RgReihenfolge), 0) + 10, Aktiv: false, Status: "Entwurf", Fassung: 0, EntwurfFassung: 1, EntwurfVon: User().FullName}), Set(varPatchFehler, true));
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varNeuRg, First(Sort(Filter(RG_Rundgaenge, Title = Left(Trim(txtNeuName.Text), 255)), ID, SortOrder.Descending)));
+                                  If(varPatchFehler || IsBlank(varNeuRg.ID),
+                                      Set(varIsLoading, false);
+                                      Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
+                                      Set(varNeuOffen, false);
+                                      Set(varRgID, varNeuRg.ID);
+                                      Set(varFassung, 1);
+                                      Set(varSchreibbar, true);
+                                      If(varNeuLeer,
+                                          Set(varJob, "laden"),
+                                          With({s: ddNeuQuelle.Selected},
+                                              Set(varQuelleR, s.ID);
+                                              Set(varQuelleF, If(fnStatus(s.Status, s.Aktiv) = "Entwurf", Coalesce(s.EntwurfFassung, 1), fnAktiveFassung(s.Fassung)));
+                                              Set(varQuelleNurAktiv, fnStatus(s.Status, s.Aktiv) <> "Entwurf")
+                                          );
+                                          Set(varZielR, varNeuRg.ID);
+                                          Set(varZielF, 1);
+                                          Set(varJob, "quelle")
+                                      );
+                                      Reset(txtNeuName);
+                                      Set(varArbeitStart, false);
+                                      Set(varIsLoading, true);
+                                      Set(varLadeText, "");
+                                      Navigate(scrEditor, ScreenTransition.None)
+                                  )
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Anlegen"
+                        Width: =160
+                        X: =416
+                        Y: =352
+                  - btnNeuZu:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: =Set(varNeuOffen, false)
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =16
+                        Text: ="✕"
+                        Width: =40
+                        X: =540
+                        Y: =16
+      - conLiLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(255, 255, 255, 0.7)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnLiLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - lblLiLadenText:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =60
+                  Size: =18
+                  Text: =If(varLadeText = "", "Bitte warten …", varLadeText)
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =(Parent.Height - 60) / 2
