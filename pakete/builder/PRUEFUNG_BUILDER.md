@@ -11,6 +11,7 @@ Stand 30.10.2026. Kennzeichnung: **belegt** (maschinell/Export), **geschlussfolg
   - Die YAML-Dateien lesen sich zeichengleich zurück, die Textbreiten sind geschätzt.
 - Mutationstest `werkzeuge/mutation_builder.py`: **10/10** absichtlich eingebaute Fehler werden gefunden (`arbeit/2026-10-30_Builder/mutation.txt`).
 - Logik-Gegenprobe `werkzeuge/logik_builder.py`: **27 Szenarien ohne Fehler** – Python-Nachbildung der Abläufe (Vorbereiten, neue Fassung, Kopie mit Bedingungen, Aktivieren, halbes Aktivieren, veraltetes Fenster, Verwerfen, Kopierfehler, Reaktivieren, Kopie als neuer Rundgang, Vorlagen) gegen die Leselogik der Rundgang-App (`btnRgAktion`, `scrKategorie.OnVisible`). Belegt damit die Datenlogik, nicht die Power-Fx-Schreibweise.
+- Sichtprüfung `werkzeuge/vorschau_builder.py`: Die Bildschirme werden mit den echten Positionen nachgezeichnet (`arbeit/2026-10-30_Builder/vorschau_*.png`, Zustand „Prüfpunkt Zahl gewählt, beschreibbar“). **0 Überlappungen** gleichzeitig sichtbarer Steuerelemente, alle Knöpfe frei, das Prüfpunkt-Formular passt in die Höhe. Formeltexte sind dort Platzhalter, Farben nur angedeutet.
 - Paket 7: Generator ohne Fehler, Mutationstest Baukasten 9/9, Logik-Gegenprobe 81 Szenarien ohne Fehler.
 
 ## Unabhängige Prüfung (ein Prüfer, 30.10.) und Umgang
