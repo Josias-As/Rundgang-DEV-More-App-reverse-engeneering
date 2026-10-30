@@ -26,7 +26,7 @@ Der Prüfer fand keine Formel, die in Studio sicher rot wird. Er hat Schemas, Fo
 | 6 | `patch_feld` schreibt per `varAuswahlID` ohne Prüfung von Ebene und Fassung | niedrig–mittel | **Behoben.** Es wird nur geschrieben, wenn die Ebene passt. Der Datensatz wird über `ID && RundgangID && Fassung` gelesen. Ein Treffer außerhalb des Entwurfs ist damit ausgeschlossen. Die Reihenfolge der Ereignisse bleibt UNSICHER U5 (Test T5). |
 | 7 | Die Fassungsnummer wird nur aus den Bereichen bestimmt | niedrig | **Behoben.** Höchster Wert aus Bereichen, Kategorien und Prüfpunkten (sortiert gelesen, eine Zeile je Liste). |
 | 8a | Namensänderung im Entwurf ist sofort live | niedrig | Meldung „Der Name gilt sofort, auch für die aktive Fassung“. In der Anleitung beschrieben. |
-| 8b | Das Lade-Fenster hat keinen Ausweg, wenn der Zeitgeber nicht startet (UNSICHER) | niedrig | Nicht gebaut, als U7 in der Anleitung: Studio-Vorschau neu starten. Tritt das im Test auf, baue ich einen Knopf „Abbrechen“. |
+| 8b | Das Lade-Fenster hat keinen Ausweg, wenn der Zeitgeber nicht startet (UNSICHER) | niedrig | **Behoben:** Im Editor steht unter „Bitte warten …“ der Knopf „Zur Übersicht“ (setzt den Ablauf zurück). Ein abgebrochener Ablauf ist gefahrlos, weil Schreibprüfung und Zurücknehmen wirksam bleiben. |
 | 8c | Kurz „keine aktiven Kategorien“ beim Start während des Umschaltens | – | So gewollt (Reihenfolge erst aus, dann an). |
 
 ## Offen
