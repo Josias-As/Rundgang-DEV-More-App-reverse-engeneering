@@ -58,7 +58,7 @@ def main():
          "Stand 02.11.2026. Erzeugt mit `werkzeuge/builder.py` + `werkzeuge/doc_paket9_builder.py`. **Voraussetzung: Paket 8 (Builder) vollständig eingefügt** "
          "(`PAKET_8_BUILDER.md`, Schritt 0–5). Die Formeln hier enthalten die Änderungen von Paket 8 schon.", "",
          "## Kurzfassung", "",
-         "- Neuer Bildschirm **„Ansprechpartner“** (aus der Übersicht): Gewerk/Rolle, Name, Telefon, Hinweis, „bei jedem kritischen Mangel“, aktiv/inaktiv.",
+         "- Neuer Bildschirm **„Ansprechpartner“** (aus der Übersicht): Gewerk/Rolle, Kontakt (Name/Firma), Telefon, Hinweis, „bei jedem kritischen Mangel“, aktiv/inaktiv.",
          "- Im Prüfpunkt-Editor unten ein Knopf **„Bei n.i.O.: …“**. Er öffnet ein Fenster: Rückfrage an/aus mit Text, kritisch ja/nein mit Text, Ansprechpartner antippen.",
          "- Kopie, neue Fassung, Änderungsliste und Prüfung kennen die fünf neuen Felder.",
          "- Umfang: neue Liste + 5 Spalten (gemeinsam mit der Rundgang-App), 1 neuer Bildschirm, 3 neue Blöcke im Editor/Übersicht, %d geänderte Properties." % len(geaendert),
@@ -87,7 +87,7 @@ def main():
               "```diff", diff(v[k], n[k]), "```", "", "**Kurz erklärt:** " + ERKL[k], "",
               "**Nachprüfen:** endet auf `%s`" % [x for x in n[k].strip().split("\n") if x.strip()][-1].strip()[-80:], ""]
     z += ["## Test (wenn du testest)", "",
-          "1. Übersicht → „Ansprechpartner“ → „+ Ansprechpartner“: „Elektriker“, Name, Telefon. Zweiter: „Allgemein“, „bei jedem“ = ja.",
+          "1. Übersicht → „Ansprechpartner“ → „+ Ansprechpartner“: „Elektriker“, Kontakt, Telefon. Zweiter: „Allgemein“, „bei jedem“ = ja.",
           "2. Testrundgang bearbeiten → Prüfpunkt → „Bei n.i.O.: nichts Besonderes ›“ → Rückfrage an + Text, kritisch ja + Text, „Elektriker“ antippen (✓).",
           "3. Knopf zeigt „⚠ Bei n.i.O.: Rückfrage + kritisch ›“ in Rot, Vorschau nennt beides.",
           "4. Aktivieren → Änderungsliste zeigt den Punkt als „geändert“. Neue Fassung → Einstellungen sind noch da.",

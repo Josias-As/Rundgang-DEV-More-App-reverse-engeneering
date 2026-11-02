@@ -9,13 +9,13 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (Paket 8 und 9 als Zustan
 - **Rückfrage:** Bei n.i.O. (oder Zahl außerhalb, Modus Mangel) fragt die App „Ist das wirklich so?“ mit dem normalen Wert. „Nein“ nimmt die Antwort zurück.
 - **Kritischer Mangel:** rotes Fenster über den ganzen Bildschirm mit den Ansprechpartnern (Name, Telefon, Hinweis). Nur „Ich habe Bescheid gegeben“ oder „war ein Versehen“. Ohne Bestätigung lässt sich die Kategorie nicht speichern. Protokoll und Mangel nennen die Bestätigung. **Es wird nichts verschickt.**
 - Eingestellt wird alles im Builder (Paket 9 Builder-Teil folgt). Bis dahin: Spalten direkt in SharePoint setzen.
-- Umfang: 15 Properties (jede einmal in der Endfassung), 30 neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten.
-- Geprüft: Generator 0 Fehler (Namen, Klammern, Rückübersetzung, gleiche Felder in allen drei Zweigen von colAntworten, 13 Argumente in jedem fnFehlt-Aufruf). **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 15 Properties (jede einmal in der Endfassung), 23 neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten.
+- Geprüft: Generator 0 Fehler (Namen, Klammern, Rückübersetzung, gleiche Felder in allen drei Zweigen von colAntworten, 13 Argumente in jedem fnFehlt-Aufruf). Unabhängig geprüft (14 Befunde eingearbeitet, `arbeit/2026-11-02_App89/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Schritt 1 – SharePoint und Datenquelle
 
-1. **Neue Liste `RG_Ansprechpartner`** (SharePoint, IMS+). Spalten: `Title` (vorhanden, = Gewerk/Rolle, z. B. „Elektriker“), `Name` (Eine Textzeile), `Telefon` (Eine Textzeile), `Hinweis` (Mehrere Textzeilen, nur Text), `Allgemein` (Ja/Nein, Standard Nein), `Aktiv` (Ja/Nein, Standard Ja).
-   Testzeilen: „Allgemein“ (Allgemein = Ja), „Elektriker“, „IT-Dienstleister“.
+1. **Neue Liste `RG_Ansprechpartner`** (SharePoint, IMS+). Spalten: `Title` (vorhanden, = Gewerk/Rolle, z. B. „Elektriker“), `Kontakt` (Eine Textzeile, Name oder Firma; **nicht** „Name“ nennen, den Namen hat SharePoint schon intern vergeben), `Telefon` (Eine Textzeile), `Hinweis` (Mehrere Textzeilen, nur Text), `Allgemein` (Ja/Nein, Standard Nein), `Aktiv` (Ja/Nein, Standard Ja).
+   Testzeilen: „Allgemein“ (Allgemein = Ja), „Elektriker“, „IT-Dienstleister“. Berechtigung: wie die anderen RG-Listen (Prüfer lesen, Pflegegruppe bearbeiten).
 2. **`RG_Pruefpunkte`** neue Spalten: `Kritisch` (Ja/Nein, Standard Nein), `KritischText` (Eine Textzeile), `Ansprechpartner` (Eine Textzeile, IDs aus `RG_Ansprechpartner` mit `;` getrennt), `Rueckfrage` (Ja/Nein, Standard Nein), `RueckfrageText` (Eine Textzeile). `Abschnitt` gibt es schon.
 3. Rundgang-App: **Daten** → `RG_Pruefpunkte` und `RG_Bereiche` → ⋯ → **Aktualisieren**, dann **Daten hinzufügen** → SharePoint → IMS+ → `RG_Ansprechpartner`.
 4. Zum Testen an einem ZZ-Test-Prüfpunkt in SharePoint: `Kritisch` = Ja, `KritischText` = „Anlage nicht weiter betreiben.“, `Ansprechpartner` = ID von „Elektriker“, `Rueckfrage` = Ja, `RueckfrageText` = „Normalerweise steht hier i.O.“.
@@ -55,7 +55,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); KritischVon: Coalesce(Text(a.KritischVon); ""); Inaktiv: false}
                     )
                 )
             )
@@ -85,6 +85,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      RueckfrageText: Coalesce(p.RueckfrageText; "");
                      KritischOk: If(IsBlank(alt); false; Coalesce(IfError(Boolean(alt.Value.KritischOk); false); false));
                      KritischZeit: If(IsBlank(alt); ""; Coalesce(Text(alt.Value.KritischZeit); ""));
+                     KritischVon: If(IsBlank(alt); ""; Coalesce(Text(alt.Value.KritischVon); ""));
                      Warnung: false;
                      Inaktiv: false}
                 )
@@ -93,16 +94,16 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
         Collect(colAntworten;
             ForAll(Filter(t As j2; IsBlank(LookUp(colPP; ID = Value(j2.Value.PruefpunktID)))) As o;
                 {PruefpunktID: Value(o.Value.PruefpunktID); Frage: Text(o.Value.Frage); Typ: Text(o.Value.Typ); Pflicht: false; Einheit: Coalesce(Text(o.Value.Einheit); ""); MinWert: Blank(); MaxWert: Blank(); Auswahl: ""; Hinweis: ""; Reihenfolge: 100000 + Value(o.Value.PruefpunktID);
-                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); BildID: 0; Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(o.Value.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(o.Value.KritischOk); false); false); KritischZeit: Coalesce(Text(o.Value.KritischZeit); ""); Inaktiv: true}
+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); ""); FotoModus: "Aus"; KommentarPflicht: false; Grenzmodus: "Mangel"; Warnung: Coalesce(IfError(Boolean(o.Value.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet); false); false); BildID: 0; Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(o.Value.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(o.Value.KritischOk); false); false); KritischZeit: Coalesce(Text(o.Value.KritischZeit); ""); KritischVon: Coalesce(Text(o.Value.KritischVon); ""); Inaktiv: true}
             )
         )
     )
 );;
-ClearCollect(colAbsTmp; ShowColumns(Filter(colAntworten; !Inaktiv && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt; BedID));;
+ClearCollect(colAbsTmp; ShowColumns(Filter(colAntworten; !Inaktiv && !Ausgeblendet && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt; BedID));;
 ForAll(colAbsTmp As t;
     Patch(colAntworten; LookUp(colAntworten; PruefpunktID = t.PruefpunktID);
         {AbsKopf: With({g: Filter(colAbsTmp As u; Lower(u.Abschnitt) = Lower(t.Abschnitt))};
-            If(IsEmpty(Filter(g As u1; u1.BedID = 0)); t.Reihenfolge = Min(g; Reihenfolge); t.BedID = 0 && t.Reihenfolge = Min(Filter(g As u2; u2.BedID = 0); Reihenfolge)))}
+            If(IsEmpty(Filter(g As u1; u1.BedID = 0)); t.Reihenfolge * 1000000 + t.PruefpunktID = Min(g; Reihenfolge * 1000000 + PruefpunktID); t.BedID = 0 && t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(g As u2; u2.BedID = 0); Reihenfolge * 1000000 + PruefpunktID)))}
     )
 );;
 Set(varSprungRec; First(Sort(Filter(colAntworten As a; !a.Inaktiv && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)));;
@@ -129,15 +130,16 @@ Set(varIsLoading; false)
 +                     RueckfrageText: Coalesce(p.RueckfrageText; "");
 +                     KritischOk: If(IsBlank(alt); false; Coalesce(IfError(Boolean(alt.Value.KritischOk); false); false));
 +                     KritischZeit: If(IsBlank(alt); ""; Coalesce(Text(alt.Value.KritischZeit); ""));
++                     KritischVon: If(IsBlank(alt); ""; Coalesce(Text(alt.Value.KritischVon); ""));
 -                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); …
 +                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); …
 +    )
 +);;
-+ClearCollect(colAbsTmp; ShowColumns(Filter(colAntworten; !Inaktiv && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt; BedID));;
++ClearCollect(colAbsTmp; ShowColumns(Filter(colAntworten; !Inaktiv && !Ausgeblendet && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt; BedID));;
 +ForAll(colAbsTmp As t;
 +    Patch(colAntworten; LookUp(colAntworten; PruefpunktID = t.PruefpunktID);
 +        {AbsKopf: With({g: Filter(colAbsTmp As u; Lower(u.Abschnitt) = Lower(t.Abschnitt))};
-+            If(IsEmpty(Filter(g As u1; u1.BedID = 0)); t.Reihenfolge = Min(g; Reihenfolge); t.BedID = 0 && t.Reihenfolge = Min(Filter(g As u2; u2.BedID = 0); Reihenfolge)))}
++            If(IsEmpty(Filter(g As u1; u1.BedID = 0)); t.Reihenfolge * 1000000 + t.PruefpunktID = Min(g; Reihenfolge * 1000000 + PruefpunktID); t.BedID = 0 && t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(g As u2; u2.BedID = 0); …
 ```
 
 **Kurz erklärt:** Lädt die Ansprechpartner, setzt die beiden Fenster zurück, neue Felder in allen drei Zweigen (Abschnitt, Kopf-Kennzeichen, kritisch, Rückfrage, Bestätigung). Danach wird je Abschnitt die erste Frage als Überschrift-Träger markiert (bevorzugt eine ohne Bedingung).
@@ -299,7 +301,7 @@ fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(ta
 ```
 With({neu: If(ThisItem.Bewertung = "NIO"; ""; "NIO")};
     Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {Bewertung: neu; KritischOk: false; KritischZeit: ""});;
-    If(neu = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)))
+    If(neu = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)); Set(varRueckPP; 0);; Set(varKritPP; 0))
 );;
 Set(varGeaendert; true)
 ```
@@ -310,7 +312,7 @@ Set(varGeaendert; true)
 -Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {Bewertung: If(ThisItem.Bewertung = "NIO"; ""; "NIO")});;
 +With({neu: If(ThisItem.Bewertung = "NIO"; ""; "NIO")};
 +    Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {Bewertung: neu; KritischOk: false; KritischZeit: ""});;
-+    If(neu = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)))
++    If(neu = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)); Set(varRueckPP; 0); …
 +);;
 ```
 
@@ -326,7 +328,7 @@ Set(varGeaendert; true)
 With({z: IfError(Value(Self.Text); Blank())};
     With({b: If(IsBlank(z); ""; fnZahlBewertung(z; ThisItem.MinWert; ThisItem.MaxWert; ThisItem.Grenzmodus)); war: ThisItem.Bewertung = "NIO" && ThisItem.KritischOk};
         Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {WertZahl: z; Bewertung: b; KritischOk: b = "NIO" && war; KritischZeit: If(b = "NIO" && war; ThisItem.KritischZeit; "")});;
-        If(b = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)))
+        If(b = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)); Set(varRueckPP; 0);; Set(varKritPP; 0))
     )
 );;
 Set(varGeaendert; true)
@@ -338,7 +340,7 @@ Set(varGeaendert; true)
 -    Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {WertZahl: z; Bewertung: If(IsBlank(z); ""; fnZahlBewertung(z; ThisItem.MinWert; ThisItem.MaxWert; ThisItem.Grenzmodus))})
 +    With({b: If(IsBlank(z); ""; fnZahlBewertung(z; ThisItem.MinWert; ThisItem.MaxWert; ThisItem.Grenzmodus)); war: ThisItem.Bewertung = "NIO" && ThisItem.KritischOk};
 +        Patch(colAntworten; LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID); {WertZahl: z; Bewertung: b; KritischOk: b = "NIO" && war; KritischZeit: If(b = "NIO" && war; ThisItem.KritischZeit; "")});;
-+        If(b = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)))
++        If(b = "NIO"; If(ThisItem.Rueckfrage; Set(varRueckPP; ThisItem.PruefpunktID); ThisItem.Kritisch && !LookUp(colAntworten; PruefpunktID = ThisItem.PruefpunktID).KritischOk; Set(varKritPP; ThisItem.PruefpunktID)); Set(varRueckPP; 0 …
 +    )
 ```
 
@@ -430,10 +432,12 @@ If(ThisItem.Bewertung = "NIO" || (varZeigeFehlend && fnFehlt(ThisItem.Typ; ThisI
 
 ```
 If(
+    varRueckPP > 0 || varKritPP > 0;
+        Notify("Bitte zuerst die offene Frage im Fenster beantworten."; NotificationType.Warning);
     Value(lblKaFehlendAnzahl.Text) > 0;
         Set(varZeigeFehlend; true);;
         Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))) && fnFehlt(a.Typ; a.Pflicht; a.Bewertung; a.WertText; a.WertZahl; a.Kommentar; a.FotoModus; CountRows(Filter(colFotos; PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos); a.KommentarPflicht; a.Grenzmodus; a.MinWert; a.MaxWert; a.Kritisch && !a.KritischOk))));;
-        If(varSprungRec.Kritisch && varSprungRec.Bewertung = "NIO" && !varSprungRec.KritischOk; Set(varKritPP; varSprungRec.PruefpunktID));;
+        Set(varKritPP; Coalesce(First(Sort(Filter(colAntworten As a; !a.Inaktiv && a.Bewertung = "NIO" && a.Kritisch && !a.KritischOk && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl)))); Reihenfolge)).PruefpunktID; 0));;
         Reset(galKaPruefpunkte);
     !varIsLoading && Now() >= varSperreBis;
         Set(varIsLoading; true);;
@@ -472,7 +476,14 @@ If(
                     UpdateIf(colAntworten; !Inaktiv && !fnKommentarNoetig(Typ; Bewertung; WertText; WertZahl; KommentarPflicht; Grenzmodus; MinWert; MaxWert); {Kommentar: ""});;
                     UpdateIf(colAntworten; !Inaktiv; {Warnung: Typ = "ZAHL" && Grenzmodus = "Warnen" && fnAusserhalb(WertZahl; MinWert; MaxWert)});;
                     ClearCollect(colSpeichern; ForAll(colAntworten As r; If(r.PruefpunktID in colVersteckt.PruefpunktID; Patch(r; {Bewertung: ""; WertText: ""; WertZahl: Blank(); Kommentar: ""; Fotos: ""; Warnung: false; Ausgeblendet: true}); r.Inaktiv; r; Patch(r; {Ausgeblendet: false}))));;
-                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet; Abschnitt; AbsKopf; Kritisch; KritischOk; KritischZeit); JSONFormat.Compact));;
+                    ClearCollect(colAbsTmp; ShowColumns(Filter(colSpeichern; !Inaktiv && !Ausgeblendet && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt));;
+                    UpdateIf(colSpeichern; AbsKopf; {AbsKopf: false});;
+                    ForAll(colAbsTmp As t;
+                        Patch(colSpeichern; LookUp(colSpeichern; PruefpunktID = t.PruefpunktID);
+                            {AbsKopf: t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(colAbsTmp As u; Lower(u.Abschnitt) = Lower(t.Abschnitt)); Reihenfolge * 1000000 + PruefpunktID)}
+                        )
+                    );;
+                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet; Abschnitt; AbsKopf; Kritisch; KritischOk; KritischZeit; KritischVon); JSONFormat.Compact));;
                     IfError(
                         Patch(RG_KategorieErgebnisse; If(IsBlank(erg); Defaults(RG_KategorieErgebnisse); erg);
                             {Title: varSchluesselK; DurchfuehrungID: varDurchID; TagText: durch.TagText; KategorieID: varKatID; Position: varKatPos; BereichName: varBereichName; KategorieName: varKatName; Antworten: varAntwortJSON; AnzahlNIO: CountRows(Filter(colSpeichern; Bewertung = "NIO")); PrueferEmail: User().Email; PrueferName: User().FullName; GespeichertAm: Now(); TestDatensatz: durch.TestDatensatz});
@@ -499,11 +510,20 @@ If(
 **Das ändert sich:**
 
 ```diff
++    varRueckPP > 0 || varKritPP > 0;
++        Notify("Bitte zuerst die offene Frage im Fenster beantworten."; NotificationType.Warning);
 -        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); …
 +        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); …
-+        If(varSprungRec.Kritisch && varSprungRec.Bewertung = "NIO" && !varSprungRec.KritischOk; Set(varKritPP; varSprungRec.PruefpunktID));;
++        Set(varKritPP; Coalesce(First(Sort(Filter(colAntworten As a; !a.Inaktiv && a.Bewertung = "NIO" && a.Kritisch && !a.KritischOk && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; f …
 -                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet); JSONFormat.Compact));;
-+                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet; Abschnitt; AbsKopf; Kritisch; KritischOk; KritischZeit); J …
++                    ClearCollect(colAbsTmp; ShowColumns(Filter(colSpeichern; !Inaktiv && !Ausgeblendet && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt));;
++                    UpdateIf(colSpeichern; AbsKopf; {AbsKopf: false});;
++                    ForAll(colAbsTmp As t;
++                        Patch(colSpeichern; LookUp(colSpeichern; PruefpunktID = t.PruefpunktID);
++                            {AbsKopf: t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(colAbsTmp As u; Lower(u.Abschnitt) = Lower(t.Abschnitt)); Reihenfolge * 1000000 + PruefpunktID)}
++                        )
++                    );;
++                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet; Abschnitt; AbsKopf; Kritisch; KritischOk; KritischZeit; Kr …
 ```
 
 **Kurz erklärt:** Speichert Abschnitt und Bestätigung im JSON. Fehlt nur noch die Bestätigung eines kritischen Mangels, öffnet „Speichern“ das rote Fenster wieder.
@@ -678,7 +698,7 @@ With({d: varDurch};
                 "<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO"; "#B3261E"; w; "#9A5B00"; "#0F7B3F") & "'>" & Switch(b; "IO"; "i.O."; "NIO"; "n.i.O."; "") & "</td>" &
                 "<td style='padding:6px 8px'>" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl); ""; Text(Value(a.Value.WertZahl)) & " " & fnHtml(Text(a.Value.Einheit))) & If(w; " <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>"; "") &
                 If(IsBlank(k) || k = ""; ""; "<br><i style='color:" & If(b = "NIO"; "#B3261E"; "#5F6370") & "'>" & fnHtml(k) & "</i>") &
-                If(b = "NIO" && Coalesce(IfError(Boolean(a.Value.Kritisch); false); false); "<br><b style='color:#B3261E'>KRITISCH – " & If(Coalesce(IfError(Boolean(a.Value.KritischOk); false); false); "Bescheid gegeben, bestätigt von " & fnHtml(e.PrueferName) & " um " & fnHtml(Coalesce(Text(a.Value.KritischZeit); "")); "nicht bestätigt") & "</b>"; "") &
+                If(b = "NIO" && Coalesce(IfError(Boolean(a.Value.Kritisch); false); false); "<br><b style='color:#B3261E'>KRITISCH – " & If(Coalesce(IfError(Boolean(a.Value.KritischOk); false); false); "Bescheid gegeben, bestätigt von " & fnHtml(Coalesce(Text(a.Value.KritischVon); e.PrueferName)) & " am " & fnHtml(Coalesce(Text(a.Value.KritischZeit); "")); "nicht bestätigt") & "</b>"; "") &
                 If(IsBlank(fo) || fo = ""; ""; "<br>" & Concat(Split(fo; " | ") As s; "<a href='" & Trim(s.Value) & "'>Foto ›</a> ")) &
                 "</td></tr>"
             )
@@ -821,7 +841,7 @@ If(!varIsLoading && Now() >= varSperreBis;
     Properties:
       Fill: =RGBA(0, 0, 0, 0.45)
       Height: =Parent.Height
-      Visible: =varRueckPP > 0
+      Visible: =varRueckPP > 0 && LookUp(colAntworten, PruefpunktID = varRueckPP).Bewertung = "NIO"
       Width: =Parent.Width
     Children:
     - btnKaRueckSperre:
@@ -839,7 +859,7 @@ If(!varIsLoading && Now() >= varSperreBis;
         Variant: ManualLayout
         Properties:
           Fill: =clrKarte
-          Height: =440
+          Height: =470
           RadiusBottomLeft: =16
           RadiusBottomRight: =16
           RadiusTopLeft: =16
@@ -865,7 +885,7 @@ If(!varIsLoading && Now() >= varSperreBis;
             Properties:
               Color: =clrText
               Font: =Font.'Segoe UI'
-              Height: =96
+              Height: =124
               Size: =17
               Text: |-
                 =With({r: LookUp(colAntworten, PruefpunktID = varRueckPP)}, r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL", Text(r.WertZahl) & " " & r.Einheit, "n.i.O."))
@@ -879,14 +899,14 @@ If(!varIsLoading && Now() >= varSperreBis;
               Color: =clrWarnung
               Font: =Font.'Segoe UI'
               FontWeight: =FontWeight.Semibold
-              Height: =120
+              Height: =140
               Size: =17
               Text: |-
                 =With({r: LookUp(colAntworten, PruefpunktID = varRueckPP)}, If(Trim(r.RueckfrageText) <> "", r.RueckfrageText, r.Typ = "ZAHL" && (!IsBlank(r.MinWert) || !IsBlank(r.MaxWert)), "Normalerweise: " & If(IsBlank(r.MinWert), "", "ab " & Text(r.MinWert) & " ") & If(IsBlank(r.MaxWert), "", "bis " & Text(r.MaxWert) & " ") & r.Einheit, "Bitte noch einmal genau nachsehen."))
               VerticalAlign: =VerticalAlign.Top
               Width: =Parent.Width - 48
               X: =24
-              Y: =180
+              Y: =208
         - btnKaRueckNein:
             Control: Classic/Button@2.2.0
             Properties:
@@ -925,7 +945,7 @@ If(!varIsLoading && Now() >= varSperreBis;
               OnSelect: |-
                 =With({r: LookUp(colAntworten, PruefpunktID = varRueckPP)},
                     Set(varRueckPP, 0);
-                    If(r.Kritisch && !r.KritischOk, Set(varKritPP, r.PruefpunktID))
+                    If(r.Bewertung = "NIO" && r.Kritisch && !r.KritischOk, Set(varKritPP, r.PruefpunktID))
                 )
               PressedFill: =ColorFade(clrPrimaer, -35%)
               RadiusBottomLeft: =10
@@ -954,7 +974,7 @@ If(!varIsLoading && Now() >= varSperreBis;
     Properties:
       Fill: =RGBA(179, 38, 30, 0.55)
       Height: =Parent.Height
-      Visible: =varKritPP > 0
+      Visible: =varKritPP > 0 && LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = "NIO"
       Width: =Parent.Width
     Children:
     - btnKaKritSperre:
@@ -1003,25 +1023,25 @@ If(!varIsLoading && Now() >= varSperreBis;
               Color: =clrText
               Font: =Font.'Segoe UI'
               FontWeight: =FontWeight.Semibold
-              Height: =64
+              Height: =92
               Size: =18
               Text: =LookUp(colAntworten, PruefpunktID = varKritPP).Frage
               VerticalAlign: =VerticalAlign.Top
               Width: =Parent.Width - 48
               X: =24
-              Y: =88
+              Y: =84
         - lblKaKritText:
             Control: Label@2.5.1
             Properties:
               Color: =clrFehler
               Font: =Font.'Segoe UI'
-              Height: =84
+              Height: =96
               Size: =17
               Text: =Coalesce(LookUp(colAntworten, PruefpunktID = varKritPP).KritischText, "")
               VerticalAlign: =VerticalAlign.Top
               Width: =Parent.Width - 48
               X: =24
-              Y: =152
+              Y: =180
         - lblKaKritMelden:
             Control: Label@2.5.1
             Properties:
@@ -1033,20 +1053,20 @@ If(!varIsLoading && Now() >= varSperreBis;
               Text: ="Bitte jetzt Bescheid geben bei:"
               Width: =Parent.Width - 48
               X: =24
-              Y: =244
+              Y: =280
         - galKaKritKontakte:
             Control: Gallery@2.15.0
             Variant: Vertical
             Properties:
               AccessibleLabel: ="Ansprechpartner"
-              Height: =Parent.Height - 280 - 172
+              Height: =Parent.Height - 316 - 172
               Items: =If(varKritPP > 0, Sort(Filter(colKontakte As k, Coalesce(k.Allgemein, false) || CountRows(Filter(Split(Coalesce(LookUp(colAntworten, PruefpunktID = varKritPP).Ansprechpartner, ""), ";") As s, Trim(s.Value) = Text(k.ID))) > 0), If(Coalesce(Allgemein, false), 1, 0)), Filter(colKontakte, false))
               ShowScrollbar: =true
               TemplatePadding: =0
-              TemplateSize: =92
+              TemplateSize: =112
               Width: =Parent.Width - 48
               X: =24
-              Y: =280
+              Y: =316
             Children:
             - lblKaKritRolle:
                 Control: Label@2.5.1
@@ -1067,7 +1087,7 @@ If(!varIsLoading && Now() >= varSperreBis;
                   Font: =Font.'Segoe UI'
                   Height: =30
                   Size: =17
-                  Text: =Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  ☎ " & ThisItem.Telefon)
+                  Text: =Coalesce(ThisItem.Kontakt, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  ☎ " & ThisItem.Telefon)
                   Width: =Parent.TemplateWidth
                   X: =0
                   Y: =32
@@ -1076,11 +1096,11 @@ If(!varIsLoading && Now() >= varSperreBis;
                 Properties:
                   Color: =clrTextGrau
                   Font: =Font.'Segoe UI'
-                  Height: =26
+                  Height: =44
                   Size: =13
                   Text: =Coalesce(ThisItem.Hinweis, "")
+                  VerticalAlign: =VerticalAlign.Top
                   Width: =Parent.TemplateWidth
-                  Wrap: =false
                   X: =0
                   Y: =62
         - lblKaKritLeer:
@@ -1095,7 +1115,7 @@ If(!varIsLoading && Now() >= varSperreBis;
               Visible: =IsEmpty(galKaKritKontakte.AllItems)
               Width: =Parent.Width - 48
               X: =24
-              Y: =284
+              Y: =320
         - btnKaKritOk:
             Control: Classic/Button@2.2.0
             Properties:
@@ -1107,7 +1127,7 @@ If(!varIsLoading && Now() >= varSperreBis;
               Height: =68
               HoverFill: =ColorFade(clrFehler, -15%)
               OnSelect: |-
-                =Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), "hh:mm")});
+                =If(LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = "NIO", Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), "dd.mm.yyyy hh:mm"), KritischVon: User().FullName}));
                 Set(varKritPP, 0);
                 Set(varGeaendert, true)
               PressedFill: =ColorFade(clrFehler, -30%)
@@ -1154,14 +1174,22 @@ If(!varIsLoading && Now() >= varSperreBis;
 
 | # | Schritt | erwartet |
 |---|---|---|
-| T1 | Im Builder zwei Prüfpunkten derselben Kategorie Abschnitt „Kompressor 1“ geben, aktivieren. Rundgang heute starten, Kategorie öffnen | Überschrift „Kompressor 1“ über der ersten der beiden Fragen |
-| T2 | Bereich im Builder ausblenden, aktivieren, Rundgang **neu starten** (am Testtag zurücksetzen) | Rundgangsübersicht ohne Bereichs-Überschrift, Kopfzeile ohne Bereich |
+| T1 | (braucht Paket 8 im Builder; sonst `Abschnitt` direkt in SharePoint setzen) Zwei Prüfpunkten derselben Kategorie Abschnitt „Kompressor 1“ geben. Rundgang heute starten, Kategorie öffnen | Überschrift „Kompressor 1“ über der ersten der beiden Fragen |
+| T2 | (sonst `Ausblenden` = Ja direkt in `RG_Bereiche`) Bereich ausblenden, Rundgang **neu starten** (am Testtag zurücksetzen) | Rundgangsübersicht ohne Bereichs-Überschrift, Kopfzeile ohne Bereich. Ergebnisse und Mängel haben dann keinen Bereichsnamen (gewollt) |
 | T3 | Prüfpunkt mit Rückfrage: n.i.O. | Fenster „Ist das wirklich so?“ mit Text. „Nein, korrigieren“ → Antwort leer |
 | T4 | n.i.O., „Ja, stimmt“ (Punkt auch kritisch) | rotes Fenster mit „Elektriker“ und „Allgemein“ |
-| T5 | Im roten Fenster nichts tun, App neu laden, Kategorie öffnen, Speichern | „Noch offen … (kritisch: Bescheid bestätigen)“, rotes Fenster kommt wieder |
+| T5 | Vorher: einen Punkt mit n.i.O. + Kommentar speichern, **danach** in SharePoint `Kritisch` = Ja setzen. Kategorie neu öffnen, Speichern | „Noch offen … (kritisch: Bescheid bestätigen)“, das rote Fenster öffnet sich |
+| T5b | Im roten Fenster „n.i.O. war ein Versehen“ | Fenster zu, Antwort leer. Nochmal n.i.O. → Fenster kommt wieder |
+| T5c | n.i.O. zweimal schnell tippen | kein Fenster bleibt stehen (Antwort leer → Fenster zu) |
 | T6 | „Ich habe Bescheid gegeben“, Kommentar, Speichern | gespeichert. Protokoll: „KRITISCH – Bescheid gegeben, bestätigt von … um …“ |
 | T7 | Rundgang abschließen | Mangel: Frage mit Abschnitt, Kommentar beginnt mit „KRITISCH – Bescheid gegeben“ |
 | T8 | Zahl mit Grenzen und Rückfrage: Wert außerhalb | Rückfrage „Normalerweise: ab … bis …“ |
+
+## Bekannte Grenzen (bewusst nicht gebaut)
+
+- Ein sehr schneller zweiter Tipp auf einen Fensterknopf kann in der Karte darunter landen (Befund B10, niedrig).
+- Entfernte (deaktivierte) Prüfpunkte erscheinen im Protokoll am Ende, optisch unter dem letzten Abschnitt (B12).
+- Ein ausgeblendeter Bereich hat auch in Ergebnissen und Mängeln keinen Namen (B13, gewollt).
 
 ## Rückweg
 

@@ -61,7 +61,7 @@ Nur Spalten hinzufügen, nichts umbenennen. Name **genau so** (intern = Anzeigen
 | RG_Pruefpunkte | Rueckfrage | Ja/Nein, Standard Nein |
 | RG_Pruefpunkte | RueckfrageText | Eine Textzeile |
 | RG_Ansprechpartner | Title | Eine Textzeile |
-| RG_Ansprechpartner | Name | Eine Textzeile |
+| RG_Ansprechpartner | Kontakt | Eine Textzeile |
 | RG_Ansprechpartner | Telefon | Eine Textzeile |
 | RG_Ansprechpartner | Hinweis | Eine Textzeile |
 | RG_Ansprechpartner | Allgemein | Ja/Nein, Standard Nein |

@@ -5,18 +5,17 @@ Erzeugt mit `werkzeuge/doc_app89.py`: Abgleich des Exports **02.11.2026 15:41** 
 ## Kurzfassung
 
 - Pakete 1, 2, 4 und 6 sind fast vollständig drin, Paket 3 bis auf einen Rahmen.
-- **Zwei Formeln sind im falschen Steuerelement gelandet:** `lblKaHinweis.Text` enthält den Foto-Hinweis, `lblKaAbstand.Text` die Fortschrittszeile. Dafür fehlen sie in `lblKaFotoHinweis` und `lblKaStand`.
+- **Drei Formeln sind im falschen Steuerelement gelandet:** `lblKaHinweis.Text` enthält den Foto-Hinweis, `lblKaAbstand.Text` die Fortschrittszeile, `lblKaZahlInfo.BorderColor` den Rahmen des Zahlenfelds. Dafür fehlen sie in `lblKaFotoHinweis`, `lblKaStand` und `txtKaZahl`.
 - **Paket 5 (Mehrfach, Datum, Datum + Uhrzeit) fehlt ganz:** die fünf Steuerelemente und die Änderung an `App.Formulas`.
 - **Paket 7 (Foto „Bei Mangel Pflicht“) fehlt.**
 - Alles andere stimmt zeichengleich mit dem Soll überein (1154 Properties geprüft, 2 fehlen nur, weil Studio Standardwerte weglässt: btnKaFoto.PressedColor, imgKaBild.ImagePosition).
 - Wichtig: Der Builder bietet die Typen Mehrfach/Datum und „Foto Pflicht bei Mangel“ schon an. Ohne dieses Paket versteht die Rundgang-App sie nicht.
-- Umfang: 8 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.
+- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.
 
 ## Schritt N.1 – SharePoint (zuerst)
 
 - `RG_Pruefpunkte` → Spalte **Eingabetyp** → Auswahlmöglichkeiten **ergänzen**: **MEHRFACH**, **DATUM**, **DATUMZEIT** (nichts umbenennen).
 - `RG_Pruefpunkte` → Spalte **Foto** → Auswahl **ergänzen**: **Bei Mangel Pflicht** (genau so).
-- Aufgefallen: In `RG_Pruefpunkte` gibt es neben `Fassung` eine Spalte **`Fassungf`** (Tippfehler beim Anlegen?). Keine App benutzt sie. Wenn sie leer ist, kann sie gelöscht werden.
 - Danach in der Rundgang-App: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**.
 
 ## Schritt N.2 – zwei Formeln zurück ins richtige Steuerelement
@@ -58,6 +57,18 @@ ThisItem.Auswahl
 **Kurz erklärt:** **Reparatur:** Hier stand der Text von `lblKaStand` (beim Einfügen von Paket 4 ins falsche Steuerelement geraten). `lblKaAbstand` ist nur ein Abstandhalter, Text wie im Original.
 
 **Nachprüfen:** Ende der Formel: `ThisItem.Auswahl`
+
+### N.2.3 · `lblKaZahlInfo.BorderColor`
+
+**Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › lblKaZahlInfo` → BorderColor
+
+```
+RGBA(0; 0; 0; 0)
+```
+
+**Das ändert sich:** Hier stand die Formel für `txtKaZahl.BorderColor` (Paket 3, Schritt 3.5). Vorher war es der Standardwert. Sichtbar war es nicht, weil der Rahmen 0 ist. `RGBA(0; 0; 0; 0)` ist durchsichtig.
+
+**Kurz erklärt:** **Reparatur.** Die richtige Formel kommt in Schritt N.3 nach `txtKaZahl.BorderColor`.
 
 ## Schritt N.3 – fehlende Formeln
 

@@ -4,7 +4,7 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/builder.py` + `werkzeuge/doc_paket9_bui
 
 ## Kurzfassung
 
-- Neuer Bildschirm **„Ansprechpartner“** (aus der Übersicht): Gewerk/Rolle, Name, Telefon, Hinweis, „bei jedem kritischen Mangel“, aktiv/inaktiv.
+- Neuer Bildschirm **„Ansprechpartner“** (aus der Übersicht): Gewerk/Rolle, Kontakt (Name/Firma), Telefon, Hinweis, „bei jedem kritischen Mangel“, aktiv/inaktiv.
 - Im Prüfpunkt-Editor unten ein Knopf **„Bei n.i.O.: …“**. Er öffnet ein Fenster: Rückfrage an/aus mit Text, kritisch ja/nein mit Text, Ansprechpartner antippen.
 - Kopie, neue Fassung, Änderungsliste und Prüfung kennen die fünf neuen Felder.
 - Umfang: neue Liste + 5 Spalten (gemeinsam mit der Rundgang-App), 1 neuer Bildschirm, 3 neue Blöcke im Editor/Übersicht, 5 geänderte Properties.
@@ -180,7 +180,7 @@ Screens:
             OnSelect: |-
               =If(!varIsLoading && Now() >= varSperreBis,
                   Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                  Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: "Neuer Ansprechpartner", Name: "", Telefon: "", Hinweis: "", Allgemein: false, Aktiv: true}).ID, 0));
+                  Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: "Neuer Ansprechpartner", Kontakt: "", Telefon: "", Hinweis: "", Allgemein: false, Aktiv: true}).ID, 0));
                   If(varNeuID = 0,
                       Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
                       Collect(colKoAlle, LookUp(RG_Ansprechpartner, ID = varNeuID));
@@ -249,7 +249,7 @@ Screens:
                   Font: =Font.'Segoe UI'
                   Height: =24
                   Size: =12
-                  Text: =Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & If(Coalesce(ThisItem.Allgemein, false), "  ·  bei jedem", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  ·  inaktiv")
+                  Text: =Coalesce(ThisItem.Kontakt, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & If(Coalesce(ThisItem.Allgemein, false), "  ·  bei jedem", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  ·  inaktiv")
                   Width: =Parent.TemplateWidth - 24
                   Wrap: =false
                   X: =12
@@ -366,7 +366,7 @@ Screens:
                   AccessibleLabel: ="Name oder Firma"
                   BorderColor: =clrRahmen
                   Color: =clrText
-                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Name, "")
+                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Kontakt, "")
                   DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
                   Fill: =clrKarte
                   FocusedBorderColor: =clrPrimaer
@@ -375,10 +375,10 @@ Screens:
                   HintText: ="z. B. Elektro Müller GmbH"
                   HoverBorderColor: =clrPrimaer
                   OnChange: |-
-                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Name, "")),
+                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Kontakt, "")),
                         If(varKoID > 0 && !varIsLoading,
                             Set(varPatchFehler, false);
-                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Name: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Kontakt: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
                                 Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
                                 Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
@@ -1099,7 +1099,7 @@ Screens:
                         RadiusTopLeft: =6
                         RadiusTopRight: =6
                         Size: =13
-                        Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Name, "")) = "", "", " – " & ThisItem.Name) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")
+                        Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")
                         Width: =Parent.TemplateWidth - 4
                         X: =0
                         Y: =2
@@ -1560,7 +1560,7 @@ Set(varIsLoading; false)
 
 ## Test (wenn du testest)
 
-1. Übersicht → „Ansprechpartner“ → „+ Ansprechpartner“: „Elektriker“, Name, Telefon. Zweiter: „Allgemein“, „bei jedem“ = ja.
+1. Übersicht → „Ansprechpartner“ → „+ Ansprechpartner“: „Elektriker“, Kontakt, Telefon. Zweiter: „Allgemein“, „bei jedem“ = ja.
 2. Testrundgang bearbeiten → Prüfpunkt → „Bei n.i.O.: nichts Besonderes ›“ → Rückfrage an + Text, kritisch ja + Text, „Elektriker“ antippen (✓).
 3. Knopf zeigt „⚠ Bei n.i.O.: Rückfrage + kritisch ›“ in Rot, Vorschau nennt beides.
 4. Aktivieren → Änderungsliste zeigt den Punkt als „geändert“. Neue Fassung → Einstellungen sind noch da.

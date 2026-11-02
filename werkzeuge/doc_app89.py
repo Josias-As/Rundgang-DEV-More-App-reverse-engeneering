@@ -108,6 +108,8 @@ ERKL_N = {
 def nachhol(export, soll, d):
     neu_p5 = ["dpKaDatum", "ddKaStunde", "ddKaMinute", "btnKaDatumLeeren", "cboKaMehrfach"]
     keys = sorted(k for k in soll.props if k.split(".")[0] not in neu_p5 and k in export.props and norm(soll.props[k]) != norm(export.props[k]))
+    nur_export = [k for k in export.props if k not in soll.props]
+    assert nur_export == ["lblKaZahlInfo.BorderColor"], nur_export
     fehlen = [k for k in soll.props if k not in export.props and k.split(".")[0] in export.typ and k.split(".")[0] not in neu_p5]
     reihen = ["lblKaHinweis.Text", "lblKaAbstand.Text", "lblKaFotoHinweis.Text", "lblKaStand.Text", "txtKaZahl.BorderColor", "btnKaFoto.Text",
               "btnKaFoto.Visible", "App.Formulas"]
@@ -121,23 +123,26 @@ def nachhol(export, soll, d):
          "(Export 27.10. 09:09 + Pakete 1–7 aus `baukasten.py`).", "",
          "## Kurzfassung", "",
          "- Pakete 1, 2, 4 und 6 sind fast vollständig drin, Paket 3 bis auf einen Rahmen.",
-         "- **Zwei Formeln sind im falschen Steuerelement gelandet:** `lblKaHinweis.Text` enthält den Foto-Hinweis, `lblKaAbstand.Text` die Fortschrittszeile. "
-         "Dafür fehlen sie in `lblKaFotoHinweis` und `lblKaStand`.",
+         "- **Drei Formeln sind im falschen Steuerelement gelandet:** `lblKaHinweis.Text` enthält den Foto-Hinweis, `lblKaAbstand.Text` die Fortschrittszeile, "
+         "`lblKaZahlInfo.BorderColor` den Rahmen des Zahlenfelds. Dafür fehlen sie in `lblKaFotoHinweis`, `lblKaStand` und `txtKaZahl`.",
          "- **Paket 5 (Mehrfach, Datum, Datum + Uhrzeit) fehlt ganz:** die fünf Steuerelemente und die Änderung an `App.Formulas`.",
          "- **Paket 7 (Foto „Bei Mangel Pflicht“) fehlt.**",
          "- Alles andere stimmt zeichengleich mit dem Soll überein (%d Properties geprüft, %d fehlen nur, weil Studio Standardwerte weglässt: %s)." % (
              len(soll.props), len(fehlen), ", ".join(fehlen)),
          "- Wichtig: Der Builder bietet die Typen Mehrfach/Datum und „Foto Pflicht bei Mangel“ schon an. Ohne dieses Paket versteht die Rundgang-App sie nicht.",
-         "- Umfang: 8 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.", "",
+         "- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.", "",
          "## Schritt N.1 – SharePoint (zuerst)", "",
          "- `RG_Pruefpunkte` → Spalte **Eingabetyp** → Auswahlmöglichkeiten **ergänzen**: **MEHRFACH**, **DATUM**, **DATUMZEIT** (nichts umbenennen).",
          "- `RG_Pruefpunkte` → Spalte **Foto** → Auswahl **ergänzen**: **Bei Mangel Pflicht** (genau so).",
-         "- Aufgefallen: In `RG_Pruefpunkte` gibt es neben `Fassung` eine Spalte **`Fassungf`** (Tippfehler beim Anlegen?). Keine App benutzt sie. "
-         "Wenn sie leer ist, kann sie gelöscht werden.",
          "- Danach in der Rundgang-App: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**.", "",
          "## Schritt N.2 – zwei Formeln zurück ins richtige Steuerelement", ""]
     for i, k in enumerate(reihen[:2], 1):
         z += prop_abschnitt("N.2.%d" % i, k, export.props[k], soll.props[k], ERKL_N[k], eltern)
+    z += ["### N.2.3 · `lblKaZahlInfo.BorderColor`", "", "**Pfad:** `%s` → BorderColor" % pfad("lblKaZahlInfo", eltern), "",
+          "```", "RGBA(0; 0; 0; 0)", "```", "",
+          "**Das ändert sich:** Hier stand die Formel für `txtKaZahl.BorderColor` (Paket 3, Schritt 3.5). Vorher war es der Standardwert. "
+          "Sichtbar war es nicht, weil der Rahmen 0 ist. `RGBA(0; 0; 0; 0)` ist durchsichtig.", "",
+          "**Kurz erklärt:** **Reparatur.** Die richtige Formel kommt in Schritt N.3 nach `txtKaZahl.BorderColor`.", ""]
     z += ["## Schritt N.3 – fehlende Formeln", ""]
     for i, k in enumerate(reihen[2:7], 1):
         z += prop_abschnitt("N.3.%d" % i, k, export.props[k], soll.props[k], ERKL_N[k], eltern)
@@ -215,15 +220,15 @@ def paket89(d, soll):
          "- **Kritischer Mangel:** rotes Fenster über den ganzen Bildschirm mit den Ansprechpartnern (Name, Telefon, Hinweis). Nur „Ich habe Bescheid gegeben“ "
          "oder „war ein Versehen“. Ohne Bestätigung lässt sich die Kategorie nicht speichern. Protokoll und Mangel nennen die Bestätigung. **Es wird nichts verschickt.**",
          "- Eingestellt wird alles im Builder (Paket 9 Builder-Teil folgt). Bis dahin: Spalten direkt in SharePoint setzen.",
-         "- Umfang: %d Properties (jede einmal in der Endfassung), %d neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten." % (len(end), len(neu) - 5),
+         "- Umfang: %d Properties (jede einmal in der Endfassung), %d neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten." % (len(end), len(d["pakete"][7]["neu"]) + len(d["pakete"][8]["neu"])),
          "- Geprüft: Generator 0 Fehler (Namen, Klammern, Rückübersetzung, gleiche Felder in allen drei Zweigen von colAntworten, 13 Argumente in jedem fnFehlt-Aufruf). "
-         "**Nicht in Studio getestet. Nicht unabhängig geprüft.**", ""]
+         "Unabhängig geprüft (14 Befunde eingearbeitet, `arbeit/2026-11-02_App89/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**", ""]
     for gi, (titel, ks) in enumerate(GRUPPEN_89, 1):
         z += ["## Schritt %d – %s" % (gi, titel), ""]
         if ks is None:
             z += ["1. **Neue Liste `RG_Ansprechpartner`** (SharePoint, IMS+). Spalten: `Title` (vorhanden, = Gewerk/Rolle, z. B. „Elektriker“), "
-                  "`Name` (Eine Textzeile), `Telefon` (Eine Textzeile), `Hinweis` (Mehrere Textzeilen, nur Text), `Allgemein` (Ja/Nein, Standard Nein), `Aktiv` (Ja/Nein, Standard Ja).",
-                  "   Testzeilen: „Allgemein“ (Allgemein = Ja), „Elektriker“, „IT-Dienstleister“.",
+                  "`Kontakt` (Eine Textzeile, Name oder Firma; **nicht** „Name“ nennen, den Namen hat SharePoint schon intern vergeben), `Telefon` (Eine Textzeile), `Hinweis` (Mehrere Textzeilen, nur Text), `Allgemein` (Ja/Nein, Standard Nein), `Aktiv` (Ja/Nein, Standard Ja).",
+                  "   Testzeilen: „Allgemein“ (Allgemein = Ja), „Elektriker“, „IT-Dienstleister“. Berechtigung: wie die anderen RG-Listen (Prüfer lesen, Pflegegruppe bearbeiten).",
                   "2. **`RG_Pruefpunkte`** neue Spalten: `Kritisch` (Ja/Nein, Standard Nein), `KritischText` (Eine Textzeile), `Ansprechpartner` (Eine Textzeile, IDs aus `RG_Ansprechpartner` mit `;` getrennt), "
                   "`Rueckfrage` (Ja/Nein, Standard Nein), `RueckfrageText` (Eine Textzeile). `Abschnitt` gibt es schon.",
                   "3. Rundgang-App: **Daten** → `RG_Pruefpunkte` und `RG_Bereiche` → ⋯ → **Aktualisieren**, dann **Daten hinzufügen** → SharePoint → IMS+ → `RG_Ansprechpartner`.",
@@ -247,14 +252,20 @@ def paket89(d, soll):
             z += prop_abschnitt(nr, k, vorher[k], end[k], ERKL_89[k], eltern)
     z += ["## Test (Zeitachse, nur ZZ-Test-Rundgang)", "",
           "| # | Schritt | erwartet |", "|---|---|---|",
-          "| T1 | Im Builder zwei Prüfpunkten derselben Kategorie Abschnitt „Kompressor 1“ geben, aktivieren. Rundgang heute starten, Kategorie öffnen | Überschrift „Kompressor 1“ über der ersten der beiden Fragen |",
-          "| T2 | Bereich im Builder ausblenden, aktivieren, Rundgang **neu starten** (am Testtag zurücksetzen) | Rundgangsübersicht ohne Bereichs-Überschrift, Kopfzeile ohne Bereich |",
+          "| T1 | (braucht Paket 8 im Builder; sonst `Abschnitt` direkt in SharePoint setzen) Zwei Prüfpunkten derselben Kategorie Abschnitt „Kompressor 1“ geben. Rundgang heute starten, Kategorie öffnen | Überschrift „Kompressor 1“ über der ersten der beiden Fragen |",
+          "| T2 | (sonst `Ausblenden` = Ja direkt in `RG_Bereiche`) Bereich ausblenden, Rundgang **neu starten** (am Testtag zurücksetzen) | Rundgangsübersicht ohne Bereichs-Überschrift, Kopfzeile ohne Bereich. Ergebnisse und Mängel haben dann keinen Bereichsnamen (gewollt) |",
           "| T3 | Prüfpunkt mit Rückfrage: n.i.O. | Fenster „Ist das wirklich so?“ mit Text. „Nein, korrigieren“ → Antwort leer |",
           "| T4 | n.i.O., „Ja, stimmt“ (Punkt auch kritisch) | rotes Fenster mit „Elektriker“ und „Allgemein“ |",
-          "| T5 | Im roten Fenster nichts tun, App neu laden, Kategorie öffnen, Speichern | „Noch offen … (kritisch: Bescheid bestätigen)“, rotes Fenster kommt wieder |",
+          "| T5 | Vorher: einen Punkt mit n.i.O. + Kommentar speichern, **danach** in SharePoint `Kritisch` = Ja setzen. Kategorie neu öffnen, Speichern | „Noch offen … (kritisch: Bescheid bestätigen)“, das rote Fenster öffnet sich |",
+          "| T5b | Im roten Fenster „n.i.O. war ein Versehen“ | Fenster zu, Antwort leer. Nochmal n.i.O. → Fenster kommt wieder |",
+          "| T5c | n.i.O. zweimal schnell tippen | kein Fenster bleibt stehen (Antwort leer → Fenster zu) |",
           "| T6 | „Ich habe Bescheid gegeben“, Kommentar, Speichern | gespeichert. Protokoll: „KRITISCH – Bescheid gegeben, bestätigt von … um …“ |",
           "| T7 | Rundgang abschließen | Mangel: Frage mit Abschnitt, Kommentar beginnt mit „KRITISCH – Bescheid gegeben“ |",
           "| T8 | Zahl mit Grenzen und Rückfrage: Wert außerhalb | Rückfrage „Normalerweise: ab … bis …“ |", "",
+          "## Bekannte Grenzen (bewusst nicht gebaut)", "",
+          "- Ein sehr schneller zweiter Tipp auf einen Fensterknopf kann in der Karte darunter landen (Befund B10, niedrig).",
+          "- Entfernte (deaktivierte) Prüfpunkte erscheinen im Protokoll am Ende, optisch unter dem letzten Abschnitt (B12).",
+          "- Ein ausgeblendeter Bereich hat auch in Ergebnissen und Mängeln keinen Namen (B13, gewollt).", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang einsetzen, die zwei Fenster und `lblKaAbschnitt` löschen. Spalten und Liste dürfen bleiben.", "",
           "## Anhang – Vorher-Fassungen (= Stand nach Paket N)", ""]
     for k in alle_keys:

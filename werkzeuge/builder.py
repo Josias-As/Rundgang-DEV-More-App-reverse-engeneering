@@ -39,7 +39,7 @@ NEU_SPALTEN = {
                        "Foto": "Auswahl", "KommentarPflicht": "Ja/Nein", "Grenzmodus": "Auswahl",
                        "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text",
                        "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text"},
-    "RG_Ansprechpartner": {"Title": "Text", "Name": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
+    "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
 QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner"]
@@ -1125,7 +1125,7 @@ con_nio = overlay("conNio", "varNioOffen", 660, 640, [
         color="clrTextGrau", Visible='Coalesce(%s.Kritisch, false)' % CUR),
     gal("galNioKontakte", 'Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))', "24", "310", "612", "220", 44, [
         btn("btnNioKontakt", 'If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in ' + NIO_IDS + '.Value, "✓ ", "○ ")) & ThisItem.Title & '
-            'If(Trim(Coalesce(ThisItem.Name, "")) = "", "", " – " & ThisItem.Name) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")',
+            'If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")',
             "0", "2", "Parent.TemplateWidth - 4", "40", NIO_TOGGLE, art="sekundaer", size=13, Align="Align.Left", PaddingLeft="12",
             DisplayMode='If(varSchreibbar && !varIsLoading && !Coalesce(ThisItem.Allgemein, false), DisplayMode.Edit, DisplayMode.Disabled)'),
     ], '"Ansprechpartner"', Visible='Coalesce(%s.Kritisch, false)' % CUR),
@@ -1641,7 +1641,7 @@ def ko_text(name, feld, y, hint, label, multi=False, h="40"):
 
 
 KO_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
-          "    Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: \"Neuer Ansprechpartner\", Name: \"\", Telefon: \"\", Hinweis: \"\", Allgemein: false, Aktiv: true}).ID, 0));\n"
+          "    Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: \"Neuer Ansprechpartner\", Kontakt: \"\", Telefon: \"\", Hinweis: \"\", Allgemein: false, Aktiv: true}).ID, 0));\n"
           "    If(varNeuID = 0,\n"
           "        Notify(\"Anlegen fehlgeschlagen. Bitte erneut versuchen.\", NotificationType.Error),\n"
           "        Collect(colKoAlle, LookUp(RG_Ansprechpartner, ID = varNeuID));\n"
@@ -1667,7 +1667,7 @@ scr_kontakte = C("scrKontakte", "Screen", {
             Fill="If(ThisItem.ID = varKoID, clrPrimaerHell, Color.White)"),
         lbl("lblKoRolle", "ThisItem.Title", "12", "4", "Parent.TemplateWidth - 24", "28", size=14, bold=True,
             Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
-        lbl("lblKoName", 'Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & '
+        lbl("lblKoName", 'Coalesce(ThisItem.Kontakt, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & '
             'If(Coalesce(ThisItem.Allgemein, false), "  ·  bei jedem", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  ·  inaktiv")',
             "12", "32", "Parent.TemplateWidth - 24", "24", size=12, color="clrTextGrau", Wrap="false"),
         btn("btnKoZeile", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4", "Set(varKoID, ThisItem.ID);\n" + KO_RESET, art="kopf",
@@ -1679,7 +1679,7 @@ scr_kontakte = C("scrKontakte", "Screen", {
         lbl("lblKoRolleT", '"Gewerk / Rolle"', "0", "0", "400", "20", size=12, color="clrTextGrau"),
         ko_text("txtKoRolle", "Title", "20", '"z. B. Elektriker"', '"Gewerk oder Rolle"'),
         lbl("lblKoNameT", '"Name / Firma"', "0", "72", "400", "20", size=12, color="clrTextGrau"),
-        ko_text("txtKoName", "Name", "92", '"z. B. Elektro Müller GmbH"', '"Name oder Firma"'),
+        ko_text("txtKoName", "Kontakt", "92", '"z. B. Elektro Müller GmbH"', '"Name oder Firma"'),
         lbl("lblKoTelT", '"Telefon"', "0", "144", "400", "20", size=12, color="clrTextGrau"),
         ko_text("txtKoTelefon", "Telefon", "164", '"z. B. 0561 123456"', '"Telefon"'),
         lbl("lblKoHinweisT", '"Hinweis (z. B. Erreichbarkeit)"', "0", "216", "400", "20", size=12, color="clrTextGrau"),

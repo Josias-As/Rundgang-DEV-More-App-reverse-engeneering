@@ -267,7 +267,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnKoNeu.OnSelect              LookUp(RG_Ansprechpartner, ID = varNeuID))
   txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID))
-  txtKoName.OnChange             LookUp(RG_Ansprechpartner, ID = varKoID), {Name: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKoName.OnChange             LookUp(RG_Ansprechpartner, ID = varKoID), {Kontakt: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtKoName.OnChange             LookUp(RG_Ansprechpartner, ID = varKoID))
   txtKoTelefon.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID), {Telefon: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtKoTelefon.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID))
