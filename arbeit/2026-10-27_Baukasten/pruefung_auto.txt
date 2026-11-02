@@ -506,6 +506,13 @@
   btnKaKritVersehen.Width          ok
   btnKaKritVersehen.X              ok
   btnKaKritVersehen.Y              ok
+== Paket 10: 6 Properties, neue Steuerelemente: -
+  btnKaSpeichern.OnSelect          ok
+  galRuKategorien.Items            ok
+  lblRuSymbol.Text                 ok
+  lblRuSymbol.Color                ok
+  lblRuKatZustand.Text             ok
+  btnRuOeffnen.Text                ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -515,6 +522,7 @@
   Paket 7: colAntworten hat in allen drei Zweigen dieselben 24 Felder
   Paket 8: colAntworten hat in allen drei Zweigen dieselben 26 Felder
   Paket 9: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 10: colAntworten hat in allen drei Zweigen dieselben 34 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'

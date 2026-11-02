@@ -1,4 +1,4 @@
-# Paket 8+9 – Rundgang-App: Abschnitte, Bereich ausblenden, Rückfrage, kritischer Mangel
+# Paket 8–10 – Rundgang-App: Abschnitte, Bereich ausblenden, Rückfrage, kritischer Mangel, Kategorien ohne Reihenfolge-Sperre
 
 Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (Paket 8 und 9 als Zustandskette mit exakten Ankern) und `werkzeuge/doc_app89.py`. Voraussetzung: **Paket N** (`pakete/PAKET_N_Nachholen.md`) ist eingefügt. Dann ist dein Stand zeichengleich mit dem Stand, auf dem dieses Paket aufbaut (maschinell geprüft).
 
@@ -8,8 +8,9 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (Paket 8 und 9 als Zustan
 - **Bereich ausblenden:** Im Builder ausgeblendete Bereiche erscheinen nicht mehr als Überschrift (gilt für Rundgänge, die danach gestartet werden).
 - **Rückfrage:** Bei n.i.O. (oder Zahl außerhalb, Modus Mangel) fragt die App „Ist das wirklich so?“ mit dem normalen Wert. „Nein“ nimmt die Antwort zurück.
 - **Kritischer Mangel:** rotes Fenster über den ganzen Bildschirm mit den Ansprechpartnern (Name, Telefon, Hinweis). Nur „Ich habe Bescheid gegeben“ oder „war ein Versehen“. Ohne Bestätigung lässt sich die Kategorie nicht speichern. Protokoll und Mangel nennen die Bestätigung. **Es wird nichts verschickt.**
+- **Kategorien ohne Reihenfolge-Sperre (Paket 10):** Alle Kategorien lassen sich in beliebiger Reihenfolge öffnen und speichern. Die erste offene bleibt als „▶ Als Nächstes“ markiert, die übrigen heißen „○ Offen“. „Speichern“ springt wie bisher zur ersten noch offenen Kategorie. Abschließen geht weiterhin erst, wenn alle gespeichert sind.
 - Eingestellt wird alles im Builder (Paket 9 Builder-Teil folgt). Bis dahin: Spalten direkt in SharePoint setzen.
-- Umfang: 15 Properties (jede einmal in der Endfassung), 23 neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten.
+- Umfang: 19 Properties (jede einmal in der Endfassung), 23 neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten.
 - Geprüft: Generator 0 Fehler (Namen, Klammern, Rückübersetzung, gleiche Felder in allen drei Zweigen von colAntworten, 13 Argumente in jedem fnFehlt-Aufruf). Unabhängig geprüft (14 Befunde eingearbeitet, `arbeit/2026-11-02_App89/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Schritt 1 – SharePoint und Datenquelle
@@ -457,8 +458,6 @@ If(
                     Notify("Der Rundgang ist nicht mehr in Arbeit – Änderungen sind nicht möglich."; NotificationType.Error);
                 !IsBlank(erg) && erg.GespeichertAm <> varGespeichertBeimOeffnen;
                     Notify("Diese Kategorie wurde inzwischen von " & erg.PrueferName & " gespeichert. Bitte zurück und neu öffnen."; NotificationType.Error);
-                IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
-                    Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
                 ClearCollect(colVersteckt; ShowColumns(Filter(colAntworten As a; !a.Inaktiv && !(If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); b.BedID; b.Inaktiv; b.Typ; b.Auswahl; b.Bewertung; b.WertText; b.WertZahl))))); PruefpunktID));;
                 ClearCollect(colFotoNeu; Filter(colFotos As f0; IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0; a0.PruefpunktID = f0.PruefpunktID)}; !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung; a.FotoModus))));;
                 ForAll(colFotoNeu As f;
@@ -515,6 +514,8 @@ If(
 -        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); …
 +        Set(varSprungRec; First(Filter(Sort(Filter(colAntworten; !Inaktiv); Reihenfolge) As a; If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; fnSichtbar(a.BedID; a.BedWert; !IsBlank(b); …
 +        Set(varKritPP; Coalesce(First(Sort(Filter(colAntworten As a; !a.Inaktiv && a.Bewertung = "NIO" && a.Kritisch && !a.KritischOk && If(varNurLesen; !a.Ausgeblendet; With({b: LookUp(colAntworten As b0; b0.PruefpunktID = a.BedID)}; f …
+-                IsBlank(erg) && CountRows(Filter(colKatListe As kl; kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e; e.KategorieID = kl.KategorieID)))) > 0;
+-                    Notify("Bitte zuerst die vorherigen Kategorien abschließen."; NotificationType.Warning);
 -                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet); JSONFormat.Compact));;
 +                    ClearCollect(colAbsTmp; ShowColumns(Filter(colSpeichern; !Inaktiv && !Ausgeblendet && Abschnitt <> ""); PruefpunktID; Reihenfolge; Abschnitt));;
 +                    UpdateIf(colSpeichern; AbsKopf; {AbsKopf: false});;
@@ -526,7 +527,7 @@ If(
 +                    Set(varAntwortJSON; JSON(ShowColumns(colSpeichern; PruefpunktID; Frage; Typ; Bewertung; WertZahl; WertText; Einheit; Kommentar; Fotos; Warnung; Ausgeblendet; Abschnitt; AbsKopf; Kritisch; KritischOk; KritischZeit; Kr …
 ```
 
-**Kurz erklärt:** Speichert Abschnitt und Bestätigung im JSON. Fehlt nur noch die Bestätigung eines kritischen Mangels, öffnet „Speichern“ das rote Fenster wieder.
+**Kurz erklärt:** Speichert Abschnitt und Bestätigung im JSON. Gesperrt, solange ein Fenster offen ist. Öffnet bei fehlender Bestätigung das rote Fenster. **Paket 10:** Der Zweig „Bitte zuerst die vorherigen Kategorien abschließen“ ist weg.
 
 **Nachprüfen:** Ende der Formel: `)`
 
@@ -633,7 +634,7 @@ If(!varIsLoading && Now() >= varSperreBis;
 With({liste: AddColumns(colKatListe; Erledigt; !IsBlank(LookUp(colErledigt As e; e.KategorieID = KategorieID)))};
     Sort(
         AddColumns(liste;
-            Zustand; If(Erledigt; "erledigt"; Position = Min(Filter(liste As l; !l.Erledigt); Position); "naechste"; "gesperrt");
+            Zustand; If(Erledigt; "erledigt"; Position = Min(Filter(liste As l; !l.Erledigt); Position); "naechste"; "offen");
             ErsteImBereich; BereichName <> "" && Position = Min(Filter(liste As l2; l2.BereichName = BereichName); Position);
             NIO; Coalesce(LookUp(colErledigt As e2; e2.KategorieID = KategorieID).AnzahlNIO; 0)
         );
@@ -645,11 +646,13 @@ With({liste: AddColumns(colKatListe; Erledigt; !IsBlank(LookUp(colErledigt As e;
 **Das ändert sich:**
 
 ```diff
+-            Zustand; If(Erledigt; "erledigt"; Position = Min(Filter(liste As l; !l.Erledigt); Position); "naechste"; "gesperrt");
 -            ErsteImBereich; Position = Min(Filter(liste As l2; l2.BereichName = BereichName); Position);
++            Zustand; If(Erledigt; "erledigt"; Position = Min(Filter(liste As l; !l.Erledigt); Position); "naechste"; "offen");
 +            ErsteImBereich; BereichName <> "" && Position = Min(Filter(liste As l2; l2.BereichName = BereichName); Position);
 ```
 
-**Kurz erklärt:** Bereichs-Überschrift nur, wenn der Bereich einen Namen hat.
+**Kurz erklärt:** Bereichs-Überschrift nur, wenn der Bereich einen Namen hat. **Paket 10:** Zustand „offen“ statt „gesperrt“ – alle Kategorien sind antippbar.
 
 **Nachprüfen:** Ende der Formel: `)`
 
@@ -1170,6 +1173,87 @@ If(!varIsLoading && Now() >= varSperreBis;
 
 **Nachprüfen:** liegt direkt unter `scrKategorie`, ganz oben in der Liste, kein `_1`.
 
+## Schritt 10 – Kategorien in beliebiger Reihenfolge (Paket 10)
+
+### 10.1 · `lblRuSymbol.Text`
+
+**Pfad:** `scrRundgang › galRuKategorien › conRuKarte › lblRuSymbol` → Text
+
+```
+Switch(ThisItem.Zustand; "erledigt"; "✓"; "naechste"; "▶"; "○")
+```
+
+**Das ändert sich:**
+
+```diff
+-Switch(ThisItem.Zustand; "erledigt"; "✓"; "naechste"; "▶"; "🔒")
++Switch(ThisItem.Zustand; "erledigt"; "✓"; "naechste"; "▶"; "○")
+```
+
+**Kurz erklärt:** Paket 10: Statt 🔒 steht bei offenen Kategorien ○.
+
+**Nachprüfen:** Ende der Formel: `Switch(ThisItem.Zustand; "erledigt"; "✓"; "naechste"; "▶"; "○")`
+
+### 10.2 · `lblRuSymbol.Color`
+
+**Pfad:** `scrRundgang › galRuKategorien › conRuKarte › lblRuSymbol` → Color
+
+```
+Switch(ThisItem.Zustand; "erledigt"; clrErfolg; "naechste"; clrPrimaer; clrTextGrau)
+```
+
+**Das ändert sich:**
+
+```diff
+-Switch(ThisItem.Zustand; "erledigt"; clrErfolg; "naechste"; clrPrimaer; clrGesperrt)
++Switch(ThisItem.Zustand; "erledigt"; clrErfolg; "naechste"; clrPrimaer; clrTextGrau)
+```
+
+**Kurz erklärt:** Paket 10: offen = grau statt „gesperrt“-grau.
+
+**Nachprüfen:** Ende der Formel: `Switch(ThisItem.Zustand; "erledigt"; clrErfolg; "naechste"; clrPrimaer; clrTextGrau)`
+
+### 10.3 · `lblRuKatZustand.Text`
+
+**Pfad:** `scrRundgang › galRuKategorien › conRuKarte › lblRuKatZustand` → Text
+
+```
+Switch(ThisItem.Zustand;
+    "erledigt"; "Erledigt" & If(ThisItem.NIO > 0; " · " & ThisItem.NIO & " n.i.O."; " · alles i.O.");
+    "naechste"; "Als Nächstes";
+    "Offen")
+```
+
+**Das ändert sich:**
+
+```diff
+-    "Gesperrt – erst die vorherige Kategorie abschließen")
++    "Offen")
+```
+
+**Kurz erklärt:** Paket 10: „Offen“ statt „Gesperrt – erst die vorherige Kategorie abschließen“.
+
+**Nachprüfen:** Ende der Formel: `"Offen")`
+
+### 10.4 · `btnRuOeffnen.Text`
+
+**Pfad:** `scrRundgang › galRuKategorien › conRuKarte › btnRuOeffnen` → Text
+
+```
+Switch(ThisItem.Zustand; "erledigt"; If(varDurch.Status = stInArbeit; "Bearbeiten"; "Ansehen"); "naechste"; "Öffnen"; "Öffnen")
+```
+
+**Das ändert sich:**
+
+```diff
+-Switch(ThisItem.Zustand; "erledigt"; If(varDurch.Status = stInArbeit; "Bearbeiten"; "Ansehen"); "naechste"; "Öffnen"; "Gesperrt")
++Switch(ThisItem.Zustand; "erledigt"; If(varDurch.Status = stInArbeit; "Bearbeiten"; "Ansehen"); "naechste"; "Öffnen"; "Öffnen")
+```
+
+**Kurz erklärt:** Paket 10: Knopf heißt bei offenen Kategorien „Öffnen“.
+
+**Nachprüfen:** Ende der Formel: `If(varDurch.Status = stInArbeit; "Bearbeiten"; "Ansehen"); "naechste"; "Öffnen"; "Öffnen")`
+
 ## Test (Zeitachse, nur ZZ-Test-Rundgang)
 
 | # | Schritt | erwartet |
@@ -1184,6 +1268,8 @@ If(!varIsLoading && Now() >= varSperreBis;
 | T6 | „Ich habe Bescheid gegeben“, Kommentar, Speichern | gespeichert. Protokoll: „KRITISCH – Bescheid gegeben, bestätigt von … um …“ |
 | T7 | Rundgang abschließen | Mangel: Frage mit Abschnitt, Kommentar beginnt mit „KRITISCH – Bescheid gegeben“ |
 | T8 | Zahl mit Grenzen und Rückfrage: Wert außerhalb | Rückfrage „Normalerweise: ab … bis …“ |
+| T9 | Neuen Rundgang starten → direkt die 3. Kategorie öffnen, ausfüllen, speichern | gespeichert, danach öffnet sich die 1. Kategorie (erste offene) |
+| T10 | Rundgangsübersicht | 3. Kategorie ✓, 1. „▶ Als Nächstes“, übrige „○ Offen“, „Rundgang abschließen“ grau mit „(noch … offen)“ |
 
 ## Bekannte Grenzen (bewusst nicht gebaut)
 
@@ -1683,5 +1769,32 @@ If(!varIsLoading && Now() >= varSperreBis;
         Set(varIsLoading; false)
     )
 )
+```
+
+**`lblRuSymbol.Text` vorher**
+
+```
+Switch(ThisItem.Zustand; "erledigt"; "✓"; "naechste"; "▶"; "🔒")
+```
+
+**`lblRuSymbol.Color` vorher**
+
+```
+Switch(ThisItem.Zustand; "erledigt"; clrErfolg; "naechste"; clrPrimaer; clrGesperrt)
+```
+
+**`lblRuKatZustand.Text` vorher**
+
+```
+Switch(ThisItem.Zustand;
+    "erledigt"; "Erledigt" & If(ThisItem.NIO > 0; " · " & ThisItem.NIO & " n.i.O."; " · alles i.O.");
+    "naechste"; "Als Nächstes";
+    "Gesperrt – erst die vorherige Kategorie abschließen")
+```
+
+**`btnRuOeffnen.Text` vorher**
+
+```
+Switch(ThisItem.Zustand; "erledigt"; If(varDurch.Status = stInArbeit; "Bearbeiten"; "Ansehen"); "naechste"; "Öffnen"; "Gesperrt")
 ```
 

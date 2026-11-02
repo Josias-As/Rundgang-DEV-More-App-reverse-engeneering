@@ -64,7 +64,7 @@ def main():
          "- Umfang: neue Liste + 5 Spalten (gemeinsam mit der Rundgang-App), 1 neuer Bildschirm, 3 neue Blöcke im Editor/Übersicht, %d geänderte Properties." % len(geaendert),
          "- Geprüft: Generator 0 Fehler (Datenvertrag, Textbreiten mit Innenabstand), Mutation 13/13, Logik 27 Szenarien. **Nicht in Studio getestet. Nicht unabhängig geprüft.**", "",
          "## Schritt 0 – SharePoint und Datenquellen", "",
-         "Die Liste `RG_Ansprechpartner` und die 5 Spalten an `RG_Pruefpunkte` sind dieselben wie im App-Teil (`pakete/PAKET_8_9_APP.md`, Schritt 1). Nur einmal anlegen.", "",
+         "Die Liste `RG_Ansprechpartner` und die 5 Spalten an `RG_Pruefpunkte` sind dieselben wie im App-Teil (`pakete/PAKET_8_9_10_APP.md`, Schritt 1). Nur einmal anlegen.", "",
          "Im Builder: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**, dann **Daten hinzufügen** → SharePoint → IMS+ → `RG_Ansprechpartner`.", "",
          "## Schritt 1 – App.OnStart", "",
          "**Pfad:** App → OnStart. Ganze Formel ersetzen.", "", "```", n["App.OnStart"], "```", "",
@@ -91,7 +91,7 @@ def main():
           "2. Testrundgang bearbeiten → Prüfpunkt → „Bei n.i.O.: nichts Besonderes ›“ → Rückfrage an + Text, kritisch ja + Text, „Elektriker“ antippen (✓).",
           "3. Knopf zeigt „⚠ Bei n.i.O.: Rückfrage + kritisch ›“ in Rot, Vorschau nennt beides.",
           "4. Aktivieren → Änderungsliste zeigt den Punkt als „geändert“. Neue Fassung → Einstellungen sind noch da.",
-          "5. In der Rundgang-App (nach Paket 8+9 App): Ablauf aus `PAKET_8_9_APP.md`, Test T3–T7.", "",
+          "5. In der Rundgang-App (nach Paket 8+9 App): Ablauf aus `PAKET_8_9_10_APP.md`, Test T3–T7.", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang. `scrKontakte`, `btnLiKontakte`, `btnPNio`, `conNio` löschen. Liste und Spalten dürfen bleiben.", "",
           "## Anhang – Vorher-Fassungen (Stand nach Paket 8)", ""]
     for k in geaendert:

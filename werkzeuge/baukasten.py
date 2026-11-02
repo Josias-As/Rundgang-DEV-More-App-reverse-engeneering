@@ -866,7 +866,22 @@ def paket9(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9]
+# ---------------------------------------------------------------- Paket 10 (Kategorien in beliebiger Reihenfolge)
+
+def paket10(st):
+    p = {"nr": 10, "props": [], "neu": []}
+    aendern(st, p, "10.2", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "                IsBlank(erg) && CountRows(Filter(colKatListe As kl, kl.Position < varKatPos && IsBlank(LookUp(colErledigt As e, e.KategorieID = kl.KategorieID)))) > 0,\n"
+           "                    Notify(\"Bitte zuerst die vorherigen Kategorien abschließen.\", NotificationType.Warning),\n", ""))
+    aendern(st, p, "10.3", "galRuKategorien.Items", lambda t: rep(t, '"naechste", "gesperrt")', '"naechste", "offen")'))
+    aendern(st, p, "10.3", "lblRuSymbol.Text", lambda t: rep(t, '"▶", "🔒")', '"▶", "○")'))
+    aendern(st, p, "10.3", "lblRuSymbol.Color", lambda t: rep(t, '"naechste", clrPrimaer, clrGesperrt)', '"naechste", clrPrimaer, clrTextGrau)'))
+    aendern(st, p, "10.3", "lblRuKatZustand.Text", lambda t: rep(t, '"Gesperrt – erst die vorherige Kategorie abschließen")', '"Offen")'))
+    aendern(st, p, "10.3", "btnRuOeffnen.Text", lambda t: rep(t, '"naechste", "Öffnen", "Gesperrt")', '"naechste", "Öffnen", "Öffnen")'))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10]
 
 
 # ---------------------------------------------------------------- Prüfungen

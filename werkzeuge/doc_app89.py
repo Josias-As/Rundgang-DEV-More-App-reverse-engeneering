@@ -1,6 +1,6 @@
 """Rundgang-App ab dem Export 02.11.2026 15:41: Nachhol-Paket N (Abgleich Export ↔ Soll nach Paket 1–7) und Paket 8+9 (App-Teil).
 Aufruf: python3 -I werkzeuge/baukasten.py 2026-10-27_0909 && python3 -I werkzeuge/doc_app89.py
-Ergebnis: pakete/PAKET_N_Nachholen.md, pakete/PAKET_8_9_APP.md, arbeit/2026-11-02_App89/abgleich.txt"""
+Ergebnis: pakete/PAKET_N_Nachholen.md, pakete/PAKET_8_9_10_APP.md, arbeit/2026-11-02_App89/abgleich.txt"""
 import difflib
 import json
 import os
@@ -130,7 +130,7 @@ def nachhol(export, soll, d):
          "- Alles andere stimmt zeichengleich mit dem Soll überein (%d Properties geprüft, %d fehlen nur, weil Studio Standardwerte weglässt: %s)." % (
              len(soll.props), len(fehlen), ", ".join(fehlen)),
          "- Wichtig: Der Builder bietet die Typen Mehrfach/Datum und „Foto Pflicht bei Mangel“ schon an. Ohne dieses Paket versteht die Rundgang-App sie nicht.",
-         "- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.", "",
+         "- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8–10.", "",
          "## Schritt N.1 – SharePoint (zuerst)", "",
          "- `RG_Pruefpunkte` → Spalte **Eingabetyp** → Auswahlmöglichkeiten **ergänzen**: **MEHRFACH**, **DATUM**, **DATUMZEIT** (nichts umbenennen).",
          "- `RG_Pruefpunkte` → Spalte **Foto** → Auswahl **ergänzen**: **Bei Mangel Pflicht** (genau so).",
@@ -151,7 +151,7 @@ def nachhol(export, soll, d):
     z += prop_abschnitt("N.4", "App.Formulas", export.props["App.Formulas"], soll.props["App.Formulas"], ERKL_N["App.Formulas"], eltern)
     z += ["## Schritt N.5 – Paket 5 nachholen (Steuerelemente)", "",
           "Unverändert aus `pakete/PAKET_5_Typen.md` (Schritt 5.4 und 5.5):", "", teil]
-    z += ["## Schritt N.6 – App-Prüfung", "", "App-Prüfung → Formeln = **0**. Speichern. Dann Paket 8+9 (`pakete/PAKET_8_9_APP.md`).", "",
+    z += ["## Schritt N.6 – App-Prüfung", "", "App-Prüfung → Formeln = **0**. Speichern. Dann Paket 8–10 (`pakete/PAKET_8_9_10_APP.md`).", "",
           "## Test (wenn du testest)", "", "Paket 5: Tests T5.x in `pakete/PAKET_5_Typen.md`. Paket 7: T7.1–T7.7 in `pakete/PAKET_7_FotoBeiMangel.md`. "
           "Reparatur: eine Karte mit Hinweis zeigt wieder den Hinweis (nicht den Foto-Text).", "",
           "## Anhang – Vorher-Fassungen (aus dem Export)", ""]
@@ -166,7 +166,12 @@ ERKL_89 = {
     "App.Formulas": "`fnFehltGrund`/`fnFehlt` bekommen ein 13. Argument: kritischer Mangel noch nicht bestätigt → „fehlt“ (Grund „Kritisch“).",
     "scrKategorie.OnVisible": "Lädt die Ansprechpartner, setzt die beiden Fenster zurück, neue Felder in allen drei Zweigen (Abschnitt, Kopf-Kennzeichen, kritisch, Rückfrage, Bestätigung). "
                               "Danach wird je Abschnitt die erste Frage als Überschrift-Träger markiert (bevorzugt eine ohne Bedingung).",
-    "btnKaSpeichern.OnSelect": "Speichert Abschnitt und Bestätigung im JSON. Fehlt nur noch die Bestätigung eines kritischen Mangels, öffnet „Speichern“ das rote Fenster wieder.",
+    "btnKaSpeichern.OnSelect": "Speichert Abschnitt und Bestätigung im JSON. Gesperrt, solange ein Fenster offen ist. Öffnet bei fehlender Bestätigung das rote Fenster. "
+                               "**Paket 10:** Der Zweig „Bitte zuerst die vorherigen Kategorien abschließen“ ist weg.",
+    "lblRuSymbol.Text": "Paket 10: Statt 🔒 steht bei offenen Kategorien ○.",
+    "lblRuSymbol.Color": "Paket 10: offen = grau statt „gesperrt“-grau.",
+    "lblRuKatZustand.Text": "Paket 10: „Offen“ statt „Gesperrt – erst die vorherige Kategorie abschließen“.",
+    "btnRuOeffnen.Text": "Paket 10: Knopf heißt bei offenen Kategorien „Öffnen“.",
     "conKaKarte.Y": "Platz für die Abschnitt-Überschrift über der Karte.",
     "lblKaFehlend.Text": "„Noch offen“ nennt den Abschnitt vor der Frage (bei gleichen Fragen in mehreren Abschnitten wichtig) und „(kritisch: Bescheid bestätigen)“.",
     "lblKaFehlendAnzahl.Text": "Zählt einen unbestätigten kritischen Mangel als offen.",
@@ -175,7 +180,7 @@ ERKL_89 = {
     "htmProtokoll.HtmlText": "Protokoll: Abschnitt-Überschriften, Bereichsname nur wenn nicht ausgeblendet, Zeile „KRITISCH – Bescheid gegeben, bestätigt von … um …“.",
     "btnRuAbschluss.OnSelect": "Mängel: Frage mit Abschnitt („Kompressor 1 › Betriebsdruck“), Kommentar beginnt bei kritisch mit „KRITISCH – Bescheid gegeben hh:mm.“",
     "btnRgAktion.OnSelect": "Beim Start: ausgeblendete Bereiche bekommen einen leeren Namen.",
-    "galRuKategorien.Items": "Bereichs-Überschrift nur, wenn der Bereich einen Namen hat.",
+    "galRuKategorien.Items": "Bereichs-Überschrift nur, wenn der Bereich einen Namen hat. **Paket 10:** Zustand „offen“ statt „gesperrt“ – alle Kategorien sind antippbar.",
     "lblKaUnter.Text": "Kopfzeile ohne Bereichsnamen, wenn er ausgeblendet ist.",
     "btnKaNIO.OnSelect": "Bei neuem n.i.O.: erst Rückfrage (wenn eingestellt), sonst gleich die kritische Meldung (wenn eingestellt). Zurücknehmen löscht die Bestätigung.",
     "txtKaZahl.OnChange": "Wie bei n.i.O.: Zahl außerhalb (Mangel) löst Rückfrage bzw. kritische Meldung aus. Eine schon gegebene Bestätigung bleibt, solange es n.i.O. bleibt.",
@@ -192,13 +197,13 @@ GRUPPEN_89 = [
     ("Protokoll und Mängel", ["htmProtokoll.HtmlText", "btnRuAbschluss.OnSelect"]),
     ("Fenster „Ist das wirklich so?“", ["#conKaRueck"]),
     ("Fenster „Kritischer Mangel“", ["#conKaKrit"]),
+    ("Kategorien in beliebiger Reihenfolge (Paket 10)", ["lblRuSymbol.Text", "lblRuSymbol.Color", "lblRuKatZustand.Text", "btnRuOeffnen.Text"]),
 ]
 
 
 def paket89(d, soll):
-    p8, p9 = d["pakete"][7], d["pakete"][8]
     end, vorher = {}, {}
-    for p in (p8, p9):
+    for p in d["pakete"][7:10]:
         for c in p["props"]:
             vorher.setdefault(c["key"], c["vorher"])
             end[c["key"]] = c["nachher"]
@@ -210,7 +215,7 @@ def paket89(d, soll):
     for n, i in d["neue_controls"].items():
         eltern[n] = i["eltern"]
     neu = d["neue_controls"]
-    z = ["# Paket 8+9 – Rundgang-App: Abschnitte, Bereich ausblenden, Rückfrage, kritischer Mangel", "",
+    z = ["# Paket 8–10 – Rundgang-App: Abschnitte, Bereich ausblenden, Rückfrage, kritischer Mangel, Kategorien ohne Reihenfolge-Sperre", "",
          "Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (Paket 8 und 9 als Zustandskette mit exakten Ankern) und `werkzeuge/doc_app89.py`. "
          "Voraussetzung: **Paket N** (`pakete/PAKET_N_Nachholen.md`) ist eingefügt. Dann ist dein Stand zeichengleich mit dem Stand, auf dem dieses Paket aufbaut (maschinell geprüft).", "",
          "## Kurzfassung", "",
@@ -219,6 +224,8 @@ def paket89(d, soll):
          "- **Rückfrage:** Bei n.i.O. (oder Zahl außerhalb, Modus Mangel) fragt die App „Ist das wirklich so?“ mit dem normalen Wert. „Nein“ nimmt die Antwort zurück.",
          "- **Kritischer Mangel:** rotes Fenster über den ganzen Bildschirm mit den Ansprechpartnern (Name, Telefon, Hinweis). Nur „Ich habe Bescheid gegeben“ "
          "oder „war ein Versehen“. Ohne Bestätigung lässt sich die Kategorie nicht speichern. Protokoll und Mangel nennen die Bestätigung. **Es wird nichts verschickt.**",
+         "- **Kategorien ohne Reihenfolge-Sperre (Paket 10):** Alle Kategorien lassen sich in beliebiger Reihenfolge öffnen und speichern. Die erste offene bleibt als „▶ Als Nächstes“ markiert, "
+         "die übrigen heißen „○ Offen“. „Speichern“ springt wie bisher zur ersten noch offenen Kategorie. Abschließen geht weiterhin erst, wenn alle gespeichert sind.",
          "- Eingestellt wird alles im Builder (Paket 9 Builder-Teil folgt). Bis dahin: Spalten direkt in SharePoint setzen.",
          "- Umfang: %d Properties (jede einmal in der Endfassung), %d neue Steuerelemente in 3 Blöcken, 1 neue Liste, 5 neue Spalten." % (len(end), len(d["pakete"][7]["neu"]) + len(d["pakete"][8]["neu"])),
          "- Geprüft: Generator 0 Fehler (Namen, Klammern, Rückübersetzung, gleiche Felder in allen drei Zweigen von colAntworten, 13 Argumente in jedem fnFehlt-Aufruf). "
@@ -261,7 +268,9 @@ def paket89(d, soll):
           "| T5c | n.i.O. zweimal schnell tippen | kein Fenster bleibt stehen (Antwort leer → Fenster zu) |",
           "| T6 | „Ich habe Bescheid gegeben“, Kommentar, Speichern | gespeichert. Protokoll: „KRITISCH – Bescheid gegeben, bestätigt von … um …“ |",
           "| T7 | Rundgang abschließen | Mangel: Frage mit Abschnitt, Kommentar beginnt mit „KRITISCH – Bescheid gegeben“ |",
-          "| T8 | Zahl mit Grenzen und Rückfrage: Wert außerhalb | Rückfrage „Normalerweise: ab … bis …“ |", "",
+          "| T8 | Zahl mit Grenzen und Rückfrage: Wert außerhalb | Rückfrage „Normalerweise: ab … bis …“ |",
+          "| T9 | Neuen Rundgang starten → direkt die 3. Kategorie öffnen, ausfüllen, speichern | gespeichert, danach öffnet sich die 1. Kategorie (erste offene) |",
+          "| T10 | Rundgangsübersicht | 3. Kategorie ✓, 1. „▶ Als Nächstes“, übrige „○ Offen“, „Rundgang abschließen“ grau mit „(noch … offen)“ |", "",
           "## Bekannte Grenzen (bewusst nicht gebaut)", "",
           "- Ein sehr schneller zweiter Tipp auf einen Fensterknopf kann in der Karte darunter landen (Befund B10, niedrig).",
           "- Entfernte (deaktivierte) Prüfpunkte erscheinen im Protokoll am Ende, optisch unter dem letzten Abschnitt (B12).",
@@ -281,10 +290,10 @@ def main():
     t1, reihen = nachhol(export, soll, d)
     open(os.path.join(AUS, "PAKET_N_Nachholen.md"), "w", encoding="utf-8").write(t1 + "\n")
     t2, keys = paket89(d, soll)
-    open(os.path.join(AUS, "PAKET_8_9_APP.md"), "w", encoding="utf-8").write(t2 + "\n")
+    open(os.path.join(AUS, "PAKET_8_9_10_APP.md"), "w", encoding="utf-8").write(t2 + "\n")
     open(os.path.join(ARB, "abgleich.txt"), "w", encoding="utf-8").write(
-        "Paket N: " + ", ".join(reihen) + "\nPaket 8+9: " + ", ".join(keys) + "\n")
-    print("geschrieben: PAKET_N_Nachholen.md (%d Properties), PAKET_8_9_APP.md (%d Properties)" % (len(reihen), len(keys)))
+        "Paket N: " + ", ".join(reihen) + "\nPaket 8-10: " + ", ".join(keys) + "\n")
+    print("geschrieben: PAKET_N_Nachholen.md (%d Properties), PAKET_8_9_10_APP.md (%d Properties)" % (len(reihen), len(keys)))
 
 
 if __name__ == "__main__":

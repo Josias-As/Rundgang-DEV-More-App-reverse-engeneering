@@ -10,7 +10,7 @@ Erzeugt mit `werkzeuge/doc_app89.py`: Abgleich des Exports **02.11.2026 15:41** 
 - **Paket 7 (Foto „Bei Mangel Pflicht“) fehlt.**
 - Alles andere stimmt zeichengleich mit dem Soll überein (1154 Properties geprüft, 2 fehlen nur, weil Studio Standardwerte weglässt: btnKaFoto.PressedColor, imgKaBild.ImagePosition).
 - Wichtig: Der Builder bietet die Typen Mehrfach/Datum und „Foto Pflicht bei Mangel“ schon an. Ohne dieses Paket versteht die Rundgang-App sie nicht.
-- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8+9.
+- Umfang: 9 Properties, 5 Steuerelemente (4 per YAML, 1 per Menü), 2 Auswahlwerte in SharePoint. Danach folgt Paket 8–10.
 
 ## Schritt N.1 – SharePoint (zuerst)
 
@@ -624,7 +624,7 @@ Prüfen nach dem Schritt:
 
 ## Schritt N.6 – App-Prüfung
 
-App-Prüfung → Formeln = **0**. Speichern. Dann Paket 8+9 (`pakete/PAKET_8_9_APP.md`).
+App-Prüfung → Formeln = **0**. Speichern. Dann Paket 8–10 (`pakete/PAKET_8_9_10_APP.md`).
 
 ## Test (wenn du testest)
 

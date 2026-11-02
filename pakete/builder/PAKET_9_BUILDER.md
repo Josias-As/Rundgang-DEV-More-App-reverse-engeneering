@@ -12,7 +12,7 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/builder.py` + `werkzeuge/doc_paket9_bui
 
 ## Schritt 0 – SharePoint und Datenquellen
 
-Die Liste `RG_Ansprechpartner` und die 5 Spalten an `RG_Pruefpunkte` sind dieselben wie im App-Teil (`pakete/PAKET_8_9_APP.md`, Schritt 1). Nur einmal anlegen.
+Die Liste `RG_Ansprechpartner` und die 5 Spalten an `RG_Pruefpunkte` sind dieselben wie im App-Teil (`pakete/PAKET_8_9_10_APP.md`, Schritt 1). Nur einmal anlegen.
 
 Im Builder: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**, dann **Daten hinzufügen** → SharePoint → IMS+ → `RG_Ansprechpartner`.
 
@@ -1564,7 +1564,7 @@ Set(varIsLoading; false)
 2. Testrundgang bearbeiten → Prüfpunkt → „Bei n.i.O.: nichts Besonderes ›“ → Rückfrage an + Text, kritisch ja + Text, „Elektriker“ antippen (✓).
 3. Knopf zeigt „⚠ Bei n.i.O.: Rückfrage + kritisch ›“ in Rot, Vorschau nennt beides.
 4. Aktivieren → Änderungsliste zeigt den Punkt als „geändert“. Neue Fassung → Einstellungen sind noch da.
-5. In der Rundgang-App (nach Paket 8+9 App): Ablauf aus `PAKET_8_9_APP.md`, Test T3–T7.
+5. In der Rundgang-App (nach Paket 8+9 App): Ablauf aus `PAKET_8_9_10_APP.md`, Test T3–T7.
 
 ## Rückweg
 
