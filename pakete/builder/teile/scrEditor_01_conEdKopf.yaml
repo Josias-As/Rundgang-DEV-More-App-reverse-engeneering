@@ -1,0 +1,183 @@
+- conEdKopf:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =clrPrimaer
+      Height: =64
+      Width: =Parent.Width
+    Children:
+      - btnEdZurueck:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =RGBA(255, 255, 255, 0.12)
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HoverColor: =Color.White
+            HoverFill: =RGBA(255, 255, 255, 0.24)
+            OnSelect: |-
+              =If(!varIsLoading,
+                  Set(varFrage, "");
+                  Navigate(scrListe, ScreenTransition.None)
+              )
+            PressedColor: =Color.White
+            PressedFill: =RGBA(255, 255, 255, 0.32)
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="← Übersicht"
+            Width: =140
+            X: =16
+            Y: =12
+      - txtEdName:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            AccessibleLabel: ="Name des Rundgangs"
+            BorderColor: =clrRahmen
+            Color: =clrText
+            Default: =varRg.Title
+            DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+            Fill: =clrKarte
+            FocusedBorderColor: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HintText: ="Name des Rundgangs"
+            HoverBorderColor: =clrPrimaer
+            OnChange: |-
+              =If(varSchreibbar && Trim(Self.Text) <> "" && Self.Text <> varRg.Title,
+                  If(!IsBlank(LookUp(colRg, ID <> varRgID && Lower(Trim(Title)) = Lower(Trim(Self.Text)))),
+                      Notify("Diesen Namen gibt es schon.", NotificationType.Warning);
+                      Reset(txtEdName),
+                      Set(varPatchFehler, false);
+                      IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varRgID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                      If(varPatchFehler, Notify("Name nicht gespeichert.", NotificationType.Error), Set(varRg, LookUp(RG_Rundgaenge, ID = varRgID)); Set(varGespeichertText, "Name gespeichert " & Text(Now(), "hh:mm:ss")); Notify("Der Name gilt sofort, auch für die aktive Fassung.", NotificationType.Information))
+                  ),
+                  Trim(Self.Text) = "",
+                  Reset(txtEdName)
+              )
+            Size: =15
+            Visible: =varSchreibbar && !varIstVorlage
+            Width: =360
+            X: =168
+            Y: =12
+      - lblEdName:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =40
+            Size: =17
+            Text: =varRg.Title
+            Visible: =!(varSchreibbar && !varIstVorlage)
+            Width: =360
+            X: =168
+            Y: =12
+      - lblEdStatus:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Font: =Font.'Segoe UI'
+            Height: =56
+            Size: =12
+            Text: =If(varAktivRest, "Aktivieren von Fassung " & varFassung & " unvollständig – bitte erneut aktivieren", varIstVorlage, "Vorlagen – Änderungen gelten sofort", varSchreibbar, "Entwurf Fassung " & varFassung & If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", " · noch nie aktiviert", " · aktiv ist Fassung " & fnAktiveFassung(varRg.Fassung)), "Ansicht der aktiven Fassung " & varFassung & " (nur lesen)") & Char(10) & varGespeichertText
+            Width: =420
+            X: =540
+            Y: =4
+      - lblEdPruefZahl:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Right
+            Color: =Color.White
+            Font: =Font.'Segoe UI'
+            Height: =40
+            Size: =13
+            Text: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, CountRows(Filter(galPr.AllItems, Art = "Fehler")) & " Fehler", "keine Fehler")
+            Visible: =(varSchreibbar && !varIstVorlage) || varAktivRest
+            Width: =180
+            X: =Parent.Width - 400
+            Y: =12
+      - btnEdAktivieren:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, clrTextGrau, clrPrimaer)
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, clrGesperrtHell, clrKarte)
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0,
+                      Notify("Erst die " & CountRows(Filter(galPr.AllItems, Art = "Fehler")) & " Fehler beheben (rechts unten, rot).", NotificationType.Warning),
+                      Set(varIsLoading, true);
+                      With({fa: If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", 0, fnAktiveFassung(varRg.Fassung))},
+                          ClearCollect(colAltP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = fa))
+                      );
+                      RemoveIf(colAltP, !Coalesce(Aktiv, false));
+                      With({d: LookUp(RG_Durchfuehrungen, Title = "R" & varRgID & "-" & Text(Today(), "yyyy-mm-dd"))}, Set(varHeuteLaeuft, !IsBlank(d) && d.Status <> "Abgeschlossen"));
+                      Set(varIsLoading, false);
+                      Set(varAktivOffen, true)
+                  )
+              )
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="Aktivieren …"
+            Visible: =(varSchreibbar && !varIstVorlage) || varAktivRest
+            Width: =190
+            X: =Parent.Width - 206
+            Y: =12
+      - btnEdBearbeiten:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                  Set(varSchreibbar, true);
+                  Set(varJob, "neueFassung");
+                  Set(varIsLoading, true);
+                  Set(varArbeitStart, true)
+              )
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="Neue Fassung bearbeiten"
+            Visible: =!varSchreibbar && !varAktivRest && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"
+            Width: =270
+            X: =Parent.Width - 286
+            Y: =12

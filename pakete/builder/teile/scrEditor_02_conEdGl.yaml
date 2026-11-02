@@ -1,0 +1,466 @@
+- conEdGl:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderColor: =clrRahmen
+      BorderThickness: =1
+      Fill: =clrKarte
+      Height: =Parent.Height - 64
+      Width: =380
+      X: =0
+      Y: =64
+    Children:
+      - lblGlTitel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrText
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =28
+            Size: =15
+            Text: ="Gliederung"
+            Width: =200
+            X: =16
+            Y: =6
+      - lblGlHilfe:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =34
+            Size: =11
+            Text: ="Antippen zum Bearbeiten. Prüfpunkte erscheinen unter der gewählten Kategorie."
+            Width: =348
+            X: =16
+            Y: =32
+      - galGl:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            AccessibleLabel: ="Gliederung des Rundgangs"
+            Height: =Parent.Height - 68 - If(varSchreibbar, 108, 0)
+            Items: |-
+              =Sort(
+                  Ungroup(
+                      Table(
+                          {T: ForAll(colB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
+                          {T: ForAll(colK As k, With({b: LookUp(colB As b1, b1.ID = k.BereichID)}, {Ebene: 2, ID: k.ID, BerID: k.BereichID, KatID: k.ID, Titel: k.Title, Info: Text(CountRows(Filter(colP As p1, p1.KategorieID = k.ID))), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")}))},
+                          {T: ForAll(Filter(colP, KategorieID = varCtxK) As p, With({k: LookUp(colK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: p.Title, Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
+                      ),
+                      T
+                  ),
+                  Schl
+              )
+            ShowScrollbar: =true
+            TemplatePadding: =0
+            TemplateSize: =40
+            Width: =Parent.Width
+            X: =0
+            Y: =68
+          Children:
+            - lblGlHinter:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Fill: =If(ThisItem.Ebene = varAuswahlEbene && ThisItem.ID = varAuswahlID, clrPrimaerHell, Color.White)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.TemplateHeight
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =0
+            - lblGlText:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(ThisItem.Ebene = 1, clrPrimaer, clrText)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =If(ThisItem.Ebene < 3, FontWeight.Semibold, FontWeight.Normal)
+                  Height: =Parent.TemplateHeight
+                  Size: =13
+                  Text: =If(ThisItem.Ebene = 1, "▾ " & ThisItem.Titel, ThisItem.Ebene = 2, "      " & ThisItem.Titel, "            • " & ThisItem.Titel)
+                  Width: =Parent.TemplateWidth - 126
+                  Wrap: =false
+                  X: =8
+                  Y: =0
+            - lblGlInfo:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.TemplateHeight
+                  Size: =11
+                  Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+                  Width: =90
+                  X: =Parent.TemplateWidth - 114
+                  Y: =0
+            - lblGlFehler:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrFehler
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =Parent.TemplateHeight
+                  Size: =13
+                  Text: =If(CountRows(Filter(galPr.AllItems As e, e.Art = "Fehler" && ((e.Ebene = ThisItem.Ebene && e.ID = ThisItem.ID) || (ThisItem.Ebene = 2 && e.KatID = ThisItem.ID) || (ThisItem.Ebene = 1 && e.BerID = ThisItem.ID)))) > 0, "⚠", "")
+                  Width: =20
+                  X: =Parent.TemplateWidth - 22
+                  Y: =0
+            - btnGlZeile:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.TemplateHeight
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(23, 20, 150, 0.06)
+                  OnSelect: |-
+                    =If(!varIsLoading,
+                        If(ThisItem.Ebene = 3,
+                            Set(varAuswahlEbene, 3);
+                            Set(varAuswahlID, ThisItem.ID);
+                            Set(varCtxB, ThisItem.BerID);
+                            Set(varCtxK, ThisItem.KatID);
+                            Set(varFrage, "");
+                            Reset(txtBName);
+                            Reset(txtKName);
+                            Reset(ddKBereich);
+                            Reset(txtPFrage);
+                            Reset(txtPEinheit);
+                            Reset(txtPMin);
+                            Reset(txtPMax);
+                            Reset(txtPWerte);
+                            Reset(txtPHinweis);
+                            Reset(ddPKategorie);
+                            Reset(ddPBedA);
+                            Reset(ddPBedW),
+                        ThisItem.Ebene = 2,
+                            Set(varAuswahlEbene, 2);
+                            Set(varAuswahlID, ThisItem.ID);
+                            Set(varCtxB, ThisItem.BerID);
+                            Set(varCtxK, ThisItem.ID);
+                            Set(varFrage, "");
+                            Reset(txtBName);
+                            Reset(txtKName);
+                            Reset(ddKBereich);
+                            Reset(txtPFrage);
+                            Reset(txtPEinheit);
+                            Reset(txtPMin);
+                            Reset(txtPMax);
+                            Reset(txtPWerte);
+                            Reset(txtPHinweis);
+                            Reset(ddPKategorie);
+                            Reset(ddPBedA);
+                            Reset(ddPBedW),
+                        ThisItem.Ebene = 1,
+                            Set(varAuswahlEbene, 1);
+                            Set(varAuswahlID, ThisItem.ID);
+                            Set(varCtxB, ThisItem.ID);
+                            Set(varCtxK, 0);
+                            Set(varFrage, "");
+                            Reset(txtBName);
+                            Reset(txtKName);
+                            Reset(ddKBereich);
+                            Reset(txtPFrage);
+                            Reset(txtPEinheit);
+                            Reset(txtPMin);
+                            Reset(txtPMax);
+                            Reset(txtPWerte);
+                            Reset(txtPHinweis);
+                            Reset(ddPKategorie);
+                            Reset(ddPBedA);
+                            Reset(ddPBedW)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(23, 20, 150, 0.12)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =0
+      - conGlFuss:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =108
+            Visible: =varSchreibbar
+            Width: =Parent.Width
+            X: =0
+            Y: =Parent.Height - 108
+          Children:
+            - btnGlNeuB:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(!varEntwurfOk,
+                            false,
+                            false,
+                            Notify("", NotificationType.Warning),
+                            Set(varNeuID, IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0}).ID, 0));
+                            If(varNeuID = 0,
+                                Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
+                                Collect(colB, LookUp(RG_Bereiche, ID = varNeuID));
+                                Set(varAuswahlEbene, 1);
+                                Set(varAuswahlID, varNeuID);
+                                Set(varCtxB, varNeuID);
+                                Set(varCtxK, 0);
+                                Set(varFrage, "");
+                                Reset(txtBName);
+                                Reset(txtKName);
+                                Reset(ddKBereich);
+                                Reset(txtPFrage);
+                                Reset(txtPEinheit);
+                                Reset(txtPMin);
+                                Reset(txtPMax);
+                                Reset(txtPWerte);
+                                Reset(txtPHinweis);
+                                Reset(ddPKategorie);
+                                Reset(ddPBedA);
+                                Reset(ddPBedW);
+                                SetFocus(txtBName)
+                            )
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="+ Bereich"
+                  Width: =104
+                  X: =12
+                  Y: =8
+            - btnGlNeuK:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading || varCtxB = 0, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(!varEntwurfOk,
+                            false,
+                            varCtxB = 0,
+                            Notify("Links zuerst einen Bereich antippen.", NotificationType.Warning),
+                            Set(varNeuID, IfError(Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Neue Kategorie", BereichID: varCtxB, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = varCtxB), RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: true, QuelleID: 0}).ID, 0));
+                            If(varNeuID = 0,
+                                Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
+                                Collect(colK, LookUp(RG_Kategorien, ID = varNeuID));
+                                Set(varAuswahlEbene, 2);
+                                Set(varAuswahlID, varNeuID);
+                                Set(varCtxB, varCtxB);
+                                Set(varCtxK, varNeuID);
+                                Set(varFrage, "");
+                                Reset(txtBName);
+                                Reset(txtKName);
+                                Reset(ddKBereich);
+                                Reset(txtPFrage);
+                                Reset(txtPEinheit);
+                                Reset(txtPMin);
+                                Reset(txtPMax);
+                                Reset(txtPWerte);
+                                Reset(txtPHinweis);
+                                Reset(ddPKategorie);
+                                Reset(ddPBedA);
+                                Reset(ddPBedW);
+                                SetFocus(txtKName)
+                            )
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="+ Kategorie"
+                  Width: =120
+                  X: =122
+                  Y: =8
+            - btnGlNeuP:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading || varCtxK = 0, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(!varEntwurfOk,
+                            false,
+                            varCtxK = 0,
+                            Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
+                            Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0}).ID, 0));
+                            If(varNeuID = 0,
+                                Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
+                                Collect(colP, LookUp(RG_Pruefpunkte, ID = varNeuID));
+                                Set(varAuswahlEbene, 3);
+                                Set(varAuswahlID, varNeuID);
+                                Set(varCtxB, varCtxB);
+                                Set(varCtxK, varCtxK);
+                                Set(varFrage, "");
+                                Reset(txtBName);
+                                Reset(txtKName);
+                                Reset(ddKBereich);
+                                Reset(txtPFrage);
+                                Reset(txtPEinheit);
+                                Reset(txtPMin);
+                                Reset(txtPMax);
+                                Reset(txtPWerte);
+                                Reset(txtPHinweis);
+                                Reset(ddPKategorie);
+                                Reset(ddPBedA);
+                                Reset(ddPBedW);
+                                SetFocus(txtPFrage)
+                            )
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="+ Prüfpunkt"
+                  Width: =120
+                  X: =248
+                  Y: =8
+            - btnGlMehrere:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis && varCtxK > 0,
+                        Set(varMehrTyp, "IONIO");
+                        Set(varMehrPflicht, true);
+                        Reset(txtMehr);
+                        Set(varMehrereOffen, true),
+                        varCtxK = 0,
+                        Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning)
+                    )
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="Mehrere Fragen"
+                  Width: =172
+                  X: =12
+                  Y: =56
+            - btnGlHolen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis,
+                        Set(varHolenOffen, true);
+                        Reset(ddHolenQuelle);
+                        With({s: LookUp(colRg, fnStatus(Status, Aktiv) = "Vorlage")},
+                            With({f: If(fnStatus(s.Status, s.Aktiv) = "Entwurf" || fnStatus(s.Status, s.Aktiv) = "Vorlage", Coalesce(s.EntwurfFassung, 1), fnAktiveFassung(s.Fassung)), nur: !(fnStatus(s.Status, s.Aktiv) = "Entwurf" || fnStatus(s.Status, s.Aktiv) = "Vorlage")},
+                                Concurrent(
+                                    ClearCollect(colSrcB, Filter(RG_Bereiche, RundgangID = s.ID && Fassung = f)),
+                                    ClearCollect(colSrcK, Filter(RG_Kategorien, RundgangID = s.ID && Fassung = f)),
+                                    ClearCollect(colSrcP, Filter(RG_Pruefpunkte, RundgangID = s.ID && Fassung = f))
+                                );
+                                If(nur,
+                                    RemoveIf(colSrcB, !Coalesce(Aktiv, false));
+                                    RemoveIf(colSrcK, !Coalesce(Aktiv, false));
+                                    RemoveIf(colSrcP, !Coalesce(Aktiv, false))
+                                )
+                            )
+                        );
+                        Set(varHolenEbene, 0);
+                        Set(varHolenID, 0)
+                    )
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: ="Aus Vorlage holen"
+                  Width: =176
+                  X: =192
+                  Y: =56

@@ -1,0 +1,303 @@
+- conBild:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varBildOffen
+      Width: =Parent.Width
+    Children:
+      - btnBildSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conBildKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =620
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =980
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblBildTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Beispielbild wählen (anklicken)"
+                  Width: =932
+                  X: =24
+                  Y: =16
+            - galBild:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Beispielbilder"
+                  Height: =460
+                  Items: =If(varBildOffen, Sort(RG_Hinweisbilder, ID, SortOrder.Descending), Filter(RG_Hinweisbilder, ID = -1))
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =152
+                  Width: =932
+                  WrapCount: =6
+                  X: =24
+                  Y: =64
+                Children:
+                  - imgBi:
+                      Control: Image@2.2.3
+                      Properties:
+                        AccessibleLabel: ="Bild " & ThisItem.ID
+                        Height: =110
+                        Image: =ThisItem.Thumbnail.Small
+                        ImagePosition: =ImagePosition.Fit
+                        Width: =Parent.TemplateWidth - 12
+                        X: =6
+                        Y: =6
+                  - lblBi:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Size: =12
+                        Text: ="Bild " & ThisItem.ID & If(ThisItem.ID = Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0), "  ✓", "")
+                        Width: =Parent.TemplateWidth - 12
+                        X: =6
+                        Y: =118
+                  - btnBi:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =If(ThisItem.ID = Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0), 3, 0)
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =RGBA(0, 0, 0, 0)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.TemplateHeight
+                        HoverColor: =Color.White
+                        HoverFill: =RGBA(23, 20, 150, 0.08)
+                        OnSelect: |-
+                          =If(varSchreibbar && varAuswahlEbene = 3,
+                              Refresh(RG_Rundgaenge);
+                              Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                              If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                              If(varEntwurfOk,
+                                  Set(varPatchFehler, false);
+                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: ThisItem.ID}), Set(varPatchFehler, true));
+                                  If(varPatchFehler,
+                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                      Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                      Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                  )
+                              )
+                          );
+                          Set(varBildOffen, false)
+                        PressedColor: =Color.White
+                        PressedFill: =RGBA(23, 20, 150, 0.16)
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Size: =14
+                        Text: =""
+                        Width: =Parent.TemplateWidth
+                        X: =0
+                        Y: =0
+            - lblBildLeer:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  Size: =13
+                  Text: ="Noch keine Bilder in RG_Hinweisbilder. „Bilder hochladen“ öffnet die Bibliothek, danach „Neu laden“."
+                  Visible: =IsEmpty(galBild.AllItems)
+                  Width: =932
+                  X: =24
+                  Y: =80
+            - btnBildKeins:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(varSchreibbar && varAuswahlEbene = 3,
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(varEntwurfOk,
+                            Set(varPatchFehler, false);
+                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: 0}), Set(varPatchFehler, true));
+                            If(varPatchFehler,
+                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                            )
+                        )
+                    );
+                    Set(varBildOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Kein Bild"
+                  Width: =160
+                  X: =24
+                  Y: =548
+            - btnBildHochladen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Launch(cfgBildBibliothek)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Bilder hochladen ↗"
+                  Width: =220
+                  X: =196
+                  Y: =548
+            - btnBildNeuLaden:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Refresh(RG_Hinweisbilder)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="↻ Neu laden"
+                  Width: =160
+                  X: =428
+                  Y: =548
+            - btnBildSchliessen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: =Set(varBildOffen, false)
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Schließen"
+                  Width: =160
+                  X: =796
+                  Y: =548
+            - btnBildZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varBildOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =920
+                  Y: =16

@@ -1,0 +1,32 @@
+- btnLiNeu:
+    Control: Classic/Button@2.2.0
+    Properties:
+      BorderThickness: =0
+      Color: =Color.White
+      DisabledBorderColor: =clrGesperrtHell
+      DisabledColor: =clrGesperrt
+      DisabledFill: =clrGesperrtHell
+      DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+      Fill: =clrPrimaer
+      Font: =Font.'Segoe UI'
+      Height: =44
+      HoverColor: =Color.White
+      HoverFill: =ColorFade(clrPrimaer, -20%)
+      OnSelect: |-
+        =If(!varIsLoading && Now() >= varSperreBis,
+            Set(varFrage, "");
+            Set(varNeuLeer, true);
+            Reset(txtNeuName);
+            Set(varNeuOffen, true)
+        )
+      PressedColor: =Color.White
+      PressedFill: =ColorFade(clrPrimaer, -35%)
+      RadiusBottomLeft: =6
+      RadiusBottomRight: =6
+      RadiusTopLeft: =6
+      RadiusTopRight: =6
+      Size: =14
+      Text: ="+ Neuer Rundgang"
+      Width: =220
+      X: =24
+      Y: =84

@@ -1,0 +1,343 @@
+- conHolen:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varHolenOffen
+      Width: =Parent.Width
+    Children:
+      - btnHolenSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conHolenKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =640
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =920
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblHolenTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Aus Vorlage oder anderem Rundgang holen"
+                  Width: =872
+                  X: =24
+                  Y: =16
+            - lblHolenQuelle:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Woher?"
+                  Width: =420
+                  X: =24
+                  Y: =64
+            - ddHolenQuelle:
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  AccessibleLabel: |-
+                    ="Quelle: Vorlagen oder anderer Rundgang"
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  ChevronBackground: =clrPrimaer
+                  ChevronFill: =Color.White
+                  ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                  ChevronHoverFill: =Color.White
+                  Color: =clrText
+                  Default: =Coalesce(LookUp(colRg, fnStatus(Status, Aktiv) = "Vorlage").Title, "")
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverFill: =clrPrimaerHell
+                  Items: =Sort(Filter(colRg, ID <> varRgID && (Coalesce(Fassung, 0) > 0 || fnStatus(Status, Aktiv) = "Entwurf" || fnStatus(Status, Aktiv) = "Vorlage")), If(fnStatus(Status, Aktiv) = "Vorlage", "0", "1") & Lower(Title))
+                  Items.Value: =Title
+                  OnChange: |-
+                    =If(!IsBlank(Self.Selected),
+                        With({s: Self.Selected},
+                            With({f: If(fnStatus(s.Status, s.Aktiv) = "Entwurf" || fnStatus(s.Status, s.Aktiv) = "Vorlage", Coalesce(s.EntwurfFassung, 1), fnAktiveFassung(s.Fassung)), nur: !(fnStatus(s.Status, s.Aktiv) = "Entwurf" || fnStatus(s.Status, s.Aktiv) = "Vorlage")},
+                                Concurrent(
+                                    ClearCollect(colSrcB, Filter(RG_Bereiche, RundgangID = s.ID && Fassung = f)),
+                                    ClearCollect(colSrcK, Filter(RG_Kategorien, RundgangID = s.ID && Fassung = f)),
+                                    ClearCollect(colSrcP, Filter(RG_Pruefpunkte, RundgangID = s.ID && Fassung = f))
+                                );
+                                If(nur,
+                                    RemoveIf(colSrcB, !Coalesce(Aktiv, false));
+                                    RemoveIf(colSrcK, !Coalesce(Aktiv, false));
+                                    RemoveIf(colSrcP, !Coalesce(Aktiv, false))
+                                )
+                            )
+                        );
+                        Set(varHolenEbene, 0);
+                        Set(varHolenID, 0)
+                    )
+                  PaddingLeft: =10
+                  PressedColor: =Color.White
+                  PressedFill: =clrPrimaer
+                  SelectionColor: =Color.White
+                  SelectionFill: =clrPrimaer
+                  Size: =14
+                  Width: =420
+                  X: =24
+                  Y: =84
+            - lblHolenZiel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(StartsWith(Self.Text, "Ziel fehlt"), clrFehler, clrText)
+                  Font: =Font.'Segoe UI'
+                  Height: =56
+                  Size: =13
+                  Text: |-
+                    =Switch(varHolenEbene, 3, If(varCtxK > 0, "Ziel: Kategorie „" & LookUp(colK, ID = varCtxK).Title & "“ (ans Ende)", "Ziel fehlt: links zuerst eine Kategorie antippen"), 2, If(varCtxB > 0, "Ziel: Bereich „" & LookUp(colB, ID = varCtxB).Title & "“ (ans Ende)", "Ziel fehlt: links zuerst einen Bereich antippen"), 1, "Ziel: dieser Rundgang (ans Ende)", "Unten einen Bereich, eine Kategorie oder einen Prüfpunkt antippen.")
+                  Width: =436
+                  X: =460
+                  Y: =76
+            - galHolen:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Bausteine zum Übernehmen"
+                  Height: =400
+                  Items: |-
+                    =Sort(
+                        Ungroup(
+                            Table(
+                                {T: ForAll(colSrcB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
+                                {T: ForAll(colSrcK As k, With({b: LookUp(colSrcB As b1, b1.ID = k.BereichID)}, {Ebene: 2, ID: k.ID, BerID: k.BereichID, KatID: k.ID, Titel: k.Title, Info: Text(CountRows(Filter(colSrcP As p1, p1.KategorieID = k.ID))), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")}))},
+                                {T: ForAll(colSrcP As p, With({k: LookUp(colSrcK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colSrcB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: p.Title, Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
+                            ),
+                            T
+                        ),
+                        Schl
+                    )
+                  ShowScrollbar: =true
+                  TemplatePadding: =0
+                  TemplateSize: =36
+                  Width: =872
+                  X: =24
+                  Y: =140
+                Children:
+                  - lblHoHinter:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Fill: =If(ThisItem.Ebene = varHolenEbene && ThisItem.ID = varHolenID, clrPrimaerHell, Color.White)
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.TemplateHeight
+                        Size: =14
+                        Text: =""
+                        Width: =Parent.TemplateWidth
+                        X: =0
+                        Y: =0
+                  - lblHoText:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(ThisItem.Ebene = 1, clrPrimaer, clrText)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =If(ThisItem.Ebene < 3, FontWeight.Semibold, FontWeight.Normal)
+                        Height: =Parent.TemplateHeight
+                        Size: =13
+                        Text: =If(ThisItem.Ebene = 1, "▾ " & ThisItem.Titel, ThisItem.Ebene = 2, "      " & ThisItem.Titel, "            • " & ThisItem.Titel)
+                        Width: =Parent.TemplateWidth - 126
+                        Wrap: =false
+                        X: =8
+                        Y: =0
+                  - lblHoInfo:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Right
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.TemplateHeight
+                        Size: =11
+                        Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+                        Width: =90
+                        X: =Parent.TemplateWidth - 114
+                        Y: =0
+                  - btnHoZeile:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =RGBA(0, 0, 0, 0)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =RGBA(0, 0, 0, 0)
+                        Font: =Font.'Segoe UI'
+                        Height: =Parent.TemplateHeight
+                        HoverColor: =Color.White
+                        HoverFill: =RGBA(23, 20, 150, 0.06)
+                        OnSelect: |-
+                          =Set(varHolenEbene, ThisItem.Ebene);
+                          Set(varHolenID, ThisItem.ID)
+                        PressedColor: =Color.White
+                        PressedFill: =RGBA(23, 20, 150, 0.12)
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Size: =14
+                        Text: =""
+                        Width: =Parent.TemplateWidth
+                        X: =0
+                        Y: =0
+            - lblHolenLeer:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  Size: =13
+                  Text: ="Hier ist nichts. Oben eine andere Quelle wählen. Vorlagen legst du in der Übersicht mit „Vorlagen bearbeiten“ an."
+                  Visible: =IsEmpty(galHolen.AllItems)
+                  Width: =872
+                  X: =24
+                  Y: =150
+            - btnHolenSchliessen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varHolenOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Schließen"
+                  Width: =180
+                  X: =24
+                  Y: =568
+            - btnHolenUebernehmen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading || varHolenID = 0, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis && varHolenID > 0 && varSchreibbar,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(!varEntwurfOk,
+                            Set(varHolenOffen, false),
+                            varHolenEbene = 3 && varCtxK = 0,
+                            Notify("Links zuerst eine Kategorie antippen, in die der Prüfpunkt soll.", NotificationType.Warning),
+                            varHolenEbene = 2 && varCtxB = 0,
+                            Notify("Links zuerst einen Bereich antippen, in den die Kategorie soll.", NotificationType.Warning),
+                            ClearCollect(colQB, Filter(colSrcB, varHolenEbene = 1 && ID = varHolenID));
+                            ClearCollect(colQK, Filter(colSrcK, (varHolenEbene = 2 && ID = varHolenID) || (varHolenEbene = 1 && BereichID = varHolenID)));
+                            ClearCollect(colQP, Filter(colSrcP, (varHolenEbene = 3 && ID = varHolenID) || KategorieID in colQK.ID));
+                            Set(varZielR, varRgID);
+                            Set(varZielF, varFassung);
+                            Set(varZielB, varCtxB);
+                            Set(varZielK, varCtxK);
+                            Set(varZielBAktiv, false);
+                            Set(varKopieBehalteR, false);
+                            Set(varKopieZusatz, "");
+                            Set(varKopieNach, "auswahl");
+                            Set(varJob, "kopie");
+                            Set(varIsLoading, true);
+                            Set(varArbeitStart, true)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: =Switch(varHolenEbene, 1, "Bereich übernehmen", 2, "Kategorie übernehmen", 3, "Prüfpunkt übernehmen", "Übernehmen")
+                  Width: =260
+                  X: =636
+                  Y: =568
+            - btnHolenZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varHolenOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =860
+                  Y: =16

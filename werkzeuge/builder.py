@@ -1875,8 +1875,12 @@ def main():
     zeilen += ["", "Abfragen auf SharePoint (Delegation nachlesen):"] + delegation(props)
     os.makedirs(AUS_PAKET, exist_ok=True)
     os.makedirs(AUS_ARB, exist_ok=True)
+    teile = os.path.join(AUS_PAKET, "teile")
+    os.makedirs(teile, exist_ok=True)
     for s in SCREENS:
         open(os.path.join(AUS_PAKET, s.name + ".yaml"), "w", encoding="utf-8").write(yaml_screen(s))
+        for i, k in enumerate(s.kinder, 1):
+            open(os.path.join(teile, "%s_%02d_%s.yaml" % (s.name, i, k.name)), "w", encoding="utf-8").write("\n".join(yaml_control(k, "")) + "\n")
     open(os.path.join(AUS_PAKET, "App.Formulas.txt"), "w", encoding="utf-8").write(rg.to_de(FORMULAS) + "\n")
     open(os.path.join(AUS_PAKET, "App.OnStart.txt"), "w", encoding="utf-8").write(rg.to_de(ONSTART) + "\n")
     stat = {"screens": [s.name for s in SCREENS], "steuerelemente": len(kontrollen) - len(SCREENS), "properties": len(props),

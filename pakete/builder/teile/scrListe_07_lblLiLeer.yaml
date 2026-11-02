@@ -1,0 +1,12 @@
+- lblLiLeer:
+    Control: Label@2.5.1
+    Properties:
+      Color: =clrTextGrau
+      Font: =Font.'Segoe UI'
+      Height: =40
+      Size: =15
+      Text: ="Noch keine Rundgänge. Lege mit „+ Neuer Rundgang“ den ersten an."
+      Visible: =IsEmpty(galLi.AllItems) && !varIsLoading
+      Width: =Parent.Width - 48
+      X: =24
+      Y: =160

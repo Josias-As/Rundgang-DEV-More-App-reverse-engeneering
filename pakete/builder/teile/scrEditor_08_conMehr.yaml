@@ -1,0 +1,324 @@
+- conMehr:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varMehrereOffen
+      Width: =Parent.Width
+    Children:
+      - btnMehrSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conMehrKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =600
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =660
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblMehrTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Mehrere Prüfpunkte anlegen"
+                  Width: =612
+                  X: =24
+                  Y: =16
+            - lblMehrHilfe:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =22
+                  Size: =13
+                  Text: ="Eine Frage pro Zeile. Du kannst auch eine Spalte aus Excel hineinkopieren."
+                  Width: =612
+                  X: =24
+                  Y: =64
+            - txtMehr:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Fragen, eine pro Zeile"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =""
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =250
+                  HintText: ="Lager sauber?" & Char(10) & "Regale beschriftet?" & Char(10) & "Fluchtweg frei?"
+                  HoverBorderColor: =clrPrimaer
+                  Mode: =TextMode.MultiLine
+                  OnChange: =false
+                  Size: =14
+                  Width: =612
+                  X: =24
+                  Y: =90
+            - lblMehrTyp:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Art für alle"
+                  Width: =300
+                  X: =24
+                  Y: =348
+            - galMehrTyp:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Art der neuen Prüfpunkte"
+                  Height: =40
+                  Items: |-
+                    =Table({W: "IONIO", N: "i.O./n.i.O."}, {W: "ZAHL", N: "Zahl"}, {W: "TEXT", N: "Text"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =40
+                  Width: =612
+                  WrapCount: =3
+                  X: =24
+                  Y: =368
+                Children:
+                  - btnMehrTyp:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = varMehrTyp, clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = varMehrTyp, Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = varMehrTyp, clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = varMehrTyp, clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = varMehrTyp, clrPrimaerHell, clrKarte)
+                        DisplayMode: =DisplayMode.Edit
+                        Fill: =If(ThisItem.W = varMehrTyp, clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HoverColor: =If(ThisItem.W = varMehrTyp, Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = varMehrTyp, ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: =Set(varMehrTyp, ThisItem.W)
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
+            - lblMehrPfl:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Antwort"
+                  Width: =300
+                  X: =24
+                  Y: =416
+            - galMehrPfl:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Pflicht"
+                  Height: =40
+                  Items: |-
+                    =Table({W: "ja", N: "Pflicht"}, {W: "nein", N: "freiwillig"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =40
+                  Width: =408
+                  WrapCount: =2
+                  X: =24
+                  Y: =436
+                Children:
+                  - btnMehrPfl:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), clrPrimaerHell, clrKarte)
+                        DisplayMode: =DisplayMode.Edit
+                        Fill: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HoverColor: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = If(varMehrPflicht, "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: =Set(varMehrPflicht, ThisItem.W = "ja")
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
+            - lblMehrZiel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  Size: =12
+                  Text: |-
+                    ="Ziel: Kategorie „" & LookUp(colK, ID = varCtxK).Title & "“ (ans Ende). Alles Weitere stellst du danach je Prüfpunkt ein."
+                  Width: =612
+                  X: =24
+                  Y: =484
+            - btnMehrAbbrechen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varMehrereOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Abbrechen"
+                  Width: =180
+                  X: =24
+                  Y: =532
+            - btnMehrAnlegen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        ClearCollect(colMehr, Filter(ForAll(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10)) As z, {F: Left(Trim(z.Value), 255)}), F <> ""));
+                        Refresh(RG_Rundgaenge);
+                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                        If(!varEntwurfOk,
+                            Set(varMehrereOffen, false),
+                            varCtxK = 0,
+                            Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
+                            IsEmpty(colMehr),
+                            Notify("Bitte mindestens eine Frage eintragen.", NotificationType.Warning),
+                            Set(varIsLoading, true);
+                            ClearCollect(colMehrErg,
+                                With({basis: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0)},
+                                    ForAll(Sequence(CountRows(colMehr)) As i,
+                                        {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0}).ID, 0)}
+                                    )
+                                )
+                            );
+                            ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung));
+                            If(CountRows(Filter(colMehrErg, Neu = 0)) > 0,
+                                Notify(CountRows(Filter(colMehrErg, Neu = 0)) & " Fragen konnten nicht angelegt werden. Bitte die Gliederung prüfen.", NotificationType.Error),
+                                Notify(CountRows(colMehrErg) & " Prüfpunkte angelegt.", NotificationType.Success);
+                                Reset(txtMehr);
+                                Set(varMehrereOffen, false)
+                            );
+                            Set(varIsLoading, false)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Anlegen (" & CountRows(Filter(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10)), Trim(Value) <> "")) & ")"
+                  Width: =220
+                  X: =416
+                  Y: =532
+            - btnMehrZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varMehrereOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =600
+                  Y: =16

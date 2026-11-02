@@ -1,0 +1,47 @@
+- conPlKopf:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =clrPrimaer
+      Height: =64
+      Width: =Parent.Width
+    Children:
+      - btnPlZurueck:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =RGBA(255, 255, 255, 0.12)
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HoverColor: =Color.White
+            HoverFill: =RGBA(255, 255, 255, 0.24)
+            OnSelect: =If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))
+            PressedColor: =Color.White
+            PressedFill: =RGBA(255, 255, 255, 0.32)
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="← Übersicht"
+            Width: =140
+            X: =16
+            Y: =12
+      - lblPlTitel:
+          Control: Label@2.5.1
+          Properties:
+            Color: =Color.White
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =64
+            Size: =20
+            Text: ="Plan – " & varPlanRg.Title
+            Width: =900
+            X: =172
+            Y: =0

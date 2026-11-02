@@ -1,0 +1,222 @@
+- conAkt:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varAktivOffen
+      Width: =Parent.Width
+    Children:
+      - btnAktSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conAktKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =600
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =680
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblAktTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Fassung " & varFassung & " aktivieren"
+                  Width: =632
+                  X: =24
+                  Y: =16
+            - lblAktText:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  Size: =14
+                  Text: |-
+                    =If(fnStatus(varRg.Status, varRg.Aktiv) = "Entwurf", "Erste Fassung: " & CountRows(colB) & " Bereiche, " & CountRows(colK) & " Kategorien, " & CountRows(colP) & " Prüfpunkte.", "Gegenüber der aktiven Fassung " & fnAktiveFassung(varRg.Fassung) & ": " & CountRows(Filter(galAkt.AllItems, Art = "neu")) & " neu, " & CountRows(Filter(galAkt.AllItems, Art = "geändert")) & " geändert, " & CountRows(Filter(galAkt.AllItems, Art = "entfernt")) & " entfernt (Prüfpunkte).")
+                  Width: =632
+                  X: =24
+                  Y: =64
+            - galAkt:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Änderungen"
+                  Height: =220
+                  Items: |-
+                    =Ungroup(
+                        Table(
+                            {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},
+                            {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coalesce(a.Eingabetyp.Value, "") || Coalesce(p.Pflicht, false) <> Coalesce(a.Pflicht, false) || Coalesce(p.Auswahlwerte, "") <> Coalesce(a.Auswahlwerte, "") || Coalesce(p.Einheit, "") <> Coalesce(a.Einheit, "") || Coalesce(p.MinWert, -999999) <> Coalesce(a.MinWert, -999999) || Coalesce(p.MaxWert, -999999) <> Coalesce(a.MaxWert, -999999) || Coalesce(p.Hinweis, "") <> Coalesce(a.Hinweis, "") || fnFotoWert(p.Foto.Value, Coalesce(p.FotoMoeglich, false)) <> fnFotoWert(a.Foto.Value, Coalesce(a.FotoMoeglich, false)) || Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID))) As p, {Art: "geändert", Text: p.Title})},
+                            {T: ForAll(Filter(colAltP As a, IsBlank(LookUp(colP As p, p.QuelleID = a.ID))) As a, {Art: "entfernt", Text: a.Title})}
+                        ),
+                        T
+                    )
+                  ShowScrollbar: =true
+                  TemplatePadding: =0
+                  TemplateSize: =30
+                  Visible: =fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"
+                  Width: =632
+                  X: =24
+                  Y: =116
+                Children:
+                  - lblAktArt:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =Switch(ThisItem.Art, "neu", clrErfolg, "entfernt", clrFehler, clrWarnung)
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =30
+                        Size: =12
+                        Text: =ThisItem.Art
+                        Width: =96
+                        X: =0
+                        Y: =0
+                  - lblAktZeile:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        Height: =30
+                        Size: =12
+                        Text: =ThisItem.Text
+                        Width: =Parent.TemplateWidth - 104
+                        Wrap: =false
+                        X: =100
+                        Y: =0
+            - lblAktHinweise:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  Height: =160
+                  Size: =13
+                  Text: |-
+                    ="• Ab dem nächsten Start eines Rundgangs gilt die neue Fassung." & If(fnStatus(varRg.Status, varRg.Aktiv) = "Archiviert", Char(10) & "• Der Rundgang ist archiviert und wird damit wieder aktiv.", "") & If(varHeuteLaeuft, Char(10) & "• Heute läuft noch ein Rundgang mit der alten Fassung. Er wird mit der alten Fassung beendet.", "") & If(IsEmpty(Filter(colPlanR, Coalesce(Aktiv, false))), Char(10) & "• Es gibt noch keinen aktiven Plan: Der Rundgang erscheint erst auf der Startseite, wenn du einen Plan anlegst.", "") & If(CountRows(Filter(galPr.AllItems, Art = "Hinweis")) > 0, Char(10) & "• Die Prüfung zeigt " & CountRows(Filter(galPr.AllItems, Art = "Hinweis")) & " Hinweis(e). Sie verhindern das Aktivieren nicht.", "")
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =632
+                  X: =24
+                  Y: =344
+            - btnAktAbbrechen:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varAktivOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Abbrechen"
+                  Width: =180
+                  X: =24
+                  Y: =528
+            - btnAktJetzt:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =48
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Set(varAktivOffen, false);
+                        Set(varJob, "aktivieren");
+                        Set(varIsLoading, true);
+                        Set(varArbeitStart, true)
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Jetzt aktivieren"
+                  Width: =200
+                  X: =456
+                  Y: =528
+            - btnAktZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varAktivOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =620
+                  Y: =16
