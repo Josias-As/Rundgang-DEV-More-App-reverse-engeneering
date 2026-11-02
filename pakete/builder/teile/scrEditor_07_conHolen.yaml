@@ -142,9 +142,9 @@
                     =Sort(
                         Ungroup(
                             Table(
-                                {T: ForAll(colSrcB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
+                                {T: ForAll(colSrcB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: If(Coalesce(b.Ausblenden, false), "ausgeblendet", ""), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
                                 {T: ForAll(colSrcK As k, With({b: LookUp(colSrcB As b1, b1.ID = k.BereichID)}, {Ebene: 2, ID: k.ID, BerID: k.BereichID, KatID: k.ID, Titel: k.Title, Info: Text(CountRows(Filter(colSrcP As p1, p1.KategorieID = k.ID))), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")}))},
-                                {T: ForAll(colSrcP As p, With({k: LookUp(colSrcK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colSrcB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: p.Title, Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
+                                {T: ForAll(colSrcP As p, With({k: LookUp(colSrcK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colSrcB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: If(Trim(Coalesce(p.Abschnitt, "")) = "", p.Title, Trim(p.Abschnitt) & " › " & p.Title), Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
                             ),
                             T
                         ),
@@ -190,7 +190,7 @@
                         Font: =Font.'Segoe UI'
                         Height: =Parent.TemplateHeight
                         Size: =11
-                        Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+                        Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Info)
                         Width: =90
                         X: =Parent.TemplateWidth - 114
                         Y: =0
@@ -227,7 +227,7 @@
                 Properties:
                   Color: =clrTextGrau
                   Font: =Font.'Segoe UI'
-                  Height: =40
+                  Height: =48
                   Size: =13
                   Text: ="Hier ist nichts. Oben eine andere Quelle wählen. Vorlagen legst du in der Übersicht mit „Vorlagen bearbeiten“ an."
                   Visible: =IsEmpty(galHolen.AllItems)

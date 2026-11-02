@@ -68,7 +68,7 @@
                   Font: =Font.'Segoe UI'
                   Height: =22
                   Size: =13
-                  Text: ="Eine Frage pro Zeile. Du kannst auch eine Spalte aus Excel hineinkopieren."
+                  Text: ="Eine Frage pro Zeile – auch eine Spalte aus Excel einfügen."
                   Width: =612
                   X: =24
                   Y: =64
@@ -200,6 +200,36 @@
                         Width: =Parent.TemplateWidth - 6
                         X: =0
                         Y: =0
+            - lblMehrAbschnitt:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Abschnitt (optional)"
+                  Width: =188
+                  X: =448
+                  Y: =416
+            - txtMehrAbschnitt:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Abschnitt für alle neuen Fragen"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =""
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =36
+                  HintText: ="z. B. Kompressor 1"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: =false
+                  Size: =14
+                  Width: =188
+                  X: =448
+                  Y: =436
             - lblMehrZiel:
                 Control: Label@2.5.1
                 Properties:
@@ -270,7 +300,7 @@
                             ClearCollect(colMehrErg,
                                 With({basis: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0)},
                                     ForAll(Sequence(CountRows(colMehr)) As i,
-                                        {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0}).ID, 0)}
+                                        {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: Left(Trim(txtMehrAbschnitt.Text), 255)}).ID, 0)}
                                     )
                                 )
                             );
@@ -279,6 +309,7 @@
                                 Notify(CountRows(Filter(colMehrErg, Neu = 0)) & " Fragen konnten nicht angelegt werden. Bitte die Gliederung prüfen.", NotificationType.Error),
                                 Notify(CountRows(colMehrErg) & " Prüfpunkte angelegt.", NotificationType.Success);
                                 Reset(txtMehr);
+                                Reset(txtMehrAbschnitt);
                                 Set(varMehrereOffen, false)
                             );
                             Set(varIsLoading, false)

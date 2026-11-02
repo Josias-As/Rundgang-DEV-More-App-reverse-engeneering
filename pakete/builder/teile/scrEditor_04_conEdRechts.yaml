@@ -229,7 +229,7 @@
             Height: =300
             Overflow: =Overflow.Scroll
             Size: =13
-            Text: =If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & p.Title & "  (" & fnTypName(p.Eingabetyp.Value) & If(Coalesce(p.Pflicht, false), ", Pflicht", "") & If(Coalesce(p.BedingungPunkt, 0) <> 0, ", bedingt", "") & ")", Char(10)), varAuswahlEbene = 1, Concat(Sort(Filter(colK, BereichID = varAuswahlID), RgReihenfolge * 1000000 + ID) As k, "• " & k.Title & "  (" & CountRows(Filter(colP, KategorieID = k.ID)) & " Prüfpunkte)", Char(10)), "Links etwas antippen.")
+            Text: =If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & If(Trim(Coalesce(p.Abschnitt, "")) = "", "", Trim(p.Abschnitt) & " › ") & p.Title & "  (" & fnTypName(p.Eingabetyp.Value) & If(Coalesce(p.Pflicht, false), ", Pflicht", "") & If(Coalesce(p.BedingungPunkt, 0) <> 0, ", bedingt", "") & ")", Char(10)), varAuswahlEbene = 1, Concat(Sort(Filter(colK, BereichID = varAuswahlID), RgReihenfolge * 1000000 + ID) As k, "• " & k.Title & "  (" & CountRows(Filter(colP, KategorieID = k.ID)) & " Prüfpunkte)", Char(10)), "Links etwas antippen.")
             VerticalAlign: =VerticalAlign.Top
             Visible: =varAuswahlEbene <> 3
             Width: =Parent.Width - 32
@@ -318,7 +318,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW),
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt),
                         ThisItem.Ebene = 2,
                             Set(varAuswahlEbene, 2);
                             Set(varAuswahlID, ThisItem.ID);
@@ -336,7 +337,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW),
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt),
                         ThisItem.Ebene = 1,
                             Set(varAuswahlEbene, 1);
                             Set(varAuswahlID, ThisItem.ID);
@@ -354,7 +356,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW)
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt)
                         )
                     )
                   PressedColor: =Color.White

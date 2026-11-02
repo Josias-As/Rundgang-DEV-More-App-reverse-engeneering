@@ -45,7 +45,8 @@ If(varSchreibbar && varAuswahlEbene > 0; If(!varIsLoading && Now() >= varSperreB
         Reset(txtPHinweis);;
         Reset(ddPKategorie);;
         Reset(ddPBedA);;
-        Reset(ddPBedW);
+        Reset(ddPBedW);;
+        Reset(txtPAbschnitt);
         varAuswahlEbene = 2;
         Set(varAuswahlEbene; 1);;
         Set(varAuswahlID; varCtxB);;
@@ -63,7 +64,8 @@ If(varSchreibbar && varAuswahlEbene > 0; If(!varIsLoading && Now() >= varSperreB
         Reset(txtPHinweis);;
         Reset(ddPKategorie);;
         Reset(ddPBedA);;
-        Reset(ddPBedW);
+        Reset(ddPBedW);;
+        Reset(txtPAbschnitt);
         Set(varAuswahlEbene; 0);;
         Set(varAuswahlID; 0);;
         Set(varCtxB; 0);;
@@ -80,7 +82,8 @@ If(varSchreibbar && varAuswahlEbene > 0; If(!varIsLoading && Now() >= varSperreB
         Reset(txtPHinweis);;
         Reset(ddPKategorie);;
         Reset(ddPBedA);;
-        Reset(ddPBedW)
+        Reset(ddPBedW);;
+        Reset(txtPAbschnitt)
     );;
     Set(varIsLoading; false)
     )

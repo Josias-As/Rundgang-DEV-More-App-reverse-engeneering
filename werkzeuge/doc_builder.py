@@ -61,7 +61,7 @@ def main():
         for name, typ in cols.items():
             if liste == "RG_Pruefpunkte" and name in ("Foto", "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID"):
                 continue
-            z.append("| %s | %s | %s |" % (liste, name, {"Text": "Eine Textzeile", "Zahl": "Zahl, 0 Dezimalstellen"}[typ]))
+            z.append("| %s | %s | %s |" % (liste, name, {"Text": "Eine Textzeile", "Zahl": "Zahl, 0 Dezimalstellen", "Ja/Nein": "Ja/Nein, Standard Nein", "Auswahl": "Auswahl"}[typ]))
     z += ["", "Empfohlen (für später, mehr als 5000 Zeilen): in `RG_Kategorien` und `RG_Pruefpunkte` die Spalte **RundgangID** indizieren (Listeneinstellungen → Indizierte Spalten).", "",
           "## 5. Schritt B1 – App anlegen", "",
           "1. make.powerapps.com → gleiche Umgebung wie „Rundgang DEV“ → **Erstellen → Leere App → Leere Canvas-App** → Name **Rundgang Builder**, Format **Tablet** → Erstellen.",

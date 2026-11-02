@@ -30,6 +30,8 @@ MUTATIONEN = [
     ("Bildschirm unbekannt", "btnLiPlan", "OnSelect", lambda f: f.replace("Navigate(scrPlan", "Navigate(scrPlaene", 1), "Bildschirm unbekannt"),
     ("IfError mit Set als Wert (02.11.)", "btnLiVerwerfen", "OnSelect",
      lambda f: f.replace("If(!varPatchFehler, If(IsError(Patch(", "If(!varPatchFehler, IfError((Patch(", 1), "als Wert"),
+    ("Label zu schmal (Innenabstand, 02.11.)", "lblPlAb", "Size", lambda f: "13", "FEHLER Label"),
+    ("Abschnitt fehlt in der Kopie", "tmrArbeit", "OnTimerEnd", lambda f: f.replace(', Abschnitt: Coalesce(q.Abschnitt, "")', "", 1), "Abschnitt"),
 ]
 
 
@@ -44,6 +46,8 @@ def main():
         c.props[prop] = mut(alt)
         try:
             f, z, _, _ = builder.pruefen(app_ref)
+            f3, z3 = builder.pruefe_label_auto()
+            f, z = f + f3, z + z3
         except Exception as e:
             f, z = 1, ["Ausnahme: %s" % e]
         c.props[prop] = alt

@@ -5,7 +5,7 @@ Stand: 30.10.2026 · erzeugt mit `werkzeuge/builder.py` (Formeln und Bildschirme
 ## Kurzfassung
 
 - **Neue Canvas-App „Rundgang Builder“** (Tablet-Format quer, 1366 × 768, für den PC gedacht) mit drei Bildschirmen: **Übersicht** (alle Rundgänge), **Editor** (Gliederung · Bearbeiten · Vorschau und Prüfung) und **Plan**.
-- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 229 Steuerelemente, 3228 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
+- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 236 Steuerelemente, 3318 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
 - **Die Rundgang-App wird nicht geändert** (außer Paket 7, das vorher eingefügt sein muss). Der Builder schreibt nur Daten, die die Rundgang-App schon richtig liest.
 - **Fassungen:** Ein aktiver Rundgang wird nie direkt geändert. „Bearbeiten“ legt einen Entwurf (neue Fassung) an. „Aktivieren“ schaltet die Bereiche der alten Fassung aus und die der neuen an. Rundgang-Nummer, Plan und Auswertung bleiben gleich. Laufende Rundgänge von heute werden mit der alten Fassung beendet.
 - **Vorlagen** sind ein eigener Rundgang „Vorlagen (Builder)“ mit 10 Startvorlagen; „Aus Vorlage holen“ kopiert Prüfpunkte, Kategorien oder ganze Bereiche – auch aus anderen Rundgängen.
@@ -47,12 +47,14 @@ Nur Spalten hinzufügen, nichts umbenennen. Name **genau so** (intern = Anzeigen
 | RG_Rundgaenge | EntwurfVon | Eine Textzeile |
 | RG_Bereiche | Fassung | Zahl, 0 Dezimalstellen |
 | RG_Bereiche | QuelleID | Zahl, 0 Dezimalstellen |
+| RG_Bereiche | Ausblenden | Ja/Nein, Standard Nein |
 | RG_Kategorien | RundgangID | Zahl, 0 Dezimalstellen |
 | RG_Kategorien | Fassung | Zahl, 0 Dezimalstellen |
 | RG_Kategorien | QuelleID | Zahl, 0 Dezimalstellen |
 | RG_Pruefpunkte | RundgangID | Zahl, 0 Dezimalstellen |
 | RG_Pruefpunkte | Fassung | Zahl, 0 Dezimalstellen |
 | RG_Pruefpunkte | QuelleID | Zahl, 0 Dezimalstellen |
+| RG_Pruefpunkte | Abschnitt | Eine Textzeile |
 
 Empfohlen (für später, mehr als 5000 Zeilen): in `RG_Kategorien` und `RG_Pruefpunkte` die Spalte **RundgangID** indizieren (Listeneinstellungen → Indizierte Spalten).
 

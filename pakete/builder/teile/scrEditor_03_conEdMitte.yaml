@@ -251,19 +251,89 @@
                   Width: =528
                   X: =0
                   Y: =20
+            - lblBZeigen:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Name für den Prüfer"
+                  Width: =528
+                  X: =0
+                  Y: =72
+            - galBZeigen:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Bereichsname zeigen"
+                  Height: =36
+                  Items: |-
+                    =Table({W: "zeigen", N: "zeigen"}, {W: "aus", N: "ausblenden"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =36
+                  Width: =300
+                  WrapCount: =2
+                  X: =0
+                  Y: =92
+                Children:
+                  - btnBZeigen:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), clrPrimaerHell, clrKarte)
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
+                        Fill: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =32
+                        HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false), "aus", "zeigen"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: |-
+                          =If((ThisItem.W = "aus") <> Coalesce(LookUp(colB, ID = varAuswahlID).Ausblenden, false),
+                              If(varSchreibbar && varAuswahlEbene = 1,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Ausblenden: ThisItem.W = "aus"}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colB, LookUp(colB, ID = varAuswahlID), LookUp(RG_Bereiche, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
             - lblBInfo:
                 Control: Label@2.5.1
                 Properties:
                   Color: =clrTextGrau
                   Font: =Font.'Segoe UI'
-                  Height: =120
+                  Height: =180
                   Size: =13
                   Text: |-
-                    ="Enthält " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkte." & Char(10) & Char(10) & "Ein Bereich ist eine Überschrift im Rundgang (z. B. „Lagerhalle“). Darin liegen die Kategorien. Neue Kategorie: links „+ Kategorie“."
+                    ="Enthält " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkte." & Char(10) & Char(10) & "Ein Bereich ist eine Überschrift im Rundgang (z. B. „Lagerhalle“). Darin liegen die Kategorien. Neue Kategorie: links „+ Kategorie“." & Char(10) & Char(10) & "„ausblenden“: Der Prüfer sieht nur die Kategorien. Sinnvoll, wenn der Rundgang nur einen Bereich hat."
                   VerticalAlign: =VerticalAlign.Top
                   Width: =528
                   X: =0
-                  Y: =76
+                  Y: =140
       - conEdK:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
@@ -383,7 +453,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW)
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt)
                         ))
                     )
                   PaddingLeft: =10
@@ -1253,7 +1324,7 @@
                         Height: =20
                         Size: =12
                         Text: ="Gehört zur Kategorie"
-                        Width: =528
+                        Width: =340
                         X: =0
                         Y: =194
                   - ddPKategorie:
@@ -1308,7 +1379,8 @@
                                   Reset(txtPHinweis);
                                   Reset(ddPKategorie);
                                   Reset(ddPBedA);
-                                  Reset(ddPBedW)
+                                  Reset(ddPBedW);
+                                  Reset(txtPAbschnitt)
                               ))
                           )
                         PaddingLeft: =10
@@ -1317,6 +1389,52 @@
                         SelectionColor: =Color.White
                         SelectionFill: =clrPrimaer
                         Size: =14
-                        Width: =528
+                        Width: =340
                         X: =0
+                        Y: =214
+                  - lblPAbschnitt:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =20
+                        Size: =12
+                        Text: ="Abschnitt (optional)"
+                        Width: =176
+                        X: =352
+                        Y: =194
+                  - txtPAbschnitt:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: ="Abschnitt innerhalb der Kategorie"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        Default: =Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, "")
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                        Fill: =clrKarte
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HintText: ="z. B. Kompressor 1"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, "")),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Abschnitt: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        Size: =14
+                        Width: =176
+                        X: =352
                         Y: =214

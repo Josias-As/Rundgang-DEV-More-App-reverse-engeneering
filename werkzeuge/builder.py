@@ -33,11 +33,11 @@ EDIT = "If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)"
 BTN_DM = "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)"
 NEU_SPALTEN = {
     "RG_Rundgaenge": {"Status": "Text", "Fassung": "Zahl", "EntwurfFassung": "Zahl", "EntwurfVon": "Text"},
-    "RG_Bereiche": {"Fassung": "Zahl", "QuelleID": "Zahl"},
+    "RG_Bereiche": {"Fassung": "Zahl", "QuelleID": "Zahl", "Ausblenden": "Ja/Nein"},
     "RG_Kategorien": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl"},
     "RG_Pruefpunkte": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl",
                        "Foto": "Auswahl", "KommentarPflicht": "Ja/Nein", "Grenzmodus": "Auswahl",
-                       "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl"},
+                       "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
 QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder"]
@@ -101,7 +101,7 @@ def sel(e, i, b, k):
     """Auswahl in der Gliederung setzen und Eingaben zurücksetzen."""
     return ("Set(varAuswahlEbene, {e});\nSet(varAuswahlID, {i});\nSet(varCtxB, {b});\nSet(varCtxK, {k});\nSet(varFrage, \"\");\n"
             "Reset(txtBName);\nReset(txtKName);\nReset(ddKBereich);\nReset(txtPFrage);\nReset(txtPEinheit);\nReset(txtPMin);\n"
-            "Reset(txtPMax);\nReset(txtPWerte);\nReset(txtPHinweis);\nReset(ddPKategorie);\nReset(ddPBedA);\nReset(ddPBedW)").format(e=e, i=i, b=b, k=k)
+            "Reset(txtPMax);\nReset(txtPWerte);\nReset(txtPHinweis);\nReset(ddPKategorie);\nReset(ddPBedA);\nReset(ddPBedW);\nReset(txtPAbschnitt)").format(e=e, i=i, b=b, k=k)
 
 
 def patch_feld(ds, col, felder, idx="varAuswahlID"):
@@ -139,7 +139,7 @@ ORD = "RgReihenfolge * 1000000 + ID"
 
 NEUER_PUNKT = ('Aktiv: true, QuelleID: 0, Eingabetyp: {{Value: {typ}}}, Pflicht: {pfl}, Auswahlwerte: "", Einheit: "", Hinweis: "", '
                'FotoMoeglich: false, Foto: {{Value: "Aus"}}, KommentarPflicht: false, Grenzmodus: {{Value: "Mangel"}}, '
-               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0')
+               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}')
 
 
 def quelle_laden(s):
@@ -169,13 +169,13 @@ def baum_items(b, k, p, nur_offen):
     return ("Sort(\n"
             "    Ungroup(\n"
             "        Table(\n"
-            "            {{T: ForAll({b} As b, {{Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: \"\", "
+            "            {{T: ForAll({b} As b, {{Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: If(Coalesce(b.Ausblenden, false), \"ausgeblendet\", \"\"), "
             "Schl: Text(b.RgReihenfolge, \"000000\") & Text(b.ID, \"000000\")}})}},\n"
             "            {{T: ForAll({k} As k, With({{b: LookUp({b} As b1, b1.ID = k.BereichID)}}, {{Ebene: 2, ID: k.ID, BerID: k.BereichID, KatID: k.ID, Titel: k.Title, "
             "Info: Text(CountRows(Filter({p} As p1, p1.KategorieID = k.ID))), "
             "Schl: Text(b.RgReihenfolge, \"000000\") & Text(b.ID, \"000000\") & Text(k.RgReihenfolge, \"000000\") & Text(k.ID, \"000000\")}}))}},\n"
             "            {{T: ForAll({pf} As p, With({{k: LookUp({k} As k1, k1.ID = p.KategorieID)}}, With({{b: LookUp({b} As b2, b2.ID = k.BereichID)}}, "
-            "{{Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: p.Title, Info: fnTypKurz(p.Eingabetyp.Value), "
+            "{{Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: If(Trim(Coalesce(p.Abschnitt, \"\")) = \"\", p.Title, Trim(p.Abschnitt) & \" › \" & p.Title), Info: fnTypKurz(p.Eingabetyp.Value), "
             "Schl: Text(b.RgReihenfolge, \"000000\") & Text(b.ID, \"000000\") & Text(k.RgReihenfolge, \"000000\") & Text(k.ID, \"000000\") & "
             "Text(p.RgReihenfolge, \"000000\") & Text(p.ID, \"000000\")}})))}}\n"
             "        ),\n"
@@ -283,7 +283,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
             ForAll(Sequence(CountRows(qs)) As i,
                 With({q: Index(qs, i.Value)},
                     {Alt: q.ID,
-                     Neu: IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: Left(q.Title & varKopieZusatz, 255), RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(colB, RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: varZielBAktiv, QuelleID: q.ID}).ID, 0)}
+                     Neu: IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: Left(q.Title & varKopieZusatz, 255), RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(colB, RgReihenfolge), 0) + i.Value * 10), Hinweis: q.Hinweis, Aktiv: varZielBAktiv, QuelleID: q.ID, Ausblenden: Coalesce(q.Ausblenden, false)}).ID, 0)}
                 )
             )
         )
@@ -306,7 +306,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0)}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, "")}).ID, 0))}
                     )
                 )
             )
@@ -467,6 +467,9 @@ REGELN = [
     + P_REGEL("Hinweis", '"„" & p.Title & "“: „Foto Pflicht bei Mangel“ wirkt nur bei i.O./n.i.O. und Zahl."') + ')',
     'ForAll(Filter(colP As p, CountRows(Filter(colP As q, q.KategorieID = p.KategorieID && Lower(Trim(q.Title)) = Lower(Trim(p.Title)))) > 1) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“ steht in der Kategorie doppelt."') + ')',
+    'ForAll(Filter(colP As p, Trim(Coalesce(p.Abschnitt, "")) <> "" && With({v: First(Sort(Filter(colP As q, q.KategorieID = p.KategorieID && q.RgReihenfolge * 1000000 + q.ID < p.RgReihenfolge * 1000000 + p.ID), RgReihenfolge * 1000000 + ID, SortOrder.Descending))}, '
+    '!IsBlank(v) && Lower(Trim(Coalesce(v.Abschnitt, ""))) <> Lower(Trim(p.Abschnitt))) && CountRows(Filter(colP As q, q.KategorieID = p.KategorieID && q.RgReihenfolge * 1000000 + q.ID < p.RgReihenfolge * 1000000 + p.ID && Lower(Trim(Coalesce(q.Abschnitt, ""))) = Lower(Trim(p.Abschnitt)))) > 0) As p, '
+    + P_REGEL("Hinweis", '"Abschnitt „" & Trim(p.Abschnitt) & "“ ist unterbrochen: Die Fragen stehen nicht zusammen (bei „" & p.Title & "“). Mit ↑ ↓ zusammenschieben."') + ')',
     'ForAll(Filter(colP As p, p.Title = "Neue Frage") As p, ' + P_REGEL("Hinweis", '"Eine Frage heißt noch „Neue Frage“."') + ')',
     'ForAll(Filter(colK As k, CountRows(Filter(colP As p, p.KategorieID = k.ID)) > 30) As k, '
     + regel("Hinweis", 2, "k.ID", "k.ID", "k.BereichID", '"Kategorie „" & k.Title & "“ hat über 30 Prüfpunkte (lange Seite für den Prüfer)."') + ')',
@@ -486,7 +489,8 @@ P_GEAENDERT = ('p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coales
                'Coalesce(p.Hinweis, "") <> Coalesce(a.Hinweis, "") || fnFotoWert(p.Foto.Value, Coalesce(p.FotoMoeglich, false)) <> fnFotoWert(a.Foto.Value, Coalesce(a.FotoMoeglich, false)) || '
                'Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || '
                'Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || '
-               'Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID')
+               'Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || '
+               'Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, ""))')
 AKT_ITEMS = ('Ungroup(\n    Table(\n'
              '        {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},\n'
              '        {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (' + P_GEAENDERT + '))) As p, {Art: "geändert", Text: p.Title})},\n'
@@ -910,7 +914,7 @@ def baum_zeilen(prefix, gewaehlt, onselect, info, fehler):
     return kinder
 
 
-GL_INFO = 'If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")'
+GL_INFO = 'If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Info)'
 
 
 def neu_eintrag(ds, col, felder, ebene, b, k, fokus, bedingung, meldung):
@@ -931,14 +935,14 @@ def neu_eintrag(ds, col, felder, ebene, b, k, fokus, bedingung, meldung):
 
 
 NEU_B = neu_eintrag("RG_Bereiche", "colB",
-                    'Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0',
+                    'Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0, Ausblenden: false',
                     "1", "varNeuID", "0", "txtBName", "false", "")
 NEU_K = neu_eintrag("RG_Kategorien", "colK",
                     'Title: "Neue Kategorie", BereichID: varCtxB, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colK, BereichID = varCtxB), RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: true, QuelleID: 0',
                     "2", "varCtxB", "varNeuID", "txtKName", "varCtxB = 0", "Links zuerst einen Bereich antippen.")
 NEU_P = neu_eintrag("RG_Pruefpunkte", "colP",
                     'Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, '
-                    + NEUER_PUNKT.format(typ='"IONIO"', pfl="true"),
+                    + NEUER_PUNKT.format(typ='"IONIO"', pfl="true", abs='If(varAuswahlEbene = 3 && ' + CUR + '.KategorieID = varCtxK, Coalesce(' + CUR + '.Abschnitt, ""), "")'),
                     "3", "varCtxB", "varCtxK", "txtPFrage", "varCtxK = 0", "Links zuerst eine Kategorie antippen.")
 
 
@@ -1148,10 +1152,14 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         C("imgPBild", "Image@2.2.3", {"X": "484", "Y": "144", "Width": "44", "Height": "44", "ImagePosition": "ImagePosition.Fill",
                                       "AccessibleLabel": '"Gewähltes Beispielbild"',
                                       "Image": 'If(varAuswahlEbene = 3 && Coalesce(%s.HinweisBildID, 0) > 0, LookUp(RG_Hinweisbilder, ID = %s.HinweisBildID).Thumbnail.Small)' % (CUR, CUR)}),
-        lbl("lblPKat", '"Gehört zur Kategorie"', "0", "194", "528", "20", size=12, color="clrTextGrau"),
+        lbl("lblPKat", '"Gehört zur Kategorie"', "0", "194", "340", "20", size=12, color="clrTextGrau"),
         dd("ddPKategorie", KAT_ITEMS, "N",
            'With({k: LookUp(colK, ID = %s.KategorieID)}, ' % CUR + KAT_N("k") + ')',
-           P_VERSCHIEBEN, "0", "214", "528", "36", '"Kategorie (verschieben)"'),
+           P_VERSCHIEBEN, "0", "214", "340", "36", '"Kategorie (verschieben)"'),
+        lbl("lblPAbschnitt", '"Abschnitt (optional)"', "352", "194", "176", "20", size=12, color="clrTextGrau"),
+        txt("txtPAbschnitt", 'Coalesce(%s.Abschnitt, "")' % CUR,
+            'If(Trim(Self.Text) <> Trim(Coalesce(%s.Abschnitt, "")),\n    %s\n)' % (CUR, ind(PP('{Abschnitt: Left(Trim(Self.Text), 255)}'), 4)),
+            "352", "214", "176", "36", '"z. B. Kompressor 1"', '"Abschnitt innerhalb der Kategorie"'),
     ]),
 ])
 
@@ -1160,9 +1168,14 @@ ed_b = con("conEdB", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     txt("txtBName", 'Coalesce(%s.Title, "")' % CURB,
         'If(Trim(Self.Text) = "",\n    Reset(txtBName),\n    Self.Text <> %s.Title,\n    %s\n)' % (CURB, ind(patch_feld("RG_Bereiche", "colB", '{Title: Left(Trim(Self.Text), 255)}'), 4)),
         "0", "20", "528", "40", '"z. B. Lagerhalle"', '"Name des Bereichs"'),
+    lbl("lblBZeigen", '"Name für den Prüfer"', "0", "72", "528", "20", size=12, color="clrTextGrau"),
+    optionen("galBZeigen", 'Table({W: "zeigen", N: "zeigen"}, {W: "aus", N: "ausblenden"})', 'If(Coalesce(%s.Ausblenden, false), "aus", "zeigen")' % CURB,
+             'If((ThisItem.W = "aus") <> Coalesce(%s.Ausblenden, false),\n    %s\n)' % (CURB, ind(patch_feld("RG_Bereiche", "colB", '{Ausblenden: ThisItem.W = "aus"}'), 4)),
+             "0", "92", "300", 2, '"Bereichsname zeigen"', h=36, size=13),
     lbl("lblBInfo", '"Enthält " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkte." & Char(10) & Char(10) & '
-        '"Ein Bereich ist eine Überschrift im Rundgang (z. B. „Lagerhalle“). Darin liegen die Kategorien. Neue Kategorie: links „+ Kategorie“."',
-        "0", "76", "528", "120", size=13, color="clrTextGrau", VerticalAlign="VerticalAlign.Top"),
+        '"Ein Bereich ist eine Überschrift im Rundgang (z. B. „Lagerhalle“). Darin liegen die Kategorien. Neue Kategorie: links „+ Kategorie“." & Char(10) & Char(10) & '
+        '"„ausblenden“: Der Prüfer sieht nur die Kategorien. Sinnvoll, wenn der Rundgang nur einen Bereich hat."',
+        "0", "140", "528", "180", size=13, color="clrTextGrau", VerticalAlign="VerticalAlign.Top"),
 ])
 
 ed_k = con("conEdK", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.Height - 56", "Fill": "clrHintergrund", "Visible": "varAuswahlEbene = 2"}, [
@@ -1233,7 +1246,7 @@ ed_rechts = con("conEdRechts", {"X": "940", "Y": "64", "Width": "Parent.Width - 
     lbl("lblVsTitel", 'Switch(varAuswahlEbene, 3, "Vorschau – so sieht es der Prüfer", 2, "Diese Seite enthält", 1, "Dieser Bereich enthält", "Vorschau")',
         "16", "6", "Parent.Width - 32", "30", size=14, bold=True),
     vs_karte,
-    lbl("lblVsListe", 'If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & p.Title & "  (" & fnTypName(p.Eingabetyp.Value) & If(Coalesce(p.Pflicht, false), ", Pflicht", "") & If(Coalesce(p.BedingungPunkt, 0) <> 0, ", bedingt", "") & ")", Char(10)), '
+    lbl("lblVsListe", 'If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & If(Trim(Coalesce(p.Abschnitt, "")) = "", "", Trim(p.Abschnitt) & " › ") & p.Title & "  (" & fnTypName(p.Eingabetyp.Value) & If(Coalesce(p.Pflicht, false), ", Pflicht", "") & If(Coalesce(p.BedingungPunkt, 0) <> 0, ", bedingt", "") & ")", Char(10)), '
         'varAuswahlEbene = 1, Concat(Sort(Filter(colK, BereichID = varAuswahlID), RgReihenfolge * 1000000 + ID) As k, "• " & k.Title & "  (" & CountRows(Filter(colP, KategorieID = k.ID)) & " Prüfpunkte)", Char(10)), '
         '"Links etwas antippen.")',
         "16", "40", "Parent.Width - 32", "300", size=13, VerticalAlign="VerticalAlign.Top", Overflow="Overflow.Scroll",
@@ -1254,7 +1267,7 @@ ed_rechts = con("conEdRechts", {"X": "940", "Y": "64", "Width": "Parent.Width - 
 ed_links = con("conEdGl", {"X": "0", "Y": "64", "Width": "380", "Height": "Parent.Height - 64", "Fill": "clrKarte",
                            "BorderColor": "clrRahmen", "BorderThickness": "1"}, [
     lbl("lblGlTitel", '"Gliederung"', "16", "6", "200", "28", size=15, bold=True),
-    lbl("lblGlHilfe", '"Antippen zum Bearbeiten. Prüfpunkte erscheinen unter der gewählten Kategorie."', "16", "32", "348", "34", size=11, color="clrTextGrau"),
+    lbl("lblGlHilfe", '"Antippen zum Bearbeiten. Prüfpunkte erscheinen unter der gewählten Kategorie."', "16", "32", "348", "36", size=11, color="clrTextGrau"),
     gal("galGl", baum_items("colB", "colK", "colP", True), "0", "68", "Parent.Width", "Parent.Height - 68 - If(varSchreibbar, 108, 0)", 40,
         baum_zeilen("Gl", GL_GEWAEHLT, GL_SELECT, GL_INFO, GL_FEHLER), '"Gliederung des Rundgangs"'),
     con("conGlFuss", {"X": "0", "Y": "Parent.Height - 108", "Width": "Parent.Width", "Height": "108", "Fill": "clrKarte", "Visible": "varSchreibbar"}, [
@@ -1373,7 +1386,7 @@ con_holen = overlay("conHolen", "varHolenOffen", 920, 640, [
                     "Set(varHolenEbene, ThisItem.Ebene);\nSet(varHolenID, ThisItem.ID)", GL_INFO, None),
         '"Bausteine zum Übernehmen"'),
     lbl("lblHolenLeer", '"Hier ist nichts. Oben eine andere Quelle wählen. Vorlagen legst du in der Übersicht mit „Vorlagen bearbeiten“ an."',
-        "24", "150", "872", "40", size=13, color="clrTextGrau", Visible="IsEmpty(galHolen.AllItems)"),
+        "24", "150", "872", "48", size=13, color="clrTextGrau", Visible="IsEmpty(galHolen.AllItems)"),
     btn("btnHolenSchliessen", '"Schließen"', "24", "568", "180", "48", "Set(varHolenOffen, false)", art="sekundaer"),
     btn("btnHolenUebernehmen", 'Switch(varHolenEbene, 1, "Bereich übernehmen", 2, "Kategorie übernehmen", 3, "Prüfpunkt übernehmen", "Übernehmen")',
         "636", "568", "260", "48", HOLEN, DisplayMode="If(varIsLoading || varHolenID = 0, DisplayMode.Disabled, DisplayMode.Edit)"),
@@ -1394,7 +1407,7 @@ MEHR_ANLEGEN = ("If(varSchreibbar && " + FREI + ",\n"
                 "            With({basis: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0)},\n"
                 "                ForAll(Sequence(CountRows(colMehr)) As i,\n"
                 "                    {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, "
-                + NEUER_PUNKT.format(typ="varMehrTyp", pfl="varMehrPflicht") + "}).ID, 0)}\n"
+                + NEUER_PUNKT.format(typ="varMehrTyp", pfl="varMehrPflicht", abs="Left(Trim(txtMehrAbschnitt.Text), 255)") + "}).ID, 0)}\n"
                 "                )\n"
                 "            )\n"
                 "        );\n"
@@ -1403,13 +1416,14 @@ MEHR_ANLEGEN = ("If(varSchreibbar && " + FREI + ",\n"
                 "            Notify(CountRows(Filter(colMehrErg, Neu = 0)) & \" Fragen konnten nicht angelegt werden. Bitte die Gliederung prüfen.\", NotificationType.Error),\n"
                 "            Notify(CountRows(colMehrErg) & \" Prüfpunkte angelegt.\", NotificationType.Success);\n"
                 "            Reset(txtMehr);\n"
+                "            Reset(txtMehrAbschnitt);\n"
                 "            Set(varMehrereOffen, false)\n"
                 "        );\n"
                 "        Set(varIsLoading, false)\n"
                 "    )\n"
                 ")")
 con_mehr = overlay("conMehr", "varMehrereOffen", 660, 600, [
-    lbl("lblMehrHilfe", '"Eine Frage pro Zeile. Du kannst auch eine Spalte aus Excel hineinkopieren."', "24", "64", "612", "22", size=13, color="clrTextGrau"),
+    lbl("lblMehrHilfe", '"Eine Frage pro Zeile – auch eine Spalte aus Excel einfügen."', "24", "64", "612", "22", size=13, color="clrTextGrau"),
     txt("txtMehr", '""', "false", "24", "90", "612", "250", '"Lager sauber?" & Char(10) & "Regale beschriftet?" & Char(10) & "Fluchtweg frei?"', '"Fragen, eine pro Zeile"',
         multi=True, DisplayMode="DisplayMode.Edit"),
     lbl("lblMehrTyp", '"Art für alle"', "24", "348", "300", "20", size=12, color="clrTextGrau"),
@@ -1418,6 +1432,9 @@ con_mehr = overlay("conMehr", "varMehrereOffen", 660, 600, [
     lbl("lblMehrPfl", '"Antwort"', "24", "416", "300", "20", size=12, color="clrTextGrau"),
     optionen("galMehrPfl", 'Table({W: "ja", N: "Pflicht"}, {W: "nein", N: "freiwillig"})', 'If(varMehrPflicht, "ja", "nein")',
              'Set(varMehrPflicht, ThisItem.W = "ja")', "24", "436", "408", 2, '"Pflicht"', h=40, size=13, aktiv="DisplayMode.Edit"),
+    lbl("lblMehrAbschnitt", '"Abschnitt (optional)"', "448", "416", "188", "20", size=12, color="clrTextGrau"),
+    txt("txtMehrAbschnitt", '""', "false", "448", "436", "188", "36", '"z. B. Kompressor 1"', '"Abschnitt für alle neuen Fragen"',
+        DisplayMode="DisplayMode.Edit"),
     lbl("lblMehrZiel", '"Ziel: Kategorie „" & LookUp(colK, ID = varCtxK).Title & "“ (ans Ende). Alles Weitere stellst du danach je Prüfpunkt ein."',
         "24", "484", "612", "40", size=12, color="clrTextGrau"),
     btn("btnMehrAbbrechen", '"Abbrechen"', "24", "532", "180", "48", "Set(varMehrereOffen, false)", art="sekundaer"),
@@ -1488,11 +1505,11 @@ pl_karte = con("conPlKarte", dict({"Fill": "If(%s, clrKarte, clrGesperrtHell)" %
     dd("ddPlZyklus", ZYKLEN, "N", "fnZyklus(ThisItem.ZyklusWochen)",
        "If(!IsBlank(Self.Selected) && Self.Selected.W <> Coalesce(ThisItem.ZyklusWochen, 1),\n    " + ind(patch_plan('{ZyklusWochen: Self.Selected.W}'), 4) + "\n)",
        "204", "14", "190", "40", '"Rhythmus"', DisplayMode=BTN_DM),
-    lbl("lblPlAb", '"ab"', "400", "14", "26", "40", size=13, color="clrTextGrau"),
+    lbl("lblPlAb", '"ab"', "400", "14", "26", "40", size=10, color="clrTextGrau"),
     dp("dpPlStart", "ThisItem.StartMontag",
        "If(!IsBlank(Self.SelectedDate) && fnMontag(Self.SelectedDate) <> ThisItem.StartMontag,\n    " + ind(patch_plan('{StartMontag: fnMontag(Self.SelectedDate)}'), 4) + "\n)",
        "428", "14", "150", "40", '"Startwoche (es zählt der Montag)"'),
-    lbl("lblPlBis", '"bis"', "584", "14", "30", "40", size=13, color="clrTextGrau"),
+    lbl("lblPlBis", '"bis"', "584", "14", "30", "40", size=10, color="clrTextGrau"),
     dp("dpPlBis", "ThisItem.GueltigBis",
        "If(!IsBlank(Self.SelectedDate) && Self.SelectedDate <> ThisItem.GueltigBis,\n    " + ind(patch_plan('{GueltigBis: Self.SelectedDate}'), 4) + "\n)",
        "616", "14", "150", "40", '"Gültig bis (leer = unbegrenzt)"', InputTextPlaceholder='"unbegrenzt"'),
@@ -1525,14 +1542,14 @@ scr_plan = C("scrPlan", "Screen", {
         "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
     lbl("lblPlKopf1", '"Wochentag"', "40", "116", "180", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf2", '"Rhythmus"', "228", "116", "180", "24", size=12, color="clrTextGrau"),
-    lbl("lblPlKopf3", '"Startwoche (Montag)"', "452", "116", "170", "24", size=12, color="clrTextGrau"),
+    lbl("lblPlKopf3", '"Startwoche (Montag)"', "452", "116", "186", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf4", '"Gültig bis"', "640", "116", "150", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf5", '"Status"', "838", "116", "100", "24", size=12, color="clrTextGrau"),
     gal("galPl", "Sort(colPlanR, ID)", "24", "140", "934", "Parent.Height - 220", 72, [pl_karte], '"Planzeilen"'),
     lbl("lblPlLeer", '"Noch kein Plan. „+ Termin hinzufügen“ legt einen an (Montag, jede Woche)."', "24", "150", "934", "40",
         size=14, color="clrTextGrau", Visible="IsEmpty(colPlanR) && !varIsLoading"),
     btn("btnPlNeu", '"+ Termin hinzufügen"', "24", "Parent.Height - 68", "240", "48", PL_NEU),
-    con("conPlTermine", dict({"X": "982", "Y": "116", "Width": "Parent.Width - 1006", "Height": "Parent.Height - 140", "Fill": "clrKarte",
+    con("conPlTermine", dict({"X": "980", "Y": "90", "Width": "Parent.Width - 1006", "Height": "Parent.Height - 140", "Fill": "clrKarte",
                               "BorderColor": "clrRahmen", "BorderThickness": "1"}, **radius(8)), [
         lbl("lblPlTermineTitel", '"Nächste Termine"', "16", "8", "Parent.Width - 32", "32", size=15, bold=True),
         gal("galPlTermine", TERMINE, "16", "44", "Parent.Width - 32", "Parent.Height - 52", 34, [
@@ -1780,6 +1797,23 @@ def pruefen(app_ref):
     for c, _ in kontrollen:
         for k, v in c.props.items():
             props[c.name + "." + k] = v
+    # Datenvertrag (02.11.): jede inhaltliche Spalte muss beim Kopieren mitkommen und in der Änderungsliste stehen
+    p_spalten = ["Title", "Eingabetyp", "Pflicht", "Auswahlwerte", "Einheit", "MinWert", "MaxWert", "Hinweis", "FotoMoeglich", "Foto",
+                 "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID", "Abschnitt"]
+    kopie = props.get("tmrArbeit.OnTimerEnd", "")
+    m_p = re.search(r"Patch\(RG_Pruefpunkte, Defaults\(RG_Pruefpunkte\), \{(.*?)\}\)\.ID", kopie, re.S)
+    m_b = re.search(r"Patch\(RG_Bereiche, Defaults\(RG_Bereiche\), \{(.*?)\}\)\.ID", kopie, re.S)
+    for sp in p_spalten:
+        if not m_p or not re.search(r"\b" + sp + r"\s*:", m_p.group(1)):
+            fehler += 1
+            zeilen.append("FEHLER Datenvertrag: Spalte %s fehlt in der Kopie der Prüfpunkte (tmrArbeit)" % sp)
+        if sp not in ("BedingungPunkt", "FotoMoeglich") and "p." + sp not in props.get("galAkt.Items", ""):
+            fehler += 1
+            zeilen.append("FEHLER Datenvertrag: Spalte %s fehlt in der Änderungsliste (galAkt)" % sp)
+    for sp in ["Title", "Hinweis", "Ausblenden"]:
+        if not m_b or not re.search(r"\b" + sp + r"\s*:", m_b.group(1)):
+            fehler += 1
+            zeilen.append("FEHLER Datenvertrag: Spalte %s fehlt in der Kopie der Bereiche (tmrArbeit)" % sp)
     for k, v in props.items():
         if iferror_als_wert(v):
             fehler += 1
@@ -1931,6 +1965,29 @@ TEXTE = [
 ]
 
 
+def pruefe_label_auto():
+    """Alle Labels mit festem Text (02.11.): Breite minus Innenabstand 5 + 5 px, Zeilenhöhe 1,2 x Schrift (Josias: „ab“ brach um)."""
+    zeilen, fehler = [], 0
+    for s in SCREENS:
+        for c, _ in alle(s):
+            if not c.typ.startswith("Label"):
+                continue
+            m = re.fullmatch(r'"([^"]*)"', c.props.get("Text", ""))
+            w, h, size = c.props.get("Width", ""), c.props.get("Height", ""), c.props.get("Size", "13")
+            if not m or len(m.group(1)) < 2 or not (w.isdigit() and h.isdigit() and size.isdigit()):
+                continue
+            pad = int(c.props.get("PaddingLeft", "5")) + int(c.props.get("PaddingRight", "5"))
+            b = textbreite(m.group(1), int(size)) * 1.1
+            noetig = int(b // max(1, int(w) - pad)) + 1
+            moeglich = max(1, int(int(h) // (int(size) * 1.333 * 1.2)))
+            ok = noetig <= moeglich
+            fehler += not ok
+            if not ok:
+                zeilen.append("  FEHLER Label %-18s %4.0f px / %d px, %d Zeile(n), Platz für %d  %r" % (c.name, b, int(w) - pad, noetig, moeglich, m.group(1)))
+    zeilen.append("  Labels mit festem Text automatisch geprüft (Innenabstand 10 px): %d Fehler" % fehler)
+    return fehler, zeilen
+
+
 def pruefe_texte():
     zeilen, fehler = [], 0
     for ctl, text, size, breite, pad, zmax in TEXTE:
@@ -1955,8 +2012,9 @@ def main():
     app_ref = rg.App("2026-10-27_0909")
     fehler, zeilen, props, kontrollen = pruefen(app_ref)
     f2, z2 = pruefe_texte()
-    fehler += f2
-    zeilen += ["", "Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):"] + z2
+    f3, z3 = pruefe_label_auto()
+    fehler += f2 + f3
+    zeilen += ["", "Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):"] + z2 + z3
     zeilen += ["", "Abfragen auf SharePoint (Delegation nachlesen):"] + delegation(props)
     os.makedirs(AUS_PAKET, exist_ok=True)
     os.makedirs(AUS_ARB, exist_ok=True)

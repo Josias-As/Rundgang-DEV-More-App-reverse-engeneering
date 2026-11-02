@@ -10,4 +10,6 @@ Kommentar in Formel                      gefunden
 Feld nach Punkt falsch                   gefunden
 Bildschirm unbekannt                     gefunden
 IfError mit Set als Wert (02.11.)        gefunden
-Ergebnis: 11/11
+Label zu schmal (Innenabstand, 02.11.)   gefunden
+Abschnitt fehlt in der Kopie             gefunden
+Ergebnis: 13/13

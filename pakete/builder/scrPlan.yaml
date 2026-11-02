@@ -99,7 +99,7 @@ Screens:
             Height: =24
             Size: =12
             Text: ="Startwoche (Montag)"
-            Width: =170
+            Width: =186
             X: =452
             Y: =116
       - lblPlKopf4:
@@ -236,7 +236,7 @@ Screens:
                         Color: =clrTextGrau
                         Font: =Font.'Segoe UI'
                         Height: =40
-                        Size: =13
+                        Size: =10
                         Text: ="ab"
                         Width: =26
                         X: =400
@@ -274,7 +274,7 @@ Screens:
                         Color: =clrTextGrau
                         Font: =Font.'Segoe UI'
                         Height: =40
-                        Size: =13
+                        Size: =10
                         Text: ="bis"
                         Width: =30
                         X: =584
@@ -434,8 +434,8 @@ Screens:
             RadiusTopLeft: =8
             RadiusTopRight: =8
             Width: =Parent.Width - 1006
-            X: =982
-            Y: =116
+            X: =980
+            Y: =90
           Children:
             - lblPlTermineTitel:
                 Control: Label@2.5.1

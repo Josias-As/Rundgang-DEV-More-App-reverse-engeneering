@@ -27,7 +27,7 @@
           Properties:
             Color: =clrTextGrau
             Font: =Font.'Segoe UI'
-            Height: =34
+            Height: =36
             Size: =11
             Text: ="Antippen zum Bearbeiten. Prüfpunkte erscheinen unter der gewählten Kategorie."
             Width: =348
@@ -43,9 +43,9 @@
               =Sort(
                   Ungroup(
                       Table(
-                          {T: ForAll(colB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
+                          {T: ForAll(colB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: If(Coalesce(b.Ausblenden, false), "ausgeblendet", ""), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})},
                           {T: ForAll(colK As k, With({b: LookUp(colB As b1, b1.ID = k.BereichID)}, {Ebene: 2, ID: k.ID, BerID: k.BereichID, KatID: k.ID, Titel: k.Title, Info: Text(CountRows(Filter(colP As p1, p1.KategorieID = k.ID))), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")}))},
-                          {T: ForAll(Filter(colP, KategorieID = varCtxK) As p, With({k: LookUp(colK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: p.Title, Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
+                          {T: ForAll(Filter(colP, KategorieID = varCtxK) As p, With({k: LookUp(colK As k1, k1.ID = p.KategorieID)}, With({b: LookUp(colB As b2, b2.ID = k.BereichID)}, {Ebene: 3, ID: p.ID, BerID: k.BereichID, KatID: p.KategorieID, Titel: If(Trim(Coalesce(p.Abschnitt, "")) = "", p.Title, Trim(p.Abschnitt) & " › " & p.Title), Info: fnTypKurz(p.Eingabetyp.Value), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000") & Text(p.RgReihenfolge, "000000") & Text(p.ID, "000000")})))}
                       ),
                       T
                   ),
@@ -91,7 +91,7 @@
                   Font: =Font.'Segoe UI'
                   Height: =Parent.TemplateHeight
                   Size: =11
-                  Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+                  Text: =If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Info)
                   Width: =90
                   X: =Parent.TemplateWidth - 114
                   Y: =0
@@ -140,7 +140,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW),
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt),
                         ThisItem.Ebene = 2,
                             Set(varAuswahlEbene, 2);
                             Set(varAuswahlID, ThisItem.ID);
@@ -158,7 +159,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW),
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt),
                         ThisItem.Ebene = 1,
                             Set(varAuswahlEbene, 1);
                             Set(varAuswahlID, ThisItem.ID);
@@ -176,7 +178,8 @@
                             Reset(txtPHinweis);
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
-                            Reset(ddPBedW)
+                            Reset(ddPBedW);
+                            Reset(txtPAbschnitt)
                         )
                     )
                   PressedColor: =Color.White
@@ -226,7 +229,7 @@
                             false,
                             false,
                             Notify("", NotificationType.Warning),
-                            Set(varNeuID, IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0}).ID, 0));
+                            Set(varNeuID, IfError(Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Neuer Bereich", RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(colB, RgReihenfolge), 0) + 10, Hinweis: "", Aktiv: false, QuelleID: 0, Ausblenden: false}).ID, 0));
                             If(varNeuID = 0,
                                 Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
                                 Collect(colB, LookUp(RG_Bereiche, ID = varNeuID));
@@ -247,6 +250,7 @@
                                 Reset(ddPKategorie);
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
+                                Reset(txtPAbschnitt);
                                 SetFocus(txtBName)
                             )
                         )
@@ -307,6 +311,7 @@
                                 Reset(ddPKategorie);
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
+                                Reset(txtPAbschnitt);
                                 SetFocus(txtKName)
                             )
                         )
@@ -346,7 +351,7 @@
                             false,
                             varCtxK = 0,
                             Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
-                            Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0}).ID, 0));
+                            Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: If(varAuswahlEbene = 3 && LookUp(colP, ID = varAuswahlID).KategorieID = varCtxK, Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, ""), "")}).ID, 0));
                             If(varNeuID = 0,
                                 Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
                                 Collect(colP, LookUp(RG_Pruefpunkte, ID = varNeuID));
@@ -367,6 +372,7 @@
                                 Reset(ddPKategorie);
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
+                                Reset(txtPAbschnitt);
                                 SetFocus(txtPFrage)
                             )
                         )
