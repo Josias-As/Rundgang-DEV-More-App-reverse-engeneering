@@ -14,6 +14,7 @@ ENTPACKT = os.path.join(REPO, "arbeit", "_entpackt")
 EXPORTE = {
     "2026-10-27_0724": "quellen/2026-10-27_Export/RundgangApp_20261027072413.zip",
     "2026-10-27_0909": "quellen/2026-10-27_Export0909/frischerexport_20261027090933.zip",
+    "2026-11-02_1541": "quellen/2026-11-02_RundgangApp/6ec7b447-rundgangapp2.11.26_20261102154137.zip",
     "2026-11-02_Builder": "quellen/2026-11-02_Builder/09684788-neueversionbuilderapp2.11.26_20261102140349.zip",
 }
 

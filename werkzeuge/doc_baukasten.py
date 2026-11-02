@@ -143,7 +143,7 @@ def main():
     auto = open(os.path.join(ARB, "pruefung_auto.txt"), encoding="utf-8").read()
     logik = open(os.path.join(ARB, "logik_probe.txt"), encoding="utf-8").read()
     os.makedirs(AUS, exist_ok=True)
-    for i, p in enumerate(d["pakete"], start=1):
+    for i, p in enumerate(d["pakete"][:7], start=1):
         name = PAKET_TEXT[i]["datei"]
         open(os.path.join(AUS, "PAKET_%d_%s.md" % (i, name)), "w", encoding="utf-8").write(paket_doc(d, p, i) + "\n")
         open(os.path.join(AUS, "PRUEFUNG_%d_%s.md" % (i, name)), "w", encoding="utf-8").write(pruef_doc(d, p, i, auto, logik) + "\n")

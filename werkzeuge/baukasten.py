@@ -586,7 +586,271 @@ def paket7(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7]
+# ---------------------------------------------------------------- Paket 8 (Abschnitte, Bereich ausblenden) – App-Teil
+
+ABS_KOPF = ('ClearCollect(colAbsTmp, ShowColumns(Filter(colAntworten, !Inaktiv && Abschnitt <> ""), PruefpunktID, Reihenfolge, Abschnitt, BedID));\n'
+            'ForAll(colAbsTmp As t,\n'
+            '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = t.PruefpunktID),\n'
+            '        {AbsKopf: With({g: Filter(colAbsTmp As u, Lower(u.Abschnitt) = Lower(t.Abschnitt))},\n'
+            '            If(IsEmpty(Filter(g As u1, u1.BedID = 0)), t.Reihenfolge = Min(g, Reihenfolge), t.BedID = 0 && t.Reihenfolge = Min(Filter(g As u2, u2.BedID = 0), Reihenfolge)))}\n'
+            '    )\n'
+            ');\n')
+ABS_FRAGE = lambda p: 'If({p}.Abschnitt = "", "", {p}.Abschnitt & " › ") & {p}.Frage'.format(p=p)  # noqa: E731
+
+
+def paket8(st):
+    p = {"nr": 8, "props": [], "neu": []}
+    st.sp.append(("RG_Pruefpunkte", "Abschnitt", "Text"))
+    st.sp.append(("RG_Bereiche", "Ausblenden", "Ja/Nein"))
+
+    def onvisible(t):
+        t = rep(t, 'BildID: Coalesce(pp.HinweisBildID, 0), Inaktiv: false}',
+                'BildID: Coalesce(pp.HinweisBildID, 0), Abschnitt: Trim(Coalesce(Text(a.Abschnitt), "")), AbsKopf: false, Inaktiv: false}')
+        t = rep(t, "                     BildID: Coalesce(p.HinweisBildID, 0),\n",
+                "                     BildID: Coalesce(p.HinweisBildID, 0),\n                     Abschnitt: Trim(Coalesce(p.Abschnitt, \"\")),\n                     AbsKopf: false,\n")
+        t = rep(t, 'BildID: 0, Inaktiv: true}', 'BildID: 0, Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt), "")), AbsKopf: false, Inaktiv: true}')
+        t = rep(t, "Set(varSprungRec, First(", ABS_KOPF + "Set(varSprungRec, First(")
+        return t
+    aendern(st, p, "8.3", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "8.4", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "Einheit, Kommentar, Fotos, Warnung, Ausgeblendet), JSONFormat.Compact)",
+        "Einheit, Kommentar, Fotos, Warnung, Ausgeblendet, Abschnitt, AbsKopf), JSONFormat.Compact)"))
+    ganz(st, p, "8.5", "conKaKarte.Y", "If(ThisItem.AbsKopf, 52, 8)")
+    neues_control(st, p, "lblKaAbschnitt", "galKaPruefpunkte", "Label@2.5.1", {
+        "Color": "clrPrimaer", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "If(ThisItem.AbsKopf, 44, 0)",
+        "Size": "17", "Text": "ThisItem.Abschnitt", "Visible": "ThisItem.AbsKopf", "Width": "Parent.TemplateWidth - 56",
+        "X": "28", "Y": "8", "VerticalAlign": "VerticalAlign.Bottom"})
+    aendern(st, p, "8.6", "lblKaFehlend.Text", lambda t: rep(t, " As z, z.Frage & Switch(", " As z, " + ABS_FRAGE("z") + " & Switch("))
+    aendern(st, p, "8.7", "htmProtokoll.HtmlText", lambda t: rep(
+        t, """                "<tr style='border-bottom:1px solid #DADCE5;" & If(b = "NIO", "background:#FCE8E6;", "") & "'>" &""",
+        """                If(Coalesce(IfError(Boolean(a.Value.AbsKopf), false), false), "<tr><td colspan='3' style='padding:12px 8px 4px 8px;font-weight:600;color:#171496'>" & fnHtml(Text(a.Value.Abschnitt)) & "</td></tr>", "") &
+                "<tr style='border-bottom:1px solid #DADCE5;" & If(b = "NIO", "background:#FCE8E6;", "") & "'>" &"""))
+    aendern(st, p, "8.7", "htmProtokoll.HtmlText", lambda t: rep(
+        t, """fnHtml(e.BereichName) & " · " & fnHtml(e.PrueferName)""",
+        """If(e.BereichName = "", "", fnHtml(e.BereichName) & " · ") & fnHtml(e.PrueferName)"""))
+    aendern(st, p, "8.8", "btnRuAbschluss.OnSelect", lambda t: rep(
+        t, "Frage: Left(Text(n.Value.Frage), 255),",
+        'Frage: Left(If(Coalesce(Text(n.Value.Abschnitt), "") = "", "", Text(n.Value.Abschnitt) & " › ") & Text(n.Value.Frage), 255),'))
+    aendern(st, p, "8.9", "btnRgAktion.OnSelect", lambda t: rep(
+        t, "BName, LookUp(b As be3, be3.ID = BereichID).Title)",
+        'BName, If(Coalesce(LookUp(b As be3, be3.ID = BereichID).Ausblenden, false), "", LookUp(b As be4, be4.ID = BereichID).Title))'))
+    aendern(st, p, "8.10", "galRuKategorien.Items", lambda t: rep(
+        t, "ErsteImBereich, Position = Min(", 'ErsteImBereich, BereichName <> "" && Position = Min('))
+    aendern(st, p, "8.11", "lblKaUnter.Text", lambda t: rep(
+        t, 'varBereichName & "  ·  Kategorie " & varKatPos', 'If(varBereichName = "", "", varBereichName & "  ·  ") & "Kategorie " & varKatPos'))
+    return p
+
+
+# ---------------------------------------------------------------- Paket 9 (Rückfrage, kritischer Mangel, Ansprechpartner) – App-Teil
+
+def fnfehlt_erweitern(t):
+    """Jeden Aufruf fnFehlt(…)/fnFehltGrund(…) mit 12 Argumenten um das 13. Argument (kritisch, nicht bestätigt) ergänzen."""
+    s = rg.ausserhalb_strings(t)
+    if len(s) != len(t):
+        s = None
+    out, i = [], 0
+    for m in re.finditer(r"\bfnFehlt(?:Grund)?\(", t):
+        if m.start() < i:
+            continue
+        tiefe, j, args = 0, m.end() - 1, []
+        start = m.end()
+        for j in range(m.end() - 1, len(t)):
+            ch = t[j]
+            if ch == '"':
+                continue
+            if ch in "({[":
+                tiefe += 1
+            elif ch in ")}]":
+                tiefe -= 1
+                if tiefe == 0:
+                    args.append(t[start:j])
+                    break
+            elif ch == "," and tiefe == 1:
+                args.append(t[start:j])
+                start = j + 1
+        if len(args) != 12:
+            raise Abbruch("fnFehlt mit %d Argumenten" % len(args))
+        pref = args[0].strip().rsplit(".", 1)[0]
+        out.append(t[i:j] + ", %s.Kritisch && !%s.KritischOk" % (pref, pref))
+        i = j
+    out.append(t[i:])
+    return "".join(out)
+
+
+UDF_P9 = ('fnFehltGrund(typ: Text, pflicht: Boolean, bew: Text, wt: Text, wz: Number, kom: Text, foto: Text, fanz: Number, kpfl: Boolean, gmodus: Text, mi: Number, ma: Number, kritoffen: Boolean): Text = If(',
+          'fnFehlt(typ: Text, pflicht: Boolean, bew: Text, wt: Text, wz: Number, kom: Text, foto: Text, fanz: Number, kpfl: Boolean, gmodus: Text, mi: Number, ma: Number, kritoffen: Boolean): Boolean = fnFehltGrund(typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gmodus, mi, ma, kritoffen) <> "";')
+
+RUECK_R = "LookUp(colAntworten, PruefpunktID = varRueckPP)"
+KRIT_R = "LookUp(colAntworten, PruefpunktID = varKritPP)"
+NACH_NIO = ('If(ThisItem.Rueckfrage, Set(varRueckPP, ThisItem.PruefpunktID), ThisItem.Kritisch && !LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID).KritischOk, '
+            'Set(varKritPP, ThisItem.PruefpunktID))')
+
+
+def paket9(st):
+    p = {"nr": 9, "props": [], "neu": []}
+    st.sp.append(("RG_Ansprechpartner", "(neue Liste: Title, Name, Telefon, Hinweis, Allgemein, Aktiv)", "Liste"))
+    for name in ("Name", "Telefon", "Allgemein"):
+        st.sp.append(("RG_Ansprechpartner", name, "Spalte"))
+    for name, typ in (("Kritisch", "Ja/Nein"), ("KritischText", "Text"), ("Ansprechpartner", "Text"), ("Rueckfrage", "Ja/Nein"), ("RueckfrageText", "Text")):
+        st.sp.append(("RG_Pruefpunkte", name, typ))
+    st.neue_quellen.add("RG_Ansprechpartner")
+
+    def formulas(t):
+        t = rep(t, 'fnFehltGrund(typ: Text, pflicht: Boolean, bew: Text, wt: Text, wz: Number, kom: Text, foto: Text, fanz: Number, kpfl: Boolean, gmodus: Text, mi: Number, ma: Number): Text = If(',
+                UDF_P9[0])
+        t = rep(t, '    (foto = "Pflicht" || (foto = "BeiMangel" && bew = "NIO")) && fanz < 1, "Foto",\n',
+                '    (foto = "Pflicht" || (foto = "BeiMangel" && bew = "NIO")) && fanz < 1, "Foto",\n    kritoffen && bew = "NIO", "Kritisch",\n')
+        t = rep(t, 'fnFehlt(typ: Text, pflicht: Boolean, bew: Text, wt: Text, wz: Number, kom: Text, foto: Text, fanz: Number, kpfl: Boolean, gmodus: Text, mi: Number, ma: Number): Boolean = fnFehltGrund(typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gmodus, mi, ma) <> "";',
+                UDF_P9[1])
+        return t
+    aendern(st, p, "9.3", "App.Formulas", formulas)
+
+    def onvisible(t):
+        t = rep(t, "Set(varBildID, 0);\n", "Set(varBildID, 0);\nSet(varRueckPP, 0);\nSet(varKritPP, 0);\n")
+        t = rep(t, "    Set(varErgebnis, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK))\n",
+                "    Set(varErgebnis, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)),\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true))\n")
+        t = rep(t, 'AbsKopf: false, Inaktiv: false}',
+                'AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(a.Kritisch), false), false), KritischText: "", Ansprechpartner: "", Rueckfrage: false, RueckfrageText: "", '
+                'KritischOk: Coalesce(IfError(Boolean(a.KritischOk), false), false), KritischZeit: Coalesce(Text(a.KritischZeit), ""), Inaktiv: false}')
+        t = rep(t, "                     AbsKopf: false,\n",
+                "                     AbsKopf: false,\n"
+                "                     Kritisch: Coalesce(p.Kritisch, false),\n"
+                "                     KritischText: Coalesce(p.KritischText, \"\"),\n"
+                "                     Ansprechpartner: Coalesce(p.Ansprechpartner, \"\"),\n"
+                "                     Rueckfrage: Coalesce(p.Rueckfrage, false),\n"
+                "                     RueckfrageText: Coalesce(p.RueckfrageText, \"\"),\n"
+                "                     KritischOk: If(IsBlank(alt), false, Coalesce(IfError(Boolean(alt.Value.KritischOk), false), false)),\n"
+                "                     KritischZeit: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischZeit), \"\")),\n")
+        t = rep(t, 'AbsKopf: false, Inaktiv: true}',
+                'AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(o.Value.Kritisch), false), false), KritischText: "", Ansprechpartner: "", Rueckfrage: false, RueckfrageText: "", '
+                'KritischOk: Coalesce(IfError(Boolean(o.Value.KritischOk), false), false), KritischZeit: Coalesce(Text(o.Value.KritischZeit), ""), Inaktiv: true}')
+        return t
+    aendern(st, p, "9.4", "scrKategorie.OnVisible", onvisible)
+    ganz(st, p, "9.5", "btnKaNIO.OnSelect",
+         'With({neu: If(ThisItem.Bewertung = "NIO", "", "NIO")},\n'
+         '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {Bewertung: neu, KritischOk: false, KritischZeit: ""});\n'
+         '    If(neu = "NIO", ' + NACH_NIO + ')\n'
+         ');\n'
+         'Set(varGeaendert, true)')
+    ganz(st, p, "9.5", "txtKaZahl.OnChange",
+         'With({z: IfError(Value(Self.Text), Blank())},\n'
+         '    With({b: If(IsBlank(z), "", fnZahlBewertung(z, ThisItem.MinWert, ThisItem.MaxWert, ThisItem.Grenzmodus)), war: ThisItem.Bewertung = "NIO" && ThisItem.KritischOk},\n'
+         '        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertZahl: z, Bewertung: b, KritischOk: b = "NIO" && war, KritischZeit: If(b = "NIO" && war, ThisItem.KritischZeit, "")});\n'
+         '        If(b = "NIO", ' + NACH_NIO + ')\n'
+         '    )\n'
+         ');\n'
+         'Set(varGeaendert, true)')
+
+    def speichern(t):
+        t = rep(t, "Ausgeblendet, Abschnitt, AbsKopf), JSONFormat.Compact)", "Ausgeblendet, Abschnitt, AbsKopf, Kritisch, KritischOk, KritischZeit), JSONFormat.Compact)")
+        t = rep(t, "        Reset(galKaPruefpunkte),\n    !varIsLoading && Now() >= varSperreBis,",
+                "        If(varSprungRec.Kritisch && varSprungRec.Bewertung = \"NIO\" && !varSprungRec.KritischOk, Set(varKritPP, varSprungRec.PruefpunktID));\n"
+                "        Reset(galKaPruefpunkte),\n    !varIsLoading && Now() >= varSperreBis,")
+        return fnfehlt_erweitern(t)
+    aendern(st, p, "9.6", "btnKaSpeichern.OnSelect", speichern)
+    for key in ("lblKaFehlendAnzahl.Text", "conKaKarte.BorderColor", "conKaKarte.BorderThickness"):
+        aendern(st, p, "9.6", key, fnfehlt_erweitern)
+    aendern(st, p, "9.6", "lblKaFehlend.Text", lambda t: rep(fnfehlt_erweitern(t), '"Uhrzeit", " (Uhrzeit)", "")', '"Uhrzeit", " (Uhrzeit)", "Kritisch", " (kritisch: Bescheid bestätigen)", "")'))
+    aendern(st, p, "9.7", "htmProtokoll.HtmlText", lambda t: rep(
+        t, """                If(IsBlank(fo) || fo = "", "", "<br>" & Concat(""",
+        """                If(b = "NIO" && Coalesce(IfError(Boolean(a.Value.Kritisch), false), false), "<br><b style='color:#B3261E'>KRITISCH – " & If(Coalesce(IfError(Boolean(a.Value.KritischOk), false), false), "Bescheid gegeben, bestätigt von " & fnHtml(e.PrueferName) & " um " & fnHtml(Coalesce(Text(a.Value.KritischZeit), "")), "nicht bestätigt") & "</b>", "") &
+                If(IsBlank(fo) || fo = "", "", "<br>" & Concat("""))
+    aendern(st, p, "9.8", "btnRuAbschluss.OnSelect", lambda t: rep(
+        t, 'Kommentar: Coalesce(Text(n.Value.Kommentar), ""),',
+        'Kommentar: If(Coalesce(IfError(Boolean(n.Value.Kritisch), false), false), "KRITISCH – Bescheid gegeben " & Coalesce(Text(n.Value.KritischZeit), "") & ". ", "") & Coalesce(Text(n.Value.Kommentar), ""),'))
+
+    # Fenster Rückfrage
+    neues_control(st, p, "conKaRueck", "scrKategorie", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(0, 0, 0, 0.45)", "Height": "Parent.Height", "Visible": "varRueckPP > 0", "Width": "Parent.Width"})
+    neues_control(st, p, "btnKaRueckSperre", "conKaRueck", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Fill": "RGBA(0, 0, 0, 0)", "Height": "Parent.Height", "HoverFill": "RGBA(0, 0, 0, 0)",
+        "PressedFill": "RGBA(0, 0, 0, 0)", "Text": '""', "Width": "Parent.Width"})
+    neues_control(st, p, "conKaRueckKarte", "conKaRueck", "GroupContainer@1.5.0", {
+        "Fill": "clrKarte", "Height": "440", "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
+        "Width": "Parent.Width - 48", "X": "24", "Y": "(Parent.Height - Self.Height) / 2"})
+    neues_control(st, p, "lblKaRueckTitel", "conKaRueckKarte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "48", "Size": "21",
+        "Text": '"Ist das wirklich so?"', "Width": "Parent.Width - 48", "X": "24", "Y": "20"})
+    neues_control(st, p, "lblKaRueckFrage", "conKaRueckKarte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "Height": "96", "Size": "17", "VerticalAlign": "VerticalAlign.Top",
+        "Text": 'With({r: ' + RUECK_R + '}, r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL", Text(r.WertZahl) & " " & r.Einheit, "n.i.O."))',
+        "Width": "Parent.Width - 48", "X": "24", "Y": "76"})
+    neues_control(st, p, "lblKaRueckNormal", "conKaRueckKarte", "Label@2.5.1", {
+        "Color": "clrWarnung", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "120", "Size": "17", "VerticalAlign": "VerticalAlign.Top",
+        "Text": 'With({r: ' + RUECK_R + '}, If(Trim(r.RueckfrageText) <> "", r.RueckfrageText, r.Typ = "ZAHL" && (!IsBlank(r.MinWert) || !IsBlank(r.MaxWert)), '
+                '"Normalerweise: " & If(IsBlank(r.MinWert), "", "ab " & Text(r.MinWert) & " ") & If(IsBlank(r.MaxWert), "", "bis " & Text(r.MaxWert) & " ") & r.Einheit, '
+                '"Bitte noch einmal genau nachsehen."))',
+        "Width": "Parent.Width - 48", "X": "24", "Y": "180"})
+    neues_control(st, p, "btnKaRueckNein", "conKaRueckKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "Font": "Font.'Segoe UI'", "Height": "64",
+        "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
+        "OnSelect": 'Patch(colAntworten, ' + RUECK_R + ', {Bewertung: "", WertZahl: Blank(), KritischOk: false, KritischZeit: ""});\nSet(varRueckPP, 0);\nSet(varGeaendert, true)',
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10", "Size": "17",
+        "Text": '"Nein, korrigieren"', "Width": "(Parent.Width - 64) / 2", "X": "24", "Y": "Parent.Height - 88"})
+    neues_control(st, p, "btnKaRueckJa", "conKaRueckKarte", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Color": "Color.White", "Fill": "clrPrimaer", "Font": "Font.'Segoe UI'", "Height": "64",
+        "HoverFill": "ColorFade(clrPrimaer, -20%)", "PressedFill": "ColorFade(clrPrimaer, -35%)",
+        "OnSelect": 'With({r: ' + RUECK_R + '},\n    Set(varRueckPP, 0);\n    If(r.Kritisch && !r.KritischOk, Set(varKritPP, r.PruefpunktID))\n)',
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10", "Size": "17",
+        "Text": '"Ja, stimmt"', "Width": "(Parent.Width - 64) / 2", "X": "40 + (Parent.Width - 64) / 2", "Y": "Parent.Height - 88"})
+
+    # Fenster kritischer Mangel
+    kontakte = ('If(varKritPP > 0, Sort(Filter(colKontakte As k, Coalesce(k.Allgemein, false) || CountRows(Filter(Split(Coalesce(' + KRIT_R + '.Ansprechpartner, ""), ";") As s, '
+                'Trim(s.Value) = Text(k.ID))) > 0), If(Coalesce(Allgemein, false), 1, 0)), Filter(colKontakte, false))')
+    neues_control(st, p, "conKaKrit", "scrKategorie", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(179, 38, 30, 0.55)", "Height": "Parent.Height", "Visible": "varKritPP > 0", "Width": "Parent.Width"})
+    neues_control(st, p, "btnKaKritSperre", "conKaKrit", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Fill": "RGBA(0, 0, 0, 0)", "Height": "Parent.Height", "HoverFill": "RGBA(0, 0, 0, 0)",
+        "PressedFill": "RGBA(0, 0, 0, 0)", "Text": '""', "Width": "Parent.Width"})
+    neues_control(st, p, "conKaKritKarte", "conKaKrit", "GroupContainer@1.5.0", {
+        "BorderColor": "clrFehler", "BorderThickness": "4", "Fill": "clrKarte", "Height": "Min(Parent.Height - 48, 820)",
+        "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
+        "Width": "Parent.Width - 48", "X": "24", "Y": "(Parent.Height - Self.Height) / 2"})
+    neues_control(st, p, "lblKaKritTitel", "conKaKritKarte", "Label@2.5.1", {
+        "Align": "Align.Center", "Color": "Color.White", "Fill": "clrFehler", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold",
+        "Height": "72", "Size": "21", "Text": '"⚠ Kritischer Mangel – sofort melden"', "Width": "Parent.Width", "X": "0", "Y": "0"})
+    neues_control(st, p, "lblKaKritFrage", "conKaKritKarte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "64", "Size": "18", "VerticalAlign": "VerticalAlign.Top",
+        "Text": KRIT_R + ".Frage", "Width": "Parent.Width - 48", "X": "24", "Y": "88"})
+    neues_control(st, p, "lblKaKritText", "conKaKritKarte", "Label@2.5.1", {
+        "Color": "clrFehler", "Font": "Font.'Segoe UI'", "Height": "84", "Size": "17", "VerticalAlign": "VerticalAlign.Top",
+        "Text": 'Coalesce(' + KRIT_R + '.KritischText, "")', "Width": "Parent.Width - 48", "X": "24", "Y": "152"})
+    neues_control(st, p, "lblKaKritMelden", "conKaKritKarte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "32", "Size": "16",
+        "Text": '"Bitte jetzt Bescheid geben bei:"', "Width": "Parent.Width - 48", "X": "24", "Y": "244"})
+    neues_control(st, p, "galKaKritKontakte", "conKaKritKarte", "Gallery@2.15.0", {
+        "AccessibleLabel": '"Ansprechpartner"', "Height": "Parent.Height - 280 - 172", "Items": kontakte, "ShowScrollbar": "true",
+        "TemplatePadding": "0", "TemplateSize": "92", "Width": "Parent.Width - 48", "X": "24", "Y": "280"})
+    neues_control(st, p, "lblKaKritRolle", "galKaKritKontakte", "Label@2.5.1", {
+        "Color": "clrFehler", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "28", "Size": "15",
+        "Text": "ThisItem.Title", "Width": "Parent.TemplateWidth", "X": "0", "Y": "4"})
+    neues_control(st, p, "lblKaKritName", "galKaKritKontakte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "Height": "30", "Size": "17",
+        "Text": 'Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  ☎ " & ThisItem.Telefon)',
+        "Width": "Parent.TemplateWidth", "X": "0", "Y": "32"})
+    neues_control(st, p, "lblKaKritHinweis", "galKaKritKontakte", "Label@2.5.1", {
+        "Color": "clrTextGrau", "Font": "Font.'Segoe UI'", "Height": "26", "Size": "13", "Text": 'Coalesce(ThisItem.Hinweis, "")',
+        "Width": "Parent.TemplateWidth", "Wrap": "false", "X": "0", "Y": "62"})
+    neues_control(st, p, "lblKaKritLeer", "conKaKritKarte", "Label@2.5.1", {
+        "Color": "clrFehler", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "64", "Size": "16",
+        "Text": '"Keine Ansprechpartner hinterlegt. Bitte die Schichtleitung bzw. den Vorgesetzten informieren."',
+        "Visible": "IsEmpty(galKaKritKontakte.AllItems)", "Width": "Parent.Width - 48", "X": "24", "Y": "284"})
+    neues_control(st, p, "btnKaKritOk", "conKaKritKarte", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Color": "Color.White", "Fill": "clrFehler", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "68",
+        "HoverFill": "ColorFade(clrFehler, -15%)", "PressedFill": "ColorFade(clrFehler, -30%)",
+        "OnSelect": 'Patch(colAntworten, ' + KRIT_R + ', {KritischOk: true, KritischZeit: Text(Now(), "hh:mm")});\nSet(varKritPP, 0);\nSet(varGeaendert, true)',
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10", "Size": "19",
+        "Text": '"Ich habe Bescheid gegeben"', "Width": "Parent.Width - 48", "X": "24", "Y": "Parent.Height - 160"})
+    neues_control(st, p, "btnKaKritVersehen", "conKaKritKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrTextGrau", "BorderThickness": "1", "Color": "clrTextGrau", "Fill": "clrKarte", "Font": "Font.'Segoe UI'", "Height": "56",
+        "HoverColor": "clrText", "HoverFill": "clrHintergrund", "PressedColor": "clrText", "PressedFill": "clrHintergrund",
+        "OnSelect": 'Patch(colAntworten, ' + KRIT_R + ', {Bewertung: "", WertZahl: Blank(), KritischOk: false, KritischZeit: ""});\nSet(varKritPP, 0);\nSet(varGeaendert, true)',
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10", "Size": "15",
+        "Text": '"n.i.O. war ein Versehen – Antwort zurücknehmen"', "Width": "Parent.Width - 48", "X": "24", "Y": "Parent.Height - 80"})
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -599,7 +863,29 @@ Switch Max Min Sum RoundDown Mod Defaults User GUID Substitute StartsWith Color 
 Font FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOfWeek Weekday ISOWeekNum ImagePosition
 Ungroup Date Number DateTime As in Compact Error Warning Success Information None Edit View Disabled White Semibold
 Days Seconds Minutes Monday Fill Fit Large Thumbnail LayoutDirection LayoutOverflow Vertical Scroll DropShadow Light
-Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full""".split())
+Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full
+VerticalAlign Top Bottom Char""".split())
+
+
+def addcolumns_namen(s):
+    """Spaltennamen aus AddColumns(Tabelle, Name1, Ausdruck1, Name2, Ausdruck2, …)."""
+    namen = set()
+    for m in re.finditer(r"\bAddColumns\(", s):
+        tiefe, start, args = 0, m.end(), []
+        for j in range(m.end() - 1, len(s)):
+            ch = s[j]
+            if ch in "({[":
+                tiefe += 1
+            elif ch in ")}]":
+                tiefe -= 1
+                if tiefe == 0:
+                    args.append(s[start:j])
+                    break
+            elif ch == "," and tiefe == 1:
+                args.append(s[start:j])
+                start = j + 1
+        namen |= {a.strip() for a in args[1::2] if re.fullmatch(r"\s*\w+\s*", a)}
+    return namen
 
 
 def namen_der_app(stand):
@@ -612,7 +898,7 @@ def namen_der_app(stand):
     params = set(re.findall(r"(\w+)\s*:\s*(?:Text|Number|Boolean|Date|DateTime)\b", formeln))
     benannt = set(re.findall(r"(?m)^(\w+)\s*=", formeln))
     felder = set(re.findall(r"(\w+)\s*:", s))
-    aliase = set(re.findall(r"\bAs\s+(\w+)", s)) | set(re.findall(r"\bAddColumns\(\s*\w+\s*,\s*(\w+)", s))
+    aliase = set(re.findall(r"\bAs\s+(\w+)", s)) | set(re.findall(r"\bAddColumns\(\s*\w+\s*,\s*(\w+)", s)) | addcolumns_namen(s)
     quellen = set(stand.app.spalten) | stand.neue_quellen
     spalten = set()
     for cols in stand.app.spalten.values():
@@ -691,9 +977,10 @@ def pruefe(stand, pakete):
                     stufe -= 1
                 elif ch == "," and stufe == 0:
                     anz += 1
-            if anz != 12:
+            soll = 13 if "kritoffen" in stand.props["App.Formulas"] else 12
+            if anz != soll:
                 fehler += 1
-                zeilen.append("  FEHLER fnFehlt mit %d statt 12 Argumenten in %s" % (anz, k))
+                zeilen.append("  FEHLER fnFehlt mit %d statt %d Argumenten in %s" % (anz, soll, k))
     zeilen.append("Aufrufe fnFehlt im Endstand: " + ", ".join(sorted(rest)))
     return fehler, zeilen
 
