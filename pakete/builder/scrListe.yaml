@@ -91,54 +91,7 @@ Screens:
             Height: =44
             HoverColor: =clrPrimaer
             HoverFill: =clrPrimaerHell
-            OnSelect: |-
-              =If(!varIsLoading && Now() >= varSperreBis,
-                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                  Set(varFrage, "");
-                  If(IsBlank(LookUp(colRg, Status = "Vorlage")),
-                      Set(varIsLoading, true);
-                      Set(varPatchFehler, false);
-                      IfError(Patch(RG_Rundgaenge, Defaults(RG_Rundgaenge), {Title: "Vorlagen (Builder)", Beschreibung: "Vorlagen für den Rundgang-Builder. Wird nie aktiviert.", RgReihenfolge: 99999, Aktiv: false, Status: "Vorlage", Fassung: 0, EntwurfFassung: 1, EntwurfVon: ""}), Set(varPatchFehler, true));
-                      Refresh(RG_Rundgaenge);
-                      Set(varVorlageNeu, LookUp(RG_Rundgaenge, Status = "Vorlage"));
-                      If(!varPatchFehler && !IsBlank(varVorlageNeu.ID),
-                          With({b: Patch(RG_Bereiche, Defaults(RG_Bereiche), {Title: "Vorlagen", RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 10, Hinweis: "", Aktiv: false, QuelleID: 0})},
-                              With({k1: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Sichtprüfung", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 10, Hinweis: "", Aktiv: true, QuelleID: 0})},
-                              With({k2: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Messwerte", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 20, Hinweis: "", Aktiv: true, QuelleID: 0})},
-                              With({k3: Patch(RG_Kategorien, Defaults(RG_Kategorien), {Title: "Sonstiges", BereichID: b.ID, RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: 30, Hinweis: "", Aktiv: true, QuelleID: 0})},
-                              ForAll(Table(
-                                  {K: 1, R: 10, T: "Bereich sauber und ordentlich?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
-                                  {K: 1, R: 20, T: "Keine Schäden sichtbar?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
-                                  {K: 1, R: 30, T: "Fluchtweg und Notausgang frei?", Typ: "IONIO", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
-                                  {K: 1, R: 40, T: "Zustand", Typ: "AUSWAHL", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: "gut;mäßig;schlecht"},
-                                  {K: 2, R: 50, T: "Temperatur", Typ: "ZAHL", Pfl: true, Foto: "Aus", Einh: "°C", Mi: 15, Ma: 25, Gm: "Warnen", W: ""},
-                                  {K: 2, R: 60, T: "Zählerstand", Typ: "ZAHL", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
-                                  {K: 2, R: 70, T: "Anzahl im Regal", Typ: "ZAHL", Pfl: true, Foto: "Bei Mangel Pflicht", Einh: "Stück", Mi: 100, Ma: 1000, Gm: "Mangel", W: ""},
-                                  {K: 3, R: 80, T: "Datum der letzten Wartung", Typ: "DATUM", Pfl: true, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""},
-                                  {K: 3, R: 90, T: "Schäden an", Typ: "MEHRFACH", Pfl: false, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: "Boden;Wand;Decke;Tür;Fenster"},
-                                  {K: 3, R: 100, T: "Bemerkung", Typ: "TEXT", Pfl: false, Foto: "Aus", Einh: "", Mi: -999999, Ma: -999999, Gm: "Mangel", W: ""}
-                              ) As v,
-                                  Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: v.T, KategorieID: Switch(v.K, 1, k1.ID, 2, k2.ID, k3.ID), RundgangID: varVorlageNeu.ID, Fassung: 1, RgReihenfolge: v.R, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: v.Typ}, Pflicht: v.Pfl, Auswahlwerte: v.W, Einheit: v.Einh, MinWert: If(v.Mi = -999999, Blank(), v.Mi), MaxWert: If(v.Ma = -999999, Blank(), v.Ma), Hinweis: "", FotoMoeglich: false, Foto: {Value: v.Foto}, KommentarPflicht: false, Grenzmodus: {Value: v.Gm}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0})
-                              ))))
-                          )
-                      );
-                      Set(varIsLoading, true);
-                      Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Plan));
-                      Concurrent(ClearCollect(colRg, RG_Rundgaenge), ClearCollect(colPlanAlle, RG_Plan));
-                      Set(varIsLoading, false)
-                  );
-                  If(IsBlank(LookUp(colRg, Status = "Vorlage")),
-                      Notify("Die Vorlagen konnten nicht angelegt werden.", NotificationType.Error),
-                      Set(varRgID, LookUp(colRg, Status = "Vorlage").ID);
-                      Set(varFassung, Coalesce(LookUp(colRg, Status = "Vorlage").EntwurfFassung, 1));
-                      Set(varSchreibbar, true);
-                      Set(varJob, "laden");
-                      Set(varArbeitStart, false);
-                      Set(varIsLoading, true);
-                      Set(varLadeText, "");
-                      Navigate(scrEditor, ScreenTransition.None)
-                  )
-              )
+            OnSelect: =false
             PressedColor: =clrPrimaer
             PressedFill: =clrPrimaerHell
             RadiusBottomLeft: =6

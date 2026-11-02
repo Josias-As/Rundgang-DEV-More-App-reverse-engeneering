@@ -1,0 +1,51 @@
+If(varSchreibbar && !varIsLoading && Now() >= varSperreBis;
+    Set(varSperreBis; DateAdd(Now(); 1; TimeUnit.Seconds));;
+    Refresh(RG_Rundgaenge);;
+    Set(varEntwurfOk; varIstVorlage || Coalesce(LookUp(RG_Rundgaenge; ID = varRgID).EntwurfFassung; 0) = varFassung);;
+    If(!varEntwurfOk; Set(varSchreibbar; false);; Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht."; NotificationType.Error));;
+    If(!varEntwurfOk;
+        false;
+        varAuswahlEbene = 1;
+        With({cur: LookUp(colB; ID = varAuswahlID)};
+            With({s: Sort(colB; RgReihenfolge * 1000000 + ID)};
+                With({pos: CountRows(Filter(s; RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1};
+                    If(pos + (1) < 1 || pos + (1) > CountRows(s);
+                        Notify("Steht schon ganz unten."; NotificationType.Information);
+                        ClearCollect(colUmsort; Filter(ForAll(Sequence(CountRows(s)) As i; With({x: Index(s; If(i.Value = pos; pos + (1); i.Value = pos + (1); pos; i.Value))}; {ID: x.ID; Alt: x.RgReihenfolge; Neu: i.Value * 10})); Alt <> Neu));;
+                        ClearCollect(colUmsortErg; ForAll(colUmsort As u; {Ok: !IsError(Patch(RG_Bereiche; LookUp(RG_Bereiche; ID = u.ID && RundgangID = varRgID && Fassung = varFassung); {RgReihenfolge: u.Neu}))}));;
+                        ForAll(colUmsort As u; Patch(colB; LookUp(colB; ID = u.ID); {RgReihenfolge: u.Neu}));;
+                        If(CountRows(Filter(colUmsortErg; !Ok)) > 0; Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen."; NotificationType.Error))
+                    )
+                )
+            )
+        );
+        varAuswahlEbene = 2;
+        With({cur: LookUp(colK; ID = varAuswahlID)};
+            With({s: Sort(Filter(colK; BereichID = cur.BereichID); RgReihenfolge * 1000000 + ID)};
+                With({pos: CountRows(Filter(s; RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1};
+                    If(pos + (1) < 1 || pos + (1) > CountRows(s);
+                        Notify("Steht schon ganz unten."; NotificationType.Information);
+                        ClearCollect(colUmsort; Filter(ForAll(Sequence(CountRows(s)) As i; With({x: Index(s; If(i.Value = pos; pos + (1); i.Value = pos + (1); pos; i.Value))}; {ID: x.ID; Alt: x.RgReihenfolge; Neu: i.Value * 10})); Alt <> Neu));;
+                        ClearCollect(colUmsortErg; ForAll(colUmsort As u; {Ok: !IsError(Patch(RG_Kategorien; LookUp(RG_Kategorien; ID = u.ID && RundgangID = varRgID && Fassung = varFassung); {RgReihenfolge: u.Neu}))}));;
+                        ForAll(colUmsort As u; Patch(colK; LookUp(colK; ID = u.ID); {RgReihenfolge: u.Neu}));;
+                        If(CountRows(Filter(colUmsortErg; !Ok)) > 0; Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen."; NotificationType.Error))
+                    )
+                )
+            )
+        );
+        varAuswahlEbene = 3;
+        With({cur: LookUp(colP; ID = varAuswahlID)};
+            With({s: Sort(Filter(colP; KategorieID = cur.KategorieID); RgReihenfolge * 1000000 + ID)};
+                With({pos: CountRows(Filter(s; RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1};
+                    If(pos + (1) < 1 || pos + (1) > CountRows(s);
+                        Notify("Steht schon ganz unten."; NotificationType.Information);
+                        ClearCollect(colUmsort; Filter(ForAll(Sequence(CountRows(s)) As i; With({x: Index(s; If(i.Value = pos; pos + (1); i.Value = pos + (1); pos; i.Value))}; {ID: x.ID; Alt: x.RgReihenfolge; Neu: i.Value * 10})); Alt <> Neu));;
+                        ClearCollect(colUmsortErg; ForAll(colUmsort As u; {Ok: !IsError(Patch(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = u.ID && RundgangID = varRgID && Fassung = varFassung); {RgReihenfolge: u.Neu}))}));;
+                        ForAll(colUmsort As u; Patch(colP; LookUp(colP; ID = u.ID); {RgReihenfolge: u.Neu}));;
+                        If(CountRows(Filter(colUmsortErg; !Ok)) > 0; Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen."; NotificationType.Error))
+                    )
+                )
+            )
+        )
+    )
+)

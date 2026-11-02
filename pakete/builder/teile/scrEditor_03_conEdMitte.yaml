@@ -48,58 +48,7 @@
                   Height: =40
                   HoverColor: =clrPrimaer
                   HoverFill: =clrPrimaerHell
-                  OnSelect: |-
-                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
-                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                        Refresh(RG_Rundgaenge);
-                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
-                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
-                        If(!varEntwurfOk,
-                            false,
-                            varAuswahlEbene = 1,
-                            With({cur: LookUp(colB, ID = varAuswahlID)},
-                                With({s: Sort(colB, RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
-                                            Notify("Steht schon ganz oben.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colB, LookUp(colB, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            ),
-                            varAuswahlEbene = 2,
-                            With({cur: LookUp(colK, ID = varAuswahlID)},
-                                With({s: Sort(Filter(colK, BereichID = cur.BereichID), RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
-                                            Notify("Steht schon ganz oben.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colK, LookUp(colK, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            ),
-                            varAuswahlEbene = 3,
-                            With({cur: LookUp(colP, ID = varAuswahlID)},
-                                With({s: Sort(Filter(colP, KategorieID = cur.KategorieID), RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (-1) < 1 || pos + (-1) > CountRows(s),
-                                            Notify("Steht schon ganz oben.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (-1), i.Value = pos + (-1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colP, LookUp(colP, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
+                  OnSelect: =false
                   PressedColor: =clrPrimaer
                   PressedFill: =clrPrimaerHell
                   RadiusBottomLeft: =6
@@ -127,58 +76,7 @@
                   Height: =40
                   HoverColor: =clrPrimaer
                   HoverFill: =clrPrimaerHell
-                  OnSelect: |-
-                    =If(varSchreibbar && !varIsLoading && Now() >= varSperreBis,
-                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
-                        Refresh(RG_Rundgaenge);
-                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
-                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
-                        If(!varEntwurfOk,
-                            false,
-                            varAuswahlEbene = 1,
-                            With({cur: LookUp(colB, ID = varAuswahlID)},
-                                With({s: Sort(colB, RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (1) < 1 || pos + (1) > CountRows(s),
-                                            Notify("Steht schon ganz unten.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Bereiche, LookUp(RG_Bereiche, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colB, LookUp(colB, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            ),
-                            varAuswahlEbene = 2,
-                            With({cur: LookUp(colK, ID = varAuswahlID)},
-                                With({s: Sort(Filter(colK, BereichID = cur.BereichID), RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (1) < 1 || pos + (1) > CountRows(s),
-                                            Notify("Steht schon ganz unten.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Kategorien, LookUp(RG_Kategorien, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colK, LookUp(colK, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            ),
-                            varAuswahlEbene = 3,
-                            With({cur: LookUp(colP, ID = varAuswahlID)},
-                                With({s: Sort(Filter(colP, KategorieID = cur.KategorieID), RgReihenfolge * 1000000 + ID)},
-                                    With({pos: CountRows(Filter(s, RgReihenfolge * 1000000 + ID < cur.RgReihenfolge * 1000000 + cur.ID)) + 1},
-                                        If(pos + (1) < 1 || pos + (1) > CountRows(s),
-                                            Notify("Steht schon ganz unten.", NotificationType.Information),
-                                            ClearCollect(colUmsort, Filter(ForAll(Sequence(CountRows(s)) As i, With({x: Index(s, If(i.Value = pos, pos + (1), i.Value = pos + (1), pos, i.Value))}, {ID: x.ID, Alt: x.RgReihenfolge, Neu: i.Value * 10})), Alt <> Neu));
-                                            ClearCollect(colUmsortErg, ForAll(colUmsort As u, {Ok: !IsError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = u.ID && RundgangID = varRgID && Fassung = varFassung), {RgReihenfolge: u.Neu}))}));
-                                            ForAll(colUmsort As u, Patch(colP, LookUp(colP, ID = u.ID), {RgReihenfolge: u.Neu}));
-                                            If(CountRows(Filter(colUmsortErg, !Ok)) > 0, Notify("Reihenfolge nicht vollständig gespeichert. Bitte den Rundgang neu öffnen.", NotificationType.Error))
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
+                  OnSelect: =false
                   PressedColor: =clrPrimaer
                   PressedFill: =clrPrimaerHell
                   RadiusBottomLeft: =6
@@ -256,95 +154,7 @@
                   Height: =40
                   HoverColor: =clrFehler
                   HoverFill: =clrFehlerHell
-                  OnSelect: |-
-                    =If(varSchreibbar && varAuswahlEbene > 0, If(!varIsLoading && Now() >= varSperreBis,
-                            If(varFrage <> "del" & varAuswahlEbene & "-" & varAuswahlID,
-                                Set(varFrage, "del" & varAuswahlEbene & "-" & varAuswahlID);
-                                Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),
-                                Set(varFrage, "");
-                                Refresh(RG_Rundgaenge);
-                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
-                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
-                        If(varEntwurfOk,
-                        Set(varIsLoading, true);
-                        If(varAuswahlEbene = 3,
-                            ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}));
-                            Remove(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung)),
-                            varAuswahlEbene = 2,
-                            Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, KategorieID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
-                            Remove(RG_Kategorien, LookUp(RG_Kategorien, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung)),
-                            varAuswahlEbene = 1,
-                            ForAll(Filter(colK, BereichID = varAuswahlID) As k, Remove(RG_Pruefpunkte, Filter(RG_Pruefpunkte, KategorieID = k.ID && RundgangID = varRgID && Fassung = varFassung)));
-                            Remove(RG_Kategorien, Filter(RG_Kategorien, BereichID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
-                            Remove(RG_Bereiche, LookUp(RG_Bereiche, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung))
-                        );
-                        Concurrent(
-                            ClearCollect(colB, Filter(RG_Bereiche, RundgangID = varRgID && Fassung = varFassung)),
-                            ClearCollect(colK, Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung)),
-                            ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
-                        );
-                        If((varAuswahlEbene = 3 && !IsBlank(LookUp(colP, ID = varAuswahlID))) || (varAuswahlEbene = 2 && !IsBlank(LookUp(colK, ID = varAuswahlID))) || (varAuswahlEbene = 1 && !IsBlank(LookUp(colB, ID = varAuswahlID))),
-                            Notify("Entfernen hat nicht geklappt. Bitte erneut versuchen.", NotificationType.Error),
-                            Notify("Entfernt.", NotificationType.Success)
-                        );
-                        If(varAuswahlEbene = 3,
-                            Set(varAuswahlEbene, 2);
-                            Set(varAuswahlID, varCtxK);
-                            Set(varCtxB, varCtxB);
-                            Set(varCtxK, varCtxK);
-                            Set(varFrage, "");
-                            Reset(txtBName);
-                            Reset(txtKName);
-                            Reset(ddKBereich);
-                            Reset(txtPFrage);
-                            Reset(txtPEinheit);
-                            Reset(txtPMin);
-                            Reset(txtPMax);
-                            Reset(txtPWerte);
-                            Reset(txtPHinweis);
-                            Reset(ddPKategorie);
-                            Reset(ddPBedA);
-                            Reset(ddPBedW),
-                            varAuswahlEbene = 2,
-                            Set(varAuswahlEbene, 1);
-                            Set(varAuswahlID, varCtxB);
-                            Set(varCtxB, varCtxB);
-                            Set(varCtxK, 0);
-                            Set(varFrage, "");
-                            Reset(txtBName);
-                            Reset(txtKName);
-                            Reset(ddKBereich);
-                            Reset(txtPFrage);
-                            Reset(txtPEinheit);
-                            Reset(txtPMin);
-                            Reset(txtPMax);
-                            Reset(txtPWerte);
-                            Reset(txtPHinweis);
-                            Reset(ddPKategorie);
-                            Reset(ddPBedA);
-                            Reset(ddPBedW),
-                            Set(varAuswahlEbene, 0);
-                            Set(varAuswahlID, 0);
-                            Set(varCtxB, 0);
-                            Set(varCtxK, 0);
-                            Set(varFrage, "");
-                            Reset(txtBName);
-                            Reset(txtKName);
-                            Reset(ddKBereich);
-                            Reset(txtPFrage);
-                            Reset(txtPEinheit);
-                            Reset(txtPMin);
-                            Reset(txtPMax);
-                            Reset(txtPWerte);
-                            Reset(txtPHinweis);
-                            Reset(ddPKategorie);
-                            Reset(ddPBedA);
-                            Reset(ddPBedW)
-                        );
-                        Set(varIsLoading, false)
-                        )
-                            )
-                        ))
+                  OnSelect: =false
                   PressedColor: =clrFehler
                   PressedFill: =clrFehlerHell
                   RadiusBottomLeft: =6

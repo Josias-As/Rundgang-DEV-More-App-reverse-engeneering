@@ -1568,10 +1568,31 @@ def yaml_wert(v):
     return s.split("\n"), True
 
 
-def yaml_props(props, e):
+LANG_LIMIT = 2500
+PLATZHALTER = {"galPr.Items": 'Table({Art: "Hinweis", Ebene: 0, ID: 0, KatID: 0, BerID: 0, Text: ""})'}
+
+
+def yaml_ist(name, k, v):
+    """Sehr lange Formeln stehen nicht im YAML, sondern als Platzhalter (kommen per Formelleiste)."""
+    if len(v) > LANG_LIMIT:
+        return PLATZHALTER.get(name + "." + k, "false")
+    return v
+
+
+def lange_formeln():
+    out = []
+    for s in SCREENS:
+        for c, _ in alle(s):
+            for k, v in c.props.items():
+                if len(v) > LANG_LIMIT:
+                    out.append((s.name, c.name, k, v))
+    return out
+
+
+def yaml_props(props, e, name=""):
     z = []
     for k in sorted(props):
-        zeilen, block = yaml_wert(props[k])
+        zeilen, block = yaml_wert(yaml_ist(name, k, props[k]))
         if block:
             z.append(e + k + ": |-")
             z += [e + "  " + x for x in zeilen]
@@ -1585,7 +1606,7 @@ def yaml_control(c, e):
     if c.variante:
         z.append(e + "    Variant: " + c.variante)
     z.append(e + "    Properties:")
-    z += yaml_props(c.props, e + "      ")
+    z += yaml_props(c.props, e + "      ", c.name)
     if c.kinder:
         z.append(e + "    Children:")
         for k in c.kinder:
@@ -1595,7 +1616,7 @@ def yaml_control(c, e):
 
 def yaml_screen(s):
     z = ["Screens:", "  " + s.name + ":", "    Properties:"]
-    z += yaml_props(s.props, "      ")
+    z += yaml_props(s.props, "      ", s.name)
     z.append("    Children:")
     for k in s.kinder:
         z += yaml_control(k, "      ")
@@ -1794,7 +1815,7 @@ def pruefen(app_ref):
         def vergleiche(knoten, c):
             n = 0
             for k, v in c.props.items():
-                if knoten["Properties"].get(k) != "=" + v:
+                if knoten["Properties"].get(k) != "=" + yaml_ist(c.name, k, v):
                     raise ValueError("YAML weicht ab: %s.%s" % (c.name, k))
                 n += 1
             for kk, ck in zip(knoten.get("Children") or [], c.kinder):
@@ -1879,8 +1900,13 @@ def main():
     os.makedirs(teile, exist_ok=True)
     for s in SCREENS:
         open(os.path.join(AUS_PAKET, s.name + ".yaml"), "w", encoding="utf-8").write(yaml_screen(s))
-        for i, k in enumerate(s.kinder, 1):
-            open(os.path.join(teile, "%s_%02d_%s.yaml" % (s.name, i, k.name)), "w", encoding="utf-8").write("\n".join(yaml_control(k, "")) + "\n")
+        if s.name == "scrEditor":
+            for i, k in enumerate(s.kinder, 1):
+                open(os.path.join(teile, "%s_%02d_%s.yaml" % (s.name, i, k.name)), "w", encoding="utf-8").write("\n".join(yaml_control(k, "")) + "\n")
+    lf = os.path.join(AUS_PAKET, "lange_formeln")
+    os.makedirs(lf, exist_ok=True)
+    for scr, ctl, prop, v in lange_formeln():
+        open(os.path.join(lf, "%s_%s.%s.txt" % (scr, ctl, prop)), "w", encoding="utf-8").write(rg.to_de(v) + "\n")
     open(os.path.join(AUS_PAKET, "App.Formulas.txt"), "w", encoding="utf-8").write(rg.to_de(FORMULAS) + "\n")
     open(os.path.join(AUS_PAKET, "App.OnStart.txt"), "w", encoding="utf-8").write(rg.to_de(ONSTART) + "\n")
     stat = {"screens": [s.name for s in SCREENS], "steuerelemente": len(kontrollen) - len(SCREENS), "properties": len(props),

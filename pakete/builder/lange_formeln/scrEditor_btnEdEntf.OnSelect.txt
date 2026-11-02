@@ -1,0 +1,88 @@
+If(varSchreibbar && varAuswahlEbene > 0; If(!varIsLoading && Now() >= varSperreBis;
+        If(varFrage <> "del" & varAuswahlEbene & "-" & varAuswahlID;
+            Set(varFrage; "del" & varAuswahlEbene & "-" & varAuswahlID);;
+            Set(varSperreBis; DateAdd(Now(); 1; TimeUnit.Seconds));
+            Set(varFrage; "");;
+            Refresh(RG_Rundgaenge);;
+    Set(varEntwurfOk; varIstVorlage || Coalesce(LookUp(RG_Rundgaenge; ID = varRgID).EntwurfFassung; 0) = varFassung);;
+    If(!varEntwurfOk; Set(varSchreibbar; false);; Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht."; NotificationType.Error));;
+    If(varEntwurfOk;
+    Set(varIsLoading; true);;
+    If(varAuswahlEbene = 3;
+        ForAll(Filter(colP; BedingungPunkt = varAuswahlID) As d; Patch(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = d.ID && RundgangID = varRgID && Fassung = varFassung); {BedingungPunkt: 0; BedingungWert: ""}));;
+        Remove(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
+        varAuswahlEbene = 2;
+        Remove(RG_Pruefpunkte; Filter(RG_Pruefpunkte; KategorieID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));;
+        Remove(RG_Kategorien; LookUp(RG_Kategorien; ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
+        varAuswahlEbene = 1;
+        ForAll(Filter(colK; BereichID = varAuswahlID) As k; Remove(RG_Pruefpunkte; Filter(RG_Pruefpunkte; KategorieID = k.ID && RundgangID = varRgID && Fassung = varFassung)));;
+        Remove(RG_Kategorien; Filter(RG_Kategorien; BereichID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));;
+        Remove(RG_Bereiche; LookUp(RG_Bereiche; ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung))
+    );;
+    Concurrent(
+        ClearCollect(colB; Filter(RG_Bereiche; RundgangID = varRgID && Fassung = varFassung));
+        ClearCollect(colK; Filter(RG_Kategorien; RundgangID = varRgID && Fassung = varFassung));
+        ClearCollect(colP; Filter(RG_Pruefpunkte; RundgangID = varRgID && Fassung = varFassung))
+    );;
+    If((varAuswahlEbene = 3 && !IsBlank(LookUp(colP; ID = varAuswahlID))) || (varAuswahlEbene = 2 && !IsBlank(LookUp(colK; ID = varAuswahlID))) || (varAuswahlEbene = 1 && !IsBlank(LookUp(colB; ID = varAuswahlID)));
+        Notify("Entfernen hat nicht geklappt. Bitte erneut versuchen."; NotificationType.Error);
+        Notify("Entfernt."; NotificationType.Success)
+    );;
+    If(varAuswahlEbene = 3;
+        Set(varAuswahlEbene; 2);;
+        Set(varAuswahlID; varCtxK);;
+        Set(varCtxB; varCtxB);;
+        Set(varCtxK; varCtxK);;
+        Set(varFrage; "");;
+        Reset(txtBName);;
+        Reset(txtKName);;
+        Reset(ddKBereich);;
+        Reset(txtPFrage);;
+        Reset(txtPEinheit);;
+        Reset(txtPMin);;
+        Reset(txtPMax);;
+        Reset(txtPWerte);;
+        Reset(txtPHinweis);;
+        Reset(ddPKategorie);;
+        Reset(ddPBedA);;
+        Reset(ddPBedW);
+        varAuswahlEbene = 2;
+        Set(varAuswahlEbene; 1);;
+        Set(varAuswahlID; varCtxB);;
+        Set(varCtxB; varCtxB);;
+        Set(varCtxK; 0);;
+        Set(varFrage; "");;
+        Reset(txtBName);;
+        Reset(txtKName);;
+        Reset(ddKBereich);;
+        Reset(txtPFrage);;
+        Reset(txtPEinheit);;
+        Reset(txtPMin);;
+        Reset(txtPMax);;
+        Reset(txtPWerte);;
+        Reset(txtPHinweis);;
+        Reset(ddPKategorie);;
+        Reset(ddPBedA);;
+        Reset(ddPBedW);
+        Set(varAuswahlEbene; 0);;
+        Set(varAuswahlID; 0);;
+        Set(varCtxB; 0);;
+        Set(varCtxK; 0);;
+        Set(varFrage; "");;
+        Reset(txtBName);;
+        Reset(txtKName);;
+        Reset(ddKBereich);;
+        Reset(txtPFrage);;
+        Reset(txtPEinheit);;
+        Reset(txtPMin);;
+        Reset(txtPMax);;
+        Reset(txtPWerte);;
+        Reset(txtPHinweis);;
+        Reset(ddPKategorie);;
+        Reset(ddPBedA);;
+        Reset(ddPBedW)
+    );;
+    Set(varIsLoading; false)
+    )
+        )
+    ))
