@@ -881,7 +881,88 @@ def paket10(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10]
+# ---------------------------------------------------------------- Paket 12 (eigene Antwortwörter für i.O./n.i.O.)
+
+WORT = lambda feld, std: 'If(Trim(ThisItem.%s) = "", "%s", ThisItem.%s)' % (feld, std, feld)  # noqa: E731
+KNOPF_BREITE = 'If(Max(Len(ThisItem.TextIO), Len(ThisItem.TextNIO)) > 8, 250, 160)'
+
+
+def paket12(st):
+    p = {"nr": 12, "props": [], "neu": []}
+    st.sp.append(("RG_Pruefpunkte", "TextIO", "Text"))
+    st.sp.append(("RG_Pruefpunkte", "TextNIO", "Text"))
+
+    def onvisible(t):
+        t = rep(t, 'KritischVon: Coalesce(Text(a.KritischVon), ""), Inaktiv: false}',
+                'KritischVon: Coalesce(Text(a.KritischVon), ""), TextIO: Coalesce(Text(a.TextIO), pp.TextIO, ""), TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), Inaktiv: false}')
+        t = rep(t, "                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n",
+                "                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n"
+                "                     TextIO: Trim(Coalesce(p.TextIO, \"\")),\n"
+                "                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n")
+        t = rep(t, 'KritischVon: Coalesce(Text(o.Value.KritischVon), ""), Inaktiv: true}',
+                'KritischVon: Coalesce(Text(o.Value.KritischVon), ""), TextIO: Coalesce(Text(o.Value.TextIO), ""), TextNIO: Coalesce(Text(o.Value.TextNIO), ""), Inaktiv: true}')
+        return t
+    aendern(st, p, "12.3", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "12.4", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "KritischZeit, KritischVon), JSONFormat.Compact)", "KritischZeit, KritischVon, TextIO, TextNIO), JSONFormat.Compact)"))
+    ganz(st, p, "12.5", "btnKaIO.Text", WORT("TextIO", "i.O."))
+    ganz(st, p, "12.5", "btnKaNIO.Text", WORT("TextNIO", "n.i.O."))
+    standard_ersetzen(st, p, "12.5", "btnKaIO.Width", "160", KNOPF_BREITE)
+    standard_ersetzen(st, p, "12.5", "btnKaNIO.Width", "160", KNOPF_BREITE)
+    ganz(st, p, "12.5", "btnKaNIO.X", "36 + btnKaIO.Width")
+    aendern(st, p, "12.6", "htmProtokoll.HtmlText", lambda t: rep(
+        t, """<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO", "#B3261E", w, "#9A5B00", "#0F7B3F") & "'>" & Switch(b, "IO", "i.O.", "NIO", "n.i.O.", "") & "</td>""",
+        """<td style='padding:6px 8px;width:110px;font-weight:600;color:" & If(b = "NIO", "#B3261E", w, "#9A5B00", "#0F7B3F") & "'>" & Switch(b, "IO", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextIO), "") = "", Blank(), Text(a.Value.TextIO)), "i.O.")), "NIO", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextNIO), "") = "", Blank(), Text(a.Value.TextNIO)), "n.i.O.")), "") & "</td>"""))
+    return p
+
+
+# ---------------------------------------------------------------- Paket 16 („nicht messbar“ bei Zahlen)
+
+NM = '"nicht messbar"'
+
+
+def paket16(st):
+    p = {"nr": 16, "props": [], "neu": []}
+    st.sp.append(("RG_Pruefpunkte", "NichtMessbar", "Ja/Nein"))
+
+    def formulas(t):
+        t = rep(t, '(typ = "ZAHL" && IsBlank(wz))', '(typ = "ZAHL" && IsBlank(wz) && wt = "")')
+        t = rep(t, 'Boolean = bew = "NIO" || (kpfl && fnBeantwortet(bew, wt, wz))',
+                'Boolean = bew = "NIO" || (typ = "ZAHL" && wt = ' + NM + ') || (kpfl && fnBeantwortet(bew, wt, wz))')
+        return t
+    aendern(st, p, "16.3", "App.Formulas", formulas)
+
+    def onvisible(t):
+        t = rep(t, 'TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), Inaktiv: false}', 'TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), NMErlaubt: false, Inaktiv: false}')
+        t = rep(t, "                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n",
+                "                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n")
+        t = rep(t, 'TextNIO: Coalesce(Text(o.Value.TextNIO), ""), Inaktiv: true}', 'TextNIO: Coalesce(Text(o.Value.TextNIO), ""), NMErlaubt: false, Inaktiv: true}')
+        return t
+    aendern(st, p, "16.4", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "16.5", "txtKaZahl.OnChange", lambda t: rep(t, "{WertZahl: z, Bewertung: b,", '{WertZahl: z, WertText: "", Bewertung: b,'))
+    aendern(st, p, "16.5", "lblKaZahlInfo.Width", lambda t: rep(t, "Parent.Width - 256", "Parent.Width - 256 - If(btnKaNM.Visible, 180, 0)"))
+    neues_control(st, p, "btnKaNM", "conKaKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrTextGrau", "BorderThickness": "1",
+        "Color": 'If(ThisItem.WertText = ' + NM + ', Color.White, clrTextGrau)',
+        "DisabledColor": "Self.Color", "DisabledFill": "Self.Fill", "DisabledBorderColor": "clrTextGrau",
+        "DisplayMode": "If(varNurLesen, DisplayMode.View, DisplayMode.Edit)",
+        "Fill": 'If(ThisItem.WertText = ' + NM + ', clrTextGrau, clrKarte)', "Font": "Font.'Segoe UI'", "Height": "56",
+        "HoverColor": "Self.Color", "HoverFill": 'If(ThisItem.WertText = ' + NM + ', ColorFade(clrTextGrau, -15%), clrHintergrund)',
+        "OnSelect": 'If(ThisItem.WertText = ' + NM + ',\n'
+                    '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ""}),\n'
+                    '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ' + NM + ', WertZahl: Blank(), Bewertung: "", KritischOk: false, KritischZeit: "", KritischVon: ""});\n'
+                    '    Reset(txtKaZahl)\n'
+                    ');\n'
+                    'Set(varGeaendert, true)',
+        "PressedColor": "Color.White", "PressedFill": "clrTextGrau",
+        "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
+        "Size": "14", "Text": 'If(ThisItem.WertText = ' + NM + ', "✓ nicht messbar", "nicht messbar")',
+        "Visible": 'ThisItem.Typ = "ZAHL" && (ThisItem.NMErlaubt || ThisItem.WertText = ' + NM + ')',
+        "Width": "164", "X": "Parent.Width - 184", "Y": '54 + If(ThisItem.Hinweis <> "", 24, 0)'})
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16]
 
 
 # ---------------------------------------------------------------- Prüfungen

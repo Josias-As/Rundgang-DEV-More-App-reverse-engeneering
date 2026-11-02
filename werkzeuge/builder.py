@@ -38,7 +38,8 @@ NEU_SPALTEN = {
     "RG_Pruefpunkte": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl",
                        "Foto": "Auswahl", "KommentarPflicht": "Ja/Nein", "Grenzmodus": "Auswahl",
                        "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text",
-                       "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text"},
+                       "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text",
+                       "TextIO": "Text", "TextNIO": "Text", "NichtMessbar": "Ja/Nein"},
     "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
@@ -104,7 +105,8 @@ def sel(e, i, b, k):
     """Auswahl in der Gliederung setzen und Eingaben zurücksetzen."""
     return ("Set(varAuswahlEbene, {e});\nSet(varAuswahlID, {i});\nSet(varCtxB, {b});\nSet(varCtxK, {k});\nSet(varFrage, \"\");\n"
             "Reset(txtBName);\nReset(txtKName);\nReset(ddKBereich);\nReset(txtPFrage);\nReset(txtPEinheit);\nReset(txtPMin);\n"
-            "Reset(txtPMax);\nReset(txtPWerte);\nReset(txtPHinweis);\nReset(ddPKategorie);\nReset(ddPBedA);\nReset(ddPBedW);\nReset(txtPAbschnitt)").format(e=e, i=i, b=b, k=k)
+            "Reset(txtPMax);\nReset(txtPWerte);\nReset(txtPHinweis);\nReset(ddPKategorie);\nReset(ddPBedA);\nReset(ddPBedW);\nReset(txtPAbschnitt);\n"
+            "Reset(txtPTextIO);\nReset(txtPTextNIO)").format(e=e, i=i, b=b, k=k)
 
 
 def patch_feld(ds, col, felder, idx="varAuswahlID"):
@@ -142,7 +144,7 @@ ORD = "RgReihenfolge * 1000000 + ID"
 
 NEUER_PUNKT = ('Aktiv: true, QuelleID: 0, Eingabetyp: {{Value: {typ}}}, Pflicht: {pfl}, Auswahlwerte: "", Einheit: "", Hinweis: "", '
                'FotoMoeglich: false, Foto: {{Value: "Aus"}}, KommentarPflicht: false, Grenzmodus: {{Value: "Mangel"}}, '
-               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}')
+               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}, TextIO: "", TextNIO: "", NichtMessbar: false')
 
 
 def quelle_laden(s):
@@ -309,7 +311,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, "")}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, ""), TextIO: Coalesce(q.TextIO, ""), TextNIO: Coalesce(q.TextNIO, ""), NichtMessbar: Coalesce(q.NichtMessbar, false)}).ID, 0))}
                     )
                 )
             )
@@ -477,6 +479,8 @@ REGELN = [
     + P_REGEL("Hinweis", '"„" & p.Title & "“: Rückfrage und „kritisch“ wirken nur bei i.O./n.i.O. und Zahl."') + ')',
     'ForAll(Filter(colP As p, Coalesce(p.Kritisch, false) && Trim(Coalesce(p.Ansprechpartner, "")) = "") As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“ ist kritisch, aber ohne eigenen Ansprechpartner (es erscheinen nur die allgemeinen)."') + ')',
+    'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "IONIO" && (Trim(Coalesce(p.TextIO, "")) <> "" || Trim(Coalesce(p.TextNIO, "")) <> "")) As p, '
+    + P_REGEL("Hinweis", '"„" & p.Title & "“: eigene Knopf-Beschriftungen wirken nur bei i.O./n.i.O."') + ')',
     'ForAll(Filter(colP As p, p.Title = "Neue Frage") As p, ' + P_REGEL("Hinweis", '"Eine Frage heißt noch „Neue Frage“."') + ')',
     'ForAll(Filter(colK As k, CountRows(Filter(colP As p, p.KategorieID = k.ID)) > 30) As k, '
     + regel("Hinweis", 2, "k.ID", "k.ID", "k.BereichID", '"Kategorie „" & k.Title & "“ hat über 30 Prüfpunkte (lange Seite für den Prüfer)."') + ')',
@@ -499,7 +503,8 @@ P_GEAENDERT = ('p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coales
                'Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || '
                'Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, "")) || Coalesce(p.Kritisch, false) <> Coalesce(a.Kritisch, false) || '
                'Coalesce(p.KritischText, "") <> Coalesce(a.KritischText, "") || Coalesce(p.Ansprechpartner, "") <> Coalesce(a.Ansprechpartner, "") || '
-               'Coalesce(p.Rueckfrage, false) <> Coalesce(a.Rueckfrage, false) || Coalesce(p.RueckfrageText, "") <> Coalesce(a.RueckfrageText, "")')
+               'Coalesce(p.Rueckfrage, false) <> Coalesce(a.Rueckfrage, false) || Coalesce(p.RueckfrageText, "") <> Coalesce(a.RueckfrageText, "") || '
+               'Coalesce(p.TextIO, "") <> Coalesce(a.TextIO, "") || Coalesce(p.TextNIO, "") <> Coalesce(a.TextNIO, "") || Coalesce(p.NichtMessbar, false) <> Coalesce(a.NichtMessbar, false)')
 AKT_ITEMS = ('Ungroup(\n    Table(\n'
              '        {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},\n'
              '        {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (' + P_GEAENDERT + '))) As p, {Art: "geändert", Text: p.Title})},\n'
@@ -1094,7 +1099,7 @@ ZAHL_FELD = lambda feld, ctl: ('With({v: If(Trim(Self.Text) = "", Blank(), IfErr
                                ')')
 
 ist_typ = lambda *t: "(" + " || ".join('%s.Eingabetyp.Value = "%s"' % (CUR, x) for x in t) + ")"  # noqa: E731
-REST_Y = 'If(%s, 360, %s, 350, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"))
+REST_Y = 'If(%s, 360, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
 
 
 NIO_OEFFNEN = ('If(!varIsLoading,\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));\n'
@@ -1153,7 +1158,23 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     optionen("galPKomm", 'Table({W: "mangel", N: "bei Mangel"}, {W: "immer", N: "immer"})', 'If(Coalesce(%s.KommentarPflicht, false), "immer", "mangel")' % CUR,
              'If((ThisItem.W = "immer") <> Coalesce(%s.KommentarPflicht, false),\n    %s\n)' % (CUR, ind(PP('{KommentarPflicht: ThisItem.W = "immer"}'), 4)),
              "272", "188", "256", 2, '"Kommentar"', h=36, size=13),
+    con("conPIonio", {"X": "0", "Y": "232", "Width": "528", "Height": "60", "Fill": "clrHintergrund", "Visible": ist_typ("IONIO")}, [
+        lbl("lblPTextIO", '"Knopf „i.O.“ heißt"', "0", "0", "256", "20", size=12, color="clrTextGrau"),
+        lbl("lblPTextNIO", '"Knopf „n.i.O.“ heißt (Mangel)"', "272", "0", "256", "20", size=12, color="clrTextGrau"),
+        txt("txtPTextIO", 'Coalesce(%s.TextIO, "")' % CUR,
+            'If(Trim(Self.Text) <> Trim(Coalesce(%s.TextIO, "")),\n    %s\n)' % (CUR, ind(PP('{TextIO: Left(Trim(Self.Text), 18)}'), 4)),
+            "0", "20", "256", "36", '"i.O. (z. B. durchgeführt)"', '"Beschriftung des i.O.-Knopfs"'),
+        txt("txtPTextNIO", 'Coalesce(%s.TextNIO, "")' % CUR,
+            'If(Trim(Self.Text) <> Trim(Coalesce(%s.TextNIO, "")),\n    %s\n)' % (CUR, ind(PP('{TextNIO: Left(Trim(Self.Text), 18)}'), 4)),
+            "272", "20", "256", "36", '"n.i.O. (z. B. nicht durchgeführt)"', '"Beschriftung des n.i.O.-Knopfs"'),
+    ]),
     con("conPZahl", {"X": "0", "Y": "232", "Width": "528", "Height": "120", "Fill": "clrHintergrund", "Visible": ist_typ("ZAHL")}, [
+        lbl("lblPNM", '"nicht messbar"', "416", "0", "112", "20", size=12, color="clrTextGrau", PaddingLeft="0", PaddingRight="0"),
+        btn("btnPNM", 'If(Coalesce(%s.NichtMessbar, false), "✓ erlaubt", "nicht erlaubt")' % CUR, "416", "20", "112", "36",
+            'If(varSchreibbar && varAuswahlEbene = 3,\n    %s\n)' % ind(PP('{NichtMessbar: !Coalesce(%s.NichtMessbar, false)}' % CUR), 4), art="sekundaer", size=12,
+            DisplayMode=EDIT.replace("DisplayMode.View", "DisplayMode.Disabled"),
+            Fill='If(Coalesce(%s.NichtMessbar, false), clrPrimaer, clrKarte)' % CUR, Color='If(Coalesce(%s.NichtMessbar, false), Color.White, clrPrimaer)' % CUR,
+            HoverColor='If(Coalesce(%s.NichtMessbar, false), Color.White, clrPrimaer)' % CUR),
         lbl("lblPEinheit", '"Einheit"', "0", "0", "140", "20", size=12, color="clrTextGrau"),
         lbl("lblPMin", '"i.O. ab"', "152", "0", "120", "20", size=12, color="clrTextGrau"),
         lbl("lblPMax", '"i.O. bis"', "284", "0", "120", "20", size=12, color="clrTextGrau"),
@@ -1240,7 +1261,7 @@ ed_k = con("conEdK", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     dd("ddKBereich", 'Sort(ForAll(colB As b, {ID: b.ID, N: b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")}), S)', "N",
        'With({b: LookUp(colB, ID = %s.BereichID)}, b.Title & If(CountRows(Filter(colB As x, x.Title = b.Title)) > 1, " (#" & b.ID & ")", ""))' % CURK, K_VERSCHIEBEN, "0", "92", "528", "36", '"Bereich (verschieben)"'),
     lbl("lblKInfo", 'CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkte." & Char(10) & Char(10) & '
-        '"Eine Kategorie ist eine Seite im Rundgang: Der Prüfer füllt sie aus und speichert sie als Ganzes. Die Kategorien werden der Reihe nach freigeschaltet. Neuer Prüfpunkt: links „+ Prüfpunkt“."',
+        '"Eine Kategorie ist eine Seite im Rundgang: Der Prüfer füllt sie aus und speichert sie als Ganzes. Der Prüfer kann die Kategorien in beliebiger Reihenfolge ausfüllen. Neuer Prüfpunkt: links „+ Prüfpunkt“."',
         "0", "140", "528", "140", size=13, color="clrTextGrau", VerticalAlign="VerticalAlign.Top"),
 ])
 
@@ -1274,15 +1295,16 @@ VS_REGELN = ('"• " & If(Coalesce(%(c)s.Pflicht, false), "Pflichtfrage", "freiw
              'If(Coalesce(%(c)s.BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = %(c)s.BedingungPunkt).Title & "“ = " & fnBedText(%(c)s.BedingungWert), "") & '
              'If(Coalesce(%(c)s.HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "") & '
              'If(Coalesce(%(c)s.Rueckfrage, false), Char(10) & "• bei n.i.O. Rückfrage „Ist das wirklich so?“", "") & '
-             'If(Coalesce(%(c)s.Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "")') % {"c": CUR, "f": FOTO_IST}
+             'If(Coalesce(%(c)s.Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "") & '
+             'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.NichtMessbar, false), Char(10) & "• „nicht messbar“ erlaubt (dann Begründung Pflicht)", "")') % {"c": CUR, "f": FOTO_IST}
 
 vs_karte = con("conVsKarte", dict({"X": "16", "Y": "40", "Width": "Parent.Width - 32", "Height": "300", "Fill": "clrKarte", "BorderColor": "clrRahmen",
                                    "BorderThickness": "1", "Visible": "varAuswahlEbene = 3"}, **radius(8)), [
     lbl("lblVsFrage", '%s.Title & If(Coalesce(%s.Pflicht, false), " *", "")' % (CUR, CUR), "16", "8", "Parent.Width - 32", "44", size=15, bold=True),
     lbl("lblVsHinweis", 'Coalesce(%s.Hinweis, "")' % CUR, "16", "52", "Parent.Width - 32", "22", size=12, color="clrTextGrau", Wrap="false"),
-    btn("btnVsIO", '"i.O."', "16", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
+    btn("btnVsIO", 'If(Trim(Coalesce(%s.TextIO, "")) = "", "i.O.", %s.TextIO)' % (CUR, CUR), "16", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
         DisabledFill="clrErfolgHell", DisabledColor="clrErfolg", DisabledBorderColor="clrErfolg", Visible=ist_typ("IONIO")),
-    btn("btnVsNIO", '"n.i.O."', "144", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
+    btn("btnVsNIO", 'If(Trim(Coalesce(%s.TextNIO, "")) = "", "n.i.O.", %s.TextNIO)' % (CUR, CUR), "144", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
         DisabledFill="clrFehlerHell", DisabledColor="clrFehler", DisabledBorderColor="clrFehler", Visible=ist_typ("IONIO")),
     txt("txtVsWert", '""', "false", "16", "80", 'If(%s, 160, Parent.Width - 32)' % ist_typ("ZAHL"), "44", 'If(%s, "Wert", "Eingabe")' % ist_typ("ZAHL"),
         '"Vorschau Eingabe"', DisplayMode="DisplayMode.Disabled", Visible=ist_typ("ZAHL", "TEXT")),
@@ -1933,7 +1955,8 @@ def pruefen(app_ref):
             props[c.name + "." + k] = v
     # Datenvertrag (02.11.): jede inhaltliche Spalte muss beim Kopieren mitkommen und in der Änderungsliste stehen
     p_spalten = ["Title", "Eingabetyp", "Pflicht", "Auswahlwerte", "Einheit", "MinWert", "MaxWert", "Hinweis", "FotoMoeglich", "Foto",
-                 "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID", "Abschnitt"]
+                 "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID", "Abschnitt",
+                 "Kritisch", "KritischText", "Ansprechpartner", "Rueckfrage", "RueckfrageText", "TextIO", "TextNIO", "NichtMessbar"]
     kopie = props.get("tmrArbeit.OnTimerEnd", "")
     m_p = re.search(r"Patch\(RG_Pruefpunkte, Defaults\(RG_Pruefpunkte\), \{(.*?)\}\)\.ID", kopie, re.S)
     m_b = re.search(r"Patch\(RG_Bereiche, Defaults\(RG_Bereiche\), \{(.*?)\}\)\.ID", kopie, re.S)

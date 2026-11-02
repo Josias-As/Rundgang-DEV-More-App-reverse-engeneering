@@ -86,7 +86,7 @@
                   RadiusTopLeft: =6
                   RadiusTopRight: =6
                   Size: =14
-                  Text: ="i.O."
+                  Text: =If(Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")) = "", "i.O.", LookUp(colP, ID = varAuswahlID).TextIO)
                   Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO")
                   Width: =120
                   X: =16
@@ -114,7 +114,7 @@
                   RadiusTopLeft: =6
                   RadiusTopRight: =6
                   Size: =14
-                  Text: ="n.i.O."
+                  Text: =If(Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, "")) = "", "n.i.O.", LookUp(colP, ID = varAuswahlID).TextNIO)
                   Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO")
                   Width: =120
                   X: =144
@@ -216,7 +216,7 @@
                   Height: =124
                   Size: =12
                   Text: |-
-                    ="• " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false), "Pflichtfrage", "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))) & Char(10) & "• Kommentar " & If(Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false), "immer Pflicht", "Pflicht bei Mangel") & If(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL", Char(10) & "• " & fnGrenzText(LookUp(colP, ID = varAuswahlID).MinWert, LookUp(colP, ID = varAuswahlID).MaxWert, LookUp(colP, ID = varAuswahlID).Einheit) & If(IsBlank(LookUp(colP, ID = varAuswahlID).MinWert) && IsBlank(LookUp(colP, ID = varAuswahlID).MaxWert), "", ", außerhalb: " & Switch(fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value), "Warnen", "Hinweis + Begründung", "Sperren", "nicht speicherbar", "Mangel")), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title & "“ = " & fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), Char(10) & "• bei n.i.O. Rückfrage „Ist das wirklich so?“", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "")
+                    ="• " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false), "Pflichtfrage", "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))) & Char(10) & "• Kommentar " & If(Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false), "immer Pflicht", "Pflicht bei Mangel") & If(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL", Char(10) & "• " & fnGrenzText(LookUp(colP, ID = varAuswahlID).MinWert, LookUp(colP, ID = varAuswahlID).MaxWert, LookUp(colP, ID = varAuswahlID).Einheit) & If(IsBlank(LookUp(colP, ID = varAuswahlID).MinWert) && IsBlank(LookUp(colP, ID = varAuswahlID).MaxWert), "", ", außerhalb: " & Switch(fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value), "Warnen", "Hinweis + Begründung", "Sperren", "nicht speicherbar", "Mangel")), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title & "“ = " & fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), Char(10) & "• bei n.i.O. Rückfrage „Ist das wirklich so?“", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "") & If(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL" && Coalesce(LookUp(colP, ID = varAuswahlID).NichtMessbar, false), Char(10) & "• „nicht messbar“ erlaubt (dann Begründung Pflicht)", "")
                   VerticalAlign: =VerticalAlign.Top
                   Width: =Parent.Width - 32
                   X: =16
@@ -319,7 +319,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt),
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO),
                         ThisItem.Ebene = 2,
                             Set(varAuswahlEbene, 2);
                             Set(varAuswahlID, ThisItem.ID);
@@ -338,7 +340,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt),
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO),
                         ThisItem.Ebene = 1,
                             Set(varAuswahlEbene, 1);
                             Set(varAuswahlID, ThisItem.ID);
@@ -357,7 +361,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt)
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO)
                         )
                     )
                   PressedColor: =Color.White

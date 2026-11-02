@@ -141,7 +141,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt),
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO),
                         ThisItem.Ebene = 2,
                             Set(varAuswahlEbene, 2);
                             Set(varAuswahlID, ThisItem.ID);
@@ -160,7 +162,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt),
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO),
                         ThisItem.Ebene = 1,
                             Set(varAuswahlEbene, 1);
                             Set(varAuswahlID, ThisItem.ID);
@@ -179,7 +183,9 @@
                             Reset(ddPKategorie);
                             Reset(ddPBedA);
                             Reset(ddPBedW);
-                            Reset(txtPAbschnitt)
+                            Reset(txtPAbschnitt);
+                            Reset(txtPTextIO);
+                            Reset(txtPTextNIO)
                         )
                     )
                   PressedColor: =Color.White
@@ -251,6 +257,8 @@
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
                                 Reset(txtPAbschnitt);
+                                Reset(txtPTextIO);
+                                Reset(txtPTextNIO);
                                 SetFocus(txtBName)
                             )
                         )
@@ -312,6 +320,8 @@
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
                                 Reset(txtPAbschnitt);
+                                Reset(txtPTextIO);
+                                Reset(txtPTextNIO);
                                 SetFocus(txtKName)
                             )
                         )
@@ -351,7 +361,7 @@
                             false,
                             varCtxK = 0,
                             Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
-                            Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: If(varAuswahlEbene = 3 && LookUp(colP, ID = varAuswahlID).KategorieID = varCtxK, Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, ""), "")}).ID, 0));
+                            Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: If(varAuswahlEbene = 3 && LookUp(colP, ID = varAuswahlID).KategorieID = varCtxK, Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, ""), ""), TextIO: "", TextNIO: "", NichtMessbar: false}).ID, 0));
                             If(varNeuID = 0,
                                 Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
                                 Collect(colP, LookUp(RG_Pruefpunkte, ID = varNeuID));
@@ -373,6 +383,8 @@
                                 Reset(ddPBedA);
                                 Reset(ddPBedW);
                                 Reset(txtPAbschnitt);
+                                Reset(txtPTextIO);
+                                Reset(txtPTextNIO);
                                 SetFocus(txtPFrage)
                             )
                         )

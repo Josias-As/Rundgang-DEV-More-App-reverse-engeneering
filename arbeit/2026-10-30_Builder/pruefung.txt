@@ -1,7 +1,7 @@
-Rundgang-Builder: 4 Bildschirme, 287 Steuerelemente, 4014 Properties, 51 Variablen, 17 Funktionen
-Patch-Felder geprüft: 266
+Rundgang-Builder: 4 Bildschirme, 294 Steuerelemente, 4103 Properties, 51 Variablen, 17 Funktionen
+Patch-Felder geprüft: 278
 YAML scrListe: 589 Properties zeichengleich zurückgelesen
-YAML scrEditor: 2688 Properties zeichengleich zurückgelesen
+YAML scrEditor: 2777 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
 YAML scrKontakte: 364 Properties zeichengleich zurückgelesen
 
@@ -145,6 +145,15 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnPKomm.OnSelect              LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnPKomm.OnSelect              LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KommentarPflicht: ThisItem.W = "immer"})
   btnPKomm.OnSelect              LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  txtPTextIO.OnChange            LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPTextIO.OnChange            LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {TextIO: Left(Trim(Self.Text), 18)}), Set
+  txtPTextIO.OnChange            LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  txtPTextNIO.OnChange           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtPTextNIO.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {TextNIO: Left(Trim(Self.Text), 18)}), Se
+  txtPTextNIO.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  btnPNM.OnSelect                LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnPNM.OnSelect                LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {NichtMessbar: !Coalesce(LookUp(colP, ID 
+  btnPNM.OnSelect                LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   txtPEinheit.OnChange           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   txtPEinheit.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Einheit: Trim(Self.Text)}), Set(varPatch
   txtPEinheit.OnChange           LookUp(RG_Pruefpunkte, ID = varAuswahlID))

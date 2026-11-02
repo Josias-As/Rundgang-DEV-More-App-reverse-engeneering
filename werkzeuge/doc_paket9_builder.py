@@ -1,3 +1,4 @@
+# HINWEIS: nach Paket 12+16 nicht mehr neu erzeugen (Stand Paket 9 eingefroren, Vorher = builder_nach_p8.json, Nachher = builder_nach_p9.json)
 """Paket 9 (Rückfrage, kritischer Mangel, Ansprechpartner), Teil Builder: Einbau-Dokument.
 Vorher = Builder nach Paket 8 (arbeit/2026-11-02_Paket8/builder_nach_p8.json).
 Aufruf: python3 -I werkzeuge/builder.py && python3 -I werkzeuge/doc_paket9_builder.py  ->  pakete/builder/PAKET_9_BUILDER.md"""

@@ -81,5 +81,15 @@ P7  ok    Bei Mangel Pflicht, Zahl außerhalb bei Warnen (i.O.) -> kein Foto nö
 P7  ok    Bei Mangel Pflicht, unbeantwortet optional -> nichts fehlt             erwartet ''           ist ''
 P7  ok    fnFotoNeuErlaubt: i.O. und BeiMangel -> nein                           erwartet False        ist False
 P7  ok    fnFotoNeuErlaubt: n.i.O. und BeiMangel -> ja                           erwartet True         ist True
+P9  ok    kritisch: n.i.O. mit Kommentar, nicht bestätigt                        erwartet 'Kritisch'   ist 'Kritisch'
+P9  ok    kritisch: n.i.O. mit Kommentar, bestätigt                              erwartet ''           ist ''
+P9  ok    kritisch: Antwort i.O. braucht keine Bestätigung                       erwartet ''           ist ''
+P9  ok    kritisch: Kommentar fehlt geht vor Bestätigung                         erwartet 'Kommentar'  ist 'Kommentar'
+P9  ok    kritisch: Zahl außerhalb (Mangel), unbestätigt                         erwartet 'Kritisch'   ist 'Kritisch'
+P16  ok    nicht messbar, Pflicht, ohne Kommentar                                 erwartet 'Kommentar'  ist 'Kommentar'
+P16  ok    nicht messbar mit Begründung                                           erwartet ''           ist ''
+P16  ok    Zahl leer, Pflicht -> Wert fehlt (unverändert)                         erwartet 'Wert'       ist 'Wert'
+P16  ok    Zahl 5 innerhalb, kein Kommentar nötig (unverändert)                   erwartet ''           ist ''
+P16  ok    fnKommentarNoetig: nicht messbar -> ja                                 erwartet True         ist True
 
-Szenarien: 81, Fehler: 0
+Szenarien: 91, Fehler: 0

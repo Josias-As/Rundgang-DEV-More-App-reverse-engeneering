@@ -59,11 +59,13 @@ def fnKommentarNoetig(paket, typ, bew, wt, wz, kpfl, gm, mi, ma):
         r = r or (kpfl and fnBeantwortet(bew, wt, wz))
     if paket >= 3:
         r = r or (typ == "ZAHL" and gm == "Warnen" and fnAusserhalb(wz, mi, ma))
+    if paket >= 16:
+        r = r or (typ == "ZAHL" and wt == "nicht messbar")
     return r
 
 
-def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi, ma):
-    wert = (typ == "IONIO" and leer(bew)) or (typ == "AUSWAHL" and leer(wt)) or (typ == "ZAHL" and wz is None) \
+def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi, ma, kritoffen=False):
+    wert = (typ == "IONIO" and leer(bew)) or (typ == "AUSWAHL" and leer(wt)) or (typ == "ZAHL" and wz is None and (paket < 16 or leer(wt))) \
         or (typ == "TEXT" and trim(wt) == "")
     if paket >= 5:
         wert = wert or (typ == "MEHRFACH" and trim(wt) == "") or (typ in ("DATUM", "DATUMZEIT") and leer(wt))
@@ -77,6 +79,8 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
         return "Kommentar"
     if (foto == "Pflicht" or (paket >= 7 and foto == "BeiMangel" and bew == "NIO")) and fanz < 1:
         return "Foto"
+    if paket >= 9 and kritoffen and bew == "NIO":
+        return "Kritisch"
     return ""
 
 
@@ -239,11 +243,21 @@ SZENARIEN = [
     (7, "Bei Mangel Pflicht, unbeantwortet optional -> nichts fehlt", "grund", ("IONIO", False, "", "", None, "", "BeiMangel", 0, False, "Mangel", None, None), ""),
     (7, "fnFotoNeuErlaubt: i.O. und BeiMangel -> nein", "neu", ("IO", "BeiMangel"), False),
     (7, "fnFotoNeuErlaubt: n.i.O. und BeiMangel -> ja", "neu", ("NIO", "BeiMangel"), True),
+    (9, "kritisch: n.i.O. mit Kommentar, nicht bestätigt", "grund", ("IONIO", True, "NIO", "", None, "k", "Aus", 0, False, "Mangel", None, None, True), "Kritisch"),
+    (9, "kritisch: n.i.O. mit Kommentar, bestätigt", "grund", ("IONIO", True, "NIO", "", None, "k", "Aus", 0, False, "Mangel", None, None, False), ""),
+    (9, "kritisch: Antwort i.O. braucht keine Bestätigung", "grund", ("IONIO", True, "IO", "", None, "", "Aus", 0, False, "Mangel", None, None, True), ""),
+    (9, "kritisch: Kommentar fehlt geht vor Bestätigung", "grund", ("IONIO", True, "NIO", "", None, "", "Aus", 0, False, "Mangel", None, None, True), "Kommentar"),
+    (9, "kritisch: Zahl außerhalb (Mangel), unbestätigt", "grund", ("ZAHL", True, "NIO", "", 12, "k", "Aus", 0, False, "Mangel", 0, 10, True), "Kritisch"),
+    (16, "nicht messbar, Pflicht, ohne Kommentar", "grund", ("ZAHL", True, "", "nicht messbar", None, "", "Aus", 0, False, "Mangel", 0, 10), "Kommentar"),
+    (16, "nicht messbar mit Begründung", "grund", ("ZAHL", True, "", "nicht messbar", None, "Anlage aus", "Aus", 0, False, "Mangel", 0, 10), ""),
+    (16, "Zahl leer, Pflicht -> Wert fehlt (unverändert)", "grund", ("ZAHL", True, "", "", None, "", "Aus", 0, False, "Mangel", 0, 10), "Wert"),
+    (16, "Zahl 5 innerhalb, kein Kommentar nötig (unverändert)", "grund", ("ZAHL", True, "IO", "", 5, "", "Aus", 0, False, "Mangel", 0, 10), ""),
+    (16, "fnKommentarNoetig: nicht messbar -> ja", "komm", ("ZAHL", "", "nicht messbar", None, False, "Mangel", 0, 10), True),
 ]
 
 
 def fuehre(paket, art, args):
-    p = 7 if paket >= 7 else min(paket, 5)
+    p = paket if paket >= 7 else min(paket, 5)
     if art == "grund":
         return fnFehltGrund(p, *args)
     if art == "komm":
@@ -277,7 +291,7 @@ def main():
         zeilen.append("P%d  %-4s  %-70s erwartet %-12r ist %r" % (paket, "ok" if ok else "FEHLER", text, erwartet, ist))
     # spätere Pakete dürfen frühere Szenarien nicht brechen
     for paket, text, art, args, erwartet in SZENARIEN:
-        for spaeter in range(paket, 8):
+        for spaeter in sorted({paket, 7, 9, 16} - set(range(0, paket))):
             if fuehre(spaeter, art, args) != erwartet:
                 fehler += 1
                 zeilen.append("FEHLER: Szenario P%d '%s' ändert sich in Paket %d" % (paket, text, spaeter))

@@ -513,6 +513,45 @@
   lblRuSymbol.Color                ok
   lblRuKatZustand.Text             ok
   btnRuOeffnen.Text                ok
+== Paket 12: 8 Properties, neue Steuerelemente: -
+  scrKategorie.OnVisible           ok
+  btnKaSpeichern.OnSelect          ok
+  btnKaIO.Text                     ok
+  btnKaNIO.Text                    ok
+  btnKaIO.Width                    ok
+  btnKaNIO.Width                   ok
+  btnKaNIO.X                       ok
+  htmProtokoll.HtmlText            ok
+== Paket 16: 4 Properties, neue Steuerelemente: btnKaNM
+  App.Formulas                     ok
+  scrKategorie.OnVisible           ok
+  txtKaZahl.OnChange               ok
+  lblKaZahlInfo.Width              ok
+  btnKaNM.BorderColor              ok
+  btnKaNM.BorderThickness          ok
+  btnKaNM.Color                    ok
+  btnKaNM.DisabledColor            ok
+  btnKaNM.DisabledFill             ok
+  btnKaNM.DisabledBorderColor      ok
+  btnKaNM.DisplayMode              ok
+  btnKaNM.Fill                     ok
+  btnKaNM.Font                     ok
+  btnKaNM.Height                   ok
+  btnKaNM.HoverColor               ok
+  btnKaNM.HoverFill                ok
+  btnKaNM.OnSelect                 ok
+  btnKaNM.PressedColor             ok
+  btnKaNM.PressedFill              ok
+  btnKaNM.RadiusBottomLeft         ok
+  btnKaNM.RadiusBottomRight        ok
+  btnKaNM.RadiusTopLeft            ok
+  btnKaNM.RadiusTopRight           ok
+  btnKaNM.Size                     ok
+  btnKaNM.Text                     ok
+  btnKaNM.Visible                  ok
+  btnKaNM.Width                    ok
+  btnKaNM.X                        ok
+  btnKaNM.Y                        ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -523,6 +562,8 @@
   Paket 8: colAntworten hat in allen drei Zweigen dieselben 26 Felder
   Paket 9: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 10: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 12: colAntworten hat in allen drei Zweigen dieselben 36 Felder
+  Paket 16: colAntworten hat in allen drei Zweigen dieselben 37 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
