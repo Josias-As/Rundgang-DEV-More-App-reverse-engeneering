@@ -1,7 +1,7 @@
-Rundgang-Builder: 4 Bildschirme, 294 Steuerelemente, 4103 Properties, 51 Variablen, 17 Funktionen
+Rundgang-Builder: 4 Bildschirme, 294 Steuerelemente, 4105 Properties, 51 Variablen, 17 Funktionen
 Patch-Felder geprüft: 278
 YAML scrListe: 589 Properties zeichengleich zurückgelesen
-YAML scrEditor: 2777 Properties zeichengleich zurückgelesen
+YAML scrEditor: 2779 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
 YAML scrKontakte: 364 Properties zeichengleich zurückgelesen
 

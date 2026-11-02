@@ -33,6 +33,11 @@ ERKL_APP = {
     "App.Formulas": "„nicht messbar“ zählt als beantwortet (`fnFehltGrund`) und braucht einen Kommentar (`fnKommentarNoetig`).",
     "txtKaZahl.OnChange": "Eine eingetippte Zahl hebt „nicht messbar“ wieder auf.",
     "lblKaZahlInfo.Width": "Macht Platz für den neuen Knopf.",
+    "lblKaZahlInfo.Size": "Etwas kleiner, solange der Knopf „nicht messbar“ da ist (sonst wird „… bitte begründen“ abgeschnitten).",
+    "btnKaIO.Size": "Schrift 14 statt 17 bei Wörtern über 12 Zeichen.",
+    "btnKaNIO.Size": "Wie btnKaIO.Size.",
+    "lblKaRueckFrage.Text": "Rückfrage zeigt das eigene Wort statt „n.i.O.“.",
+    "btnKaKritVersehen.Text": "„… war ein Versehen“ mit dem eigenen Wort.",
 }
 ERKL_BUILDER = {
     "lblKInfo.Text": "Erklärtext: Kategorien in beliebiger Reihenfolge (seit Paket 10).",
@@ -40,6 +45,9 @@ ERKL_BUILDER = {
     "btnPNio.Y": "Wie conPRest.Y.",
     "btnVsIO.Text": "Vorschau zeigt das eigene Wort.",
     "btnVsNIO.Text": "Vorschau zeigt das eigene Wort.",
+    "btnVsIO.Width": "Vorschau-Knöpfe breiter bei langen Wörtern.",
+    "btnVsNIO.Width": "Wie btnVsIO.Width.",
+    "btnVsNIO.X": "Steht immer neben dem i.O.-Knopf.",
     "lblVsRegeln.Text": "Vorschau nennt „nicht messbar erlaubt“.",
     "galAkt.Items": "Änderungen an Wörtern und „nicht messbar“ zählen als „geändert“.",
     "galPr.Items": "Hinweis, wenn eigene Wörter bei einem anderen Typ eingetragen sind.",
@@ -83,8 +91,9 @@ def app_doc():
     for n, i in BL["neue_controls"].items():
         eltern[n] = i["eltern"]
     gruppen = [("Laden, Formeln, Speichern", ["App.Formulas", "scrKategorie.OnVisible", "btnKaSpeichern.OnSelect"]),
-               ("Knöpfe i.O./n.i.O.", ["btnKaIO.Text", "btnKaNIO.Text", "btnKaIO.Width", "btnKaNIO.Width", "btnKaNIO.X"]),
-               ("„nicht messbar“", ["txtKaZahl.OnChange", "lblKaZahlInfo.Width", "#btnKaNM"]),
+               ("Knöpfe i.O./n.i.O.", ["btnKaIO.Text", "btnKaNIO.Text", "btnKaIO.Width", "btnKaNIO.Width", "btnKaNIO.X", "btnKaIO.Size", "btnKaNIO.Size"]),
+               ("Fenster mit dem eigenen Wort", ["lblKaRueckFrage.Text", "btnKaKritVersehen.Text"]),
+               ("„nicht messbar“", ["txtKaZahl.OnChange", "lblKaZahlInfo.Width", "lblKaZahlInfo.Size", "#btnKaNM"]),
                ("Protokoll", ["htmProtokoll.HtmlText"])]
     keys = [k for _, ks in gruppen for k in ks if not k.startswith("#")]
     assert sorted(keys) == sorted(end), set(keys) ^ set(end)
@@ -92,7 +101,7 @@ def app_doc():
          "Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket12, paket16) und `werkzeuge/doc_paket12_16.py`. "
          "**Voraussetzung: Paket N und Paket 8–10 eingefügt** (`PAKET_N_Nachholen.md`, `PAKET_8_9_10_APP.md`).", "",
          "## Kurzfassung", ""] + KURZ + [
-         "- Umfang: 3 Spalten, %d Properties (jede einmal), 1 neuer Knopf. Generator 0 Fehler, Mutation 12/12, Logik 91 Szenarien. **Nicht in Studio getestet. Nicht unabhängig geprüft.**" % len(end), "",
+         "- Umfang: 3 Spalten, %d Properties (jede einmal), 1 neuer Knopf. Generator 0 Fehler, Mutation 12/12, Logik 91 Szenarien, unabhängig geprüft (9 Befunde eingearbeitet, `arbeit/2026-11-02_Paket12_16/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**" % len(end), "",
          "## Schritt 1 – SharePoint", "",
          "`RG_Pruefpunkte`: `TextIO` (Eine Textzeile), `TextNIO` (Eine Textzeile), `NichtMessbar` (Ja/Nein, Standard Nein). "
          "Danach in der Rundgang-App: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**.", ""]
@@ -114,7 +123,12 @@ def app_doc():
           "| T4 | Zahl-Frage mit `NichtMessbar` = Ja: „nicht messbar“ tippen | Feld leer, Knopf grau gefüllt „✓ nicht messbar“, „Noch offen … (Kommentar)“ |",
           "| T5 | Begründung eintragen, speichern | gespeichert, Protokoll „nicht messbar“ + Begründung, kein Mangel |",
           "| T6 | Kategorie neu öffnen, eine Zahl eintippen | „nicht messbar“ ist aufgehoben, Zahl gilt |",
-          "| T7 | Zahl-Frage ohne `NichtMessbar` | kein Knopf, alles wie bisher |", "",
+          "| T7 | Zahl-Frage ohne `NichtMessbar` | kein Knopf, alles wie bisher |",
+          "| T8 | Zahl-Frage mit Rückfrage: Wert außerhalb tippen und **ohne** das Feld zu verlassen „nicht messbar“ tippen | kein Fenster, Speichern verlangt nur die Begründung |",
+          "| T9 | Rückfrage bei „nicht durchgeführt“ | Fenster sagt „Ihre Antwort: nicht durchgeführt“ |", "",
+          "## Bekannt / Frage an den Planer", "",
+          "- „nicht messbar“ umgeht Grenzmodus „Sperren“ und „kritisch“ (es gibt keinen Wert). Gewollt? Sonst: „nicht messbar“ bei kritischen Punkten im Builder sperren.",
+          "- Wird „nicht messbar“ im Builder später abgeschaltet, bleibt ein schon gespeichertes „nicht messbar“ gültig. Der Knopf bleibt dann sichtbar, damit man es aufheben kann.", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang einsetzen, `btnKaNM` löschen. Spalten dürfen bleiben.", "",
           "## Anhang – Vorher-Fassungen (Stand nach Paket 8–10)", ""]
     for k in keys:
@@ -127,7 +141,8 @@ def builder_doc():
     v, n = BV["de"], BN["de"]
     geaendert = sorted(k for k in n if k in v and v[k] != n[k])
     eltern = BN["eltern"]
-    gruppen = [("Kleine Werte und Vorschau", ["lblKInfo.Text", "conPRest.Y", "btnPNio.Y", "btnVsIO.Text", "btnVsNIO.Text", "lblVsRegeln.Text"]),
+    gruppen = [("Kleine Werte und Vorschau", ["lblKInfo.Text", "conPRest.Y", "btnPNio.Y", "btnVsIO.Text", "btnVsNIO.Text", "btnVsIO.Width", "btnVsNIO.Width",
+                                              "btnVsNIO.X", "lblVsRegeln.Text"]),
                ("Auswahl wechseln (setzt die neuen Felder zurück)", ["btnGlZeile.OnSelect", "btnGlNeuB.OnSelect", "btnGlNeuK.OnSelect", "btnGlNeuP.OnSelect",
                                                                     "btnPrZeile.OnSelect", "ddKBereich.OnChange", "ddPKategorie.OnChange"]),
                ("Listen und Mehrere Fragen", ["galAkt.Items", "btnMehrAnlegen.OnSelect"]),
@@ -154,8 +169,8 @@ def builder_doc():
          "## Kurzfassung", ""] + KURZ + [
          "- Im Prüfpunkt-Editor: bei i.O./n.i.O. zwei Felder „Knopf heißt …“, bei Zahl der Knopf „nicht messbar: erlaubt“. Kopie, Fassungen, Änderungsliste, Vorschau und Prüfung kennen die Felder.",
          "- Dazu: Der Erklärtext bei Kategorien sagt jetzt „beliebige Reihenfolge“ (Paket 10).",
-         "- Umfang: 3 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, %d geänderte Properties. Generator 0 Fehler, Mutation 13/13, Logik 27. "
-         "**Nicht in Studio getestet. Nicht unabhängig geprüft.**" % len(geaendert), "",
+         "- Umfang: 3 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, %d geänderte Properties. Generator 0 Fehler, Mutation 13/13, Logik 27, unabhängig geprüft. "
+         "**Nicht in Studio getestet.**" % len(geaendert), "",
          "## Schritt 0 – SharePoint", "", "Die drei Spalten aus `PAKET_12_16_APP.md`, Schritt 1 (nur einmal anlegen). Im Builder: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**.", "",
          "## Schritt 1 – neue Steuerelemente", "",
          "### 1a · Felder für die Knopf-Wörter", "", "**Wo hin:** **`conEdP`** (`%s`) markieren → Strg+V." % pfad("conEdP", eltern), "",
@@ -169,7 +184,8 @@ def builder_doc():
             z += block("%d.%d" % (gi, i), k, v[k], n[k], ERKL_BUILDER.get(k, STD), eltern)
     z += ["## Test", "",
           "1. Prüfpunkt i.O./n.i.O. wählen → „durchgeführt“ / „nicht durchgeführt“ eintragen → Vorschau-Knöpfe heißen so.",
-          "2. Zahl-Prüfpunkt → „nicht messbar: nicht erlaubt“ antippen → „✓ erlaubt“, Vorschau nennt es.",
+          "2. Zahl-Prüfpunkt → „nicht messbar: nicht erlaubt“ antippen → „✓ erlaubt“, Vorschau nennt es. Schnell zweimal tippen → schaltet nur einmal um.",
+          "2b. „durchgeführt“/„nicht durchgeführt“ eintragen → Vorschau-Knöpfe werden breiter, nichts abgeschnitten. Mehr als 18 Zeichen lassen sich nicht eintippen.",
           "3. Anderen Prüfpunkt wählen und zurück → Felder zeigen die richtigen Werte.",
           "4. Aktivieren → Änderungsliste „geändert“. Neue Fassung → Werte noch da.", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang. `conPIonio`, `lblPNM`, `btnPNM` erst löschen, **nachdem** die Vorher-Fassungen drin sind "

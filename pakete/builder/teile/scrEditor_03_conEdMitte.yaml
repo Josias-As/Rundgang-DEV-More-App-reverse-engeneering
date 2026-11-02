@@ -797,8 +797,9 @@
                         FocusedBorderColor: =clrPrimaer
                         Font: =Font.'Segoe UI'
                         Height: =36
-                        HintText: ="i.O. (z. B. durchgeführt)"
+                        HintText: ="z. B. durchgeführt"
                         HoverBorderColor: =clrPrimaer
+                        MaxLength: =18
                         OnChange: |-
                           =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")),
                               If(varSchreibbar && varAuswahlEbene = 3,
@@ -832,8 +833,9 @@
                         FocusedBorderColor: =clrPrimaer
                         Font: =Font.'Segoe UI'
                         Height: =36
-                        HintText: ="n.i.O. (z. B. nicht durchgeführt)"
+                        HintText: ="z. B. nicht durchgeführt"
                         HoverBorderColor: =clrPrimaer
+                        MaxLength: =18
                         OnChange: |-
                           =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, "")),
                               If(varSchreibbar && varAuswahlEbene = 3,
@@ -896,7 +898,8 @@
                         HoverColor: =If(Coalesce(LookUp(colP, ID = varAuswahlID).NichtMessbar, false), Color.White, clrPrimaer)
                         HoverFill: =clrPrimaerHell
                         OnSelect: |-
-                          =If(varSchreibbar && varAuswahlEbene = 3,
+                          =If(varSchreibbar && varAuswahlEbene = 3 && !varIsLoading && Now() >= varSperreBis,
+                              Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
                               If(varSchreibbar && varAuswahlEbene = 3,
                                   Refresh(RG_Rundgaenge);
                                   Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);

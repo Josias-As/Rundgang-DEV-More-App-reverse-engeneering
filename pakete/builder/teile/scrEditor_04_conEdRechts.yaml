@@ -88,7 +88,7 @@
                   Size: =14
                   Text: =If(Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")) = "", "i.O.", LookUp(colP, ID = varAuswahlID).TextIO)
                   Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO")
-                  Width: =120
+                  Width: =If(Max(Len(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")), Len(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, ""))) > 8, 200, 120)
                   X: =16
                   Y: =80
             - btnVsNIO:
@@ -116,8 +116,8 @@
                   Size: =14
                   Text: =If(Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, "")) = "", "n.i.O.", LookUp(colP, ID = varAuswahlID).TextNIO)
                   Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO")
-                  Width: =120
-                  X: =144
+                  Width: =If(Max(Len(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")), Len(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, ""))) > 8, 200, 120)
+                  X: =24 + btnVsIO.Width
                   Y: =80
             - txtVsWert:
                 Control: Classic/TextInput@2.3.2

@@ -6,7 +6,7 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket12, paket16) und `w
 
 - **Paket 12 – eigene Antwortwörter:** Bei i.O./n.i.O.-Fragen lassen sich die Knöpfe umbenennen, z. B. „durchgeführt“ / „nicht durchgeführt“ (Legionellen). Intern bleibt es i.O./n.i.O.: „nicht durchgeführt“ ergibt weiter einen Mangel. Leer = „i.O.“/„n.i.O.“ wie bisher. Protokoll zeigt die eigenen Wörter. Höchstens 18 Zeichen.
 - **Paket 16 – „nicht messbar“:** Bei Zahlen, für die es im Builder erlaubt ist, gibt es den Knopf „nicht messbar“ (z. B. Anlage aus). Dann ist das Feld leer, die Frage gilt als beantwortet, aber eine **Begründung (Kommentar) ist Pflicht**. Im Protokoll steht „nicht messbar“ statt „0“. Kein Mangel.
-- Umfang: 3 Spalten, 11 Properties (jede einmal), 1 neuer Knopf. Generator 0 Fehler, Mutation 12/12, Logik 91 Szenarien. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 3 Spalten, 16 Properties (jede einmal), 1 neuer Knopf. Generator 0 Fehler, Mutation 12/12, Logik 91 Szenarien, unabhängig geprüft (9 Befunde eingearbeitet, `arbeit/2026-11-02_Paket12_16/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Schritt 1 – SharePoint
 
@@ -188,7 +188,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); KritischVon: Coalesce(Text(a.KritischVon); ""); TextIO: Coalesce(Text(a.TextIO); pp.TextIO; ""); TextNIO: Coalesce(Text(a.TextNIO); pp.TextNIO; ""); NMErlaubt: false; Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); KritischVon: Coalesce(Text(a.KritischVon); ""); TextIO: Coalesce(Text(a.TextIO); ""); TextNIO: Coalesce(Text(a.TextNIO); ""); NMErlaubt: false; Inaktiv: false}
                     )
                 )
             )
@@ -390,34 +390,34 @@ If(Trim(ThisItem.TextNIO) = ""; "n.i.O."; ThisItem.TextNIO)
 **Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › btnKaIO` → Width
 
 ```
-If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)
+If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)
 ```
 
 ```diff
 - 160 (Standard)
-+ If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)
++ If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)
 ```
 
 **Kurz erklärt:** Breiter (250), wenn ein Wort länger als 8 Zeichen ist.
 
-**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)`
+**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)`
 
 ### 3.4 · `btnKaNIO.Width`
 
 **Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › btnKaNIO` → Width
 
 ```
-If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)
+If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)
 ```
 
 ```diff
 - 160 (Standard)
-+ If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)
++ If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)
 ```
 
 **Kurz erklärt:** Wie btnKaIO.Width.
 
-**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)`
+**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 260; 160)`
 
 ### 3.5 · `btnKaNIO.X`
 
@@ -436,9 +436,79 @@ If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 8; 250; 160)
 
 **Nachprüfen:** endet auf `36 + btnKaIO.Width`
 
-## Schritt 4 – „nicht messbar“
+### 3.6 · `btnKaIO.Size`
 
-### 4.1 · `txtKaZahl.OnChange`
+**Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › btnKaIO` → Size
+
+```
+If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)
+```
+
+```diff
+-17
++If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)
+```
+
+**Kurz erklärt:** Schrift 14 statt 17 bei Wörtern über 12 Zeichen.
+
+**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)`
+
+### 3.7 · `btnKaNIO.Size`
+
+**Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › btnKaNIO` → Size
+
+```
+If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)
+```
+
+```diff
+-17
++If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)
+```
+
+**Kurz erklärt:** Wie btnKaIO.Size.
+
+**Nachprüfen:** endet auf `If(Max(Len(ThisItem.TextIO); Len(ThisItem.TextNIO)) > 12; 14; 17)`
+
+## Schritt 4 – Fenster mit dem eigenen Wort
+
+### 4.1 · `lblKaRueckFrage.Text`
+
+**Pfad:** `scrKategorie › conKaRueck › conKaRueckKarte › lblKaRueckFrage` → Text
+
+```
+With({r: LookUp(colAntworten; PruefpunktID = varRueckPP)}; r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL"; Text(r.WertZahl) & " " & r.Einheit; If(Trim(r.TextNIO) = ""; "n.i.O."; r.TextNIO)))
+```
+
+```diff
+-With({r: LookUp(colAntworten; PruefpunktID = varRueckPP)}; r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL"; Text(r.WertZahl) & " " & r.Einheit; "n.i.O."))
++With({r: LookUp(colAntworten; PruefpunktID = varRueckPP)}; r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL"; Text(r.WertZahl) & " " & r.Einheit; If(Trim(r.TextNIO) = ""; "n.i.O."; r.TextNIO)))
+```
+
+**Kurz erklärt:** Rückfrage zeigt das eigene Wort statt „n.i.O.“.
+
+**Nachprüfen:** endet auf `t(r.WertZahl) & " " & r.Einheit; If(Trim(r.TextNIO) = ""; "n.i.O."; r.TextNIO)))`
+
+### 4.2 · `btnKaKritVersehen.Text`
+
+**Pfad:** `scrKategorie › conKaKrit › conKaKritKarte › btnKaKritVersehen` → Text
+
+```
+If(Trim(LookUp(colAntworten; PruefpunktID = varKritPP).TextNIO) = ""; "n.i.O."; LookUp(colAntworten; PruefpunktID = varKritPP).TextNIO) & " war ein Versehen – Antwort zurücknehmen"
+```
+
+```diff
+-"n.i.O. war ein Versehen – Antwort zurücknehmen"
++If(Trim(LookUp(colAntworten; PruefpunktID = varKritPP).TextNIO) = ""; "n.i.O."; LookUp(colAntworten; PruefpunktID = varKritPP).TextNIO) & " war ein Versehen – Antwort zurücknehmen"
+```
+
+**Kurz erklärt:** „… war ein Versehen“ mit dem eigenen Wort.
+
+**Nachprüfen:** endet auf ` PruefpunktID = varKritPP).TextNIO) & " war ein Versehen – Antwort zurücknehmen"`
+
+## Schritt 5 – „nicht messbar“
+
+### 5.1 · `txtKaZahl.OnChange`
 
 **Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › txtKaZahl` → OnChange
 
@@ -461,24 +531,41 @@ Set(varGeaendert; true)
 
 **Nachprüfen:** endet auf `Set(varGeaendert; true)`
 
-### 4.2 · `lblKaZahlInfo.Width`
+### 5.2 · `lblKaZahlInfo.Width`
 
 **Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › lblKaZahlInfo` → Width
 
 ```
-Parent.Width - 256 - If(btnKaNM.Visible; 180; 0)
+Parent.Width - 256 - If(btnKaNM.Visible; 136; 0)
 ```
 
 ```diff
 -Parent.Width - 256
-+Parent.Width - 256 - If(btnKaNM.Visible; 180; 0)
++Parent.Width - 256 - If(btnKaNM.Visible; 136; 0)
 ```
 
 **Kurz erklärt:** Macht Platz für den neuen Knopf.
 
-**Nachprüfen:** endet auf `Parent.Width - 256 - If(btnKaNM.Visible; 180; 0)`
+**Nachprüfen:** endet auf `Parent.Width - 256 - If(btnKaNM.Visible; 136; 0)`
 
-### 4.3 · neuer Knopf `btnKaNM`
+### 5.3 · `lblKaZahlInfo.Size`
+
+**Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › lblKaZahlInfo` → Size
+
+```
+If(btnKaNM.Visible; 12; 14)
+```
+
+```diff
+-14
++If(btnKaNM.Visible; 12; 14)
+```
+
+**Kurz erklärt:** Etwas kleiner, solange der Knopf „nicht messbar“ da ist (sonst wird „… bitte begründen“ abgeschnitten).
+
+**Nachprüfen:** endet auf `If(btnKaNM.Visible; 12; 14)`
+
+### 5.4 · neuer Knopf `btnKaNM`
 
 **Wo hin:** in der Strukturansicht `txtKaZahl` (in `conKaKarte`) markieren → Strg+V (landet in derselben Karte).
 
@@ -502,6 +589,8 @@ Parent.Width - 256 - If(btnKaNM.Visible; 180; 0)
         =If(ThisItem.WertText = "nicht messbar",
             Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ""}),
             Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: "nicht messbar", WertZahl: Blank(), Bewertung: "", KritischOk: false, KritischZeit: "", KritischVon: ""});
+            Set(varRueckPP, 0);
+            Set(varKritPP, 0);
             Reset(txtKaZahl)
         );
         Set(varGeaendert, true)
@@ -511,19 +600,19 @@ Parent.Width - 256 - If(btnKaNM.Visible; 180; 0)
       RadiusBottomRight: =8
       RadiusTopLeft: =8
       RadiusTopRight: =8
-      Size: =14
+      Size: =13
       Text: =If(ThisItem.WertText = "nicht messbar", "✓ nicht messbar", "nicht messbar")
       Visible: =ThisItem.Typ = "ZAHL" && (ThisItem.NMErlaubt || ThisItem.WertText = "nicht messbar")
-      Width: =164
-      X: =Parent.Width - 184
+      Width: =120
+      X: =Parent.Width - 140
       Y: =54 + If(ThisItem.Hinweis <> "", 24, 0)
 ```
 
 **Nachprüfen (E-05):** `btnKaNM.Y` muss die Formel `54 + If(ThisItem.Hinweis <> ""; 24; 0)` sein, keine Zahl.
 
-## Schritt 5 – Protokoll
+## Schritt 6 – Protokoll
 
-### 5.1 · `htmProtokoll.HtmlText`
+### 6.1 · `htmProtokoll.HtmlText`
 
 **Pfad:** `scrProtokoll › conPrInhalt › htmProtokoll` → HtmlText
 
@@ -578,6 +667,13 @@ With({d: varDurch};
 | T5 | Begründung eintragen, speichern | gespeichert, Protokoll „nicht messbar“ + Begründung, kein Mangel |
 | T6 | Kategorie neu öffnen, eine Zahl eintippen | „nicht messbar“ ist aufgehoben, Zahl gilt |
 | T7 | Zahl-Frage ohne `NichtMessbar` | kein Knopf, alles wie bisher |
+| T8 | Zahl-Frage mit Rückfrage: Wert außerhalb tippen und **ohne** das Feld zu verlassen „nicht messbar“ tippen | kein Fenster, Speichern verlangt nur die Begründung |
+| T9 | Rückfrage bei „nicht durchgeführt“ | Fenster sagt „Ihre Antwort: nicht durchgeführt“ |
+
+## Bekannt / Frage an den Planer
+
+- „nicht messbar“ umgeht Grenzmodus „Sperren“ und „kritisch“ (es gibt keinen Wert). Gewollt? Sonst: „nicht messbar“ bei kritischen Punkten im Builder sperren.
+- Wird „nicht messbar“ im Builder später abgeschaltet, bleibt ein schon gespeichertes „nicht messbar“ gültig. Der Knopf bleibt dann sichtbar, damit man es aufheben kann.
 
 ## Rückweg
 
@@ -907,6 +1003,30 @@ If(
 196
 ```
 
+**`btnKaIO.Size` vorher**
+
+```
+17
+```
+
+**`btnKaNIO.Size` vorher**
+
+```
+17
+```
+
+**`lblKaRueckFrage.Text` vorher**
+
+```
+With({r: LookUp(colAntworten; PruefpunktID = varRueckPP)}; r.Frage & Char(10) & "Ihre Antwort: " & If(r.Typ = "ZAHL"; Text(r.WertZahl) & " " & r.Einheit; "n.i.O."))
+```
+
+**`btnKaKritVersehen.Text` vorher**
+
+```
+"n.i.O. war ein Versehen – Antwort zurücknehmen"
+```
+
 **`txtKaZahl.OnChange` vorher**
 
 ```
@@ -923,6 +1043,12 @@ Set(varGeaendert; true)
 
 ```
 Parent.Width - 256
+```
+
+**`lblKaZahlInfo.Size` vorher**
+
+```
+14
 ```
 
 **`htmProtokoll.HtmlText` vorher**

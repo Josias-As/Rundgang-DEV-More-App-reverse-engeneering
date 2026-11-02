@@ -513,7 +513,7 @@
   lblRuSymbol.Color                ok
   lblRuKatZustand.Text             ok
   btnRuOeffnen.Text                ok
-== Paket 12: 8 Properties, neue Steuerelemente: -
+== Paket 12: 12 Properties, neue Steuerelemente: -
   scrKategorie.OnVisible           ok
   btnKaSpeichern.OnSelect          ok
   btnKaIO.Text                     ok
@@ -521,12 +521,17 @@
   btnKaIO.Width                    ok
   btnKaNIO.Width                   ok
   btnKaNIO.X                       ok
+  btnKaIO.Size                     ok
+  btnKaNIO.Size                    ok
+  lblKaRueckFrage.Text             ok
+  btnKaKritVersehen.Text           ok
   htmProtokoll.HtmlText            ok
-== Paket 16: 4 Properties, neue Steuerelemente: btnKaNM
+== Paket 16: 5 Properties, neue Steuerelemente: btnKaNM
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   txtKaZahl.OnChange               ok
   lblKaZahlInfo.Width              ok
+  lblKaZahlInfo.Size               ok
   btnKaNM.BorderColor              ok
   btnKaNM.BorderThickness          ok
   btnKaNM.Color                    ok

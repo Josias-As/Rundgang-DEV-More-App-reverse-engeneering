@@ -884,7 +884,8 @@ def paket10(st):
 # ---------------------------------------------------------------- Paket 12 (eigene Antwortwörter für i.O./n.i.O.)
 
 WORT = lambda feld, std: 'If(Trim(ThisItem.%s) = "", "%s", ThisItem.%s)' % (feld, std, feld)  # noqa: E731
-KNOPF_BREITE = 'If(Max(Len(ThisItem.TextIO), Len(ThisItem.TextNIO)) > 8, 250, 160)'
+KNOPF_BREITE = 'If(Max(Len(ThisItem.TextIO), Len(ThisItem.TextNIO)) > 8, 260, 160)'
+KNOPF_GROESSE = 'If(Max(Len(ThisItem.TextIO), Len(ThisItem.TextNIO)) > 12, 14, 17)'
 
 
 def paket12(st):
@@ -894,7 +895,7 @@ def paket12(st):
 
     def onvisible(t):
         t = rep(t, 'KritischVon: Coalesce(Text(a.KritischVon), ""), Inaktiv: false}',
-                'KritischVon: Coalesce(Text(a.KritischVon), ""), TextIO: Coalesce(Text(a.TextIO), pp.TextIO, ""), TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), Inaktiv: false}')
+                'KritischVon: Coalesce(Text(a.KritischVon), ""), TextIO: Coalesce(Text(a.TextIO), ""), TextNIO: Coalesce(Text(a.TextNIO), ""), Inaktiv: false}')
         t = rep(t, "                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n",
                 "                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n"
                 "                     TextIO: Trim(Coalesce(p.TextIO, \"\")),\n"
@@ -910,6 +911,10 @@ def paket12(st):
     standard_ersetzen(st, p, "12.5", "btnKaIO.Width", "160", KNOPF_BREITE)
     standard_ersetzen(st, p, "12.5", "btnKaNIO.Width", "160", KNOPF_BREITE)
     ganz(st, p, "12.5", "btnKaNIO.X", "36 + btnKaIO.Width")
+    ganz(st, p, "12.5", "btnKaIO.Size", KNOPF_GROESSE)
+    ganz(st, p, "12.5", "btnKaNIO.Size", KNOPF_GROESSE)
+    aendern(st, p, "12.7", "lblKaRueckFrage.Text", lambda t: rep(t, ', "n.i.O."))', ', If(Trim(r.TextNIO) = "", "n.i.O.", r.TextNIO)))'))
+    ganz(st, p, "12.7", "btnKaKritVersehen.Text", 'If(Trim(' + KRIT_R + '.TextNIO) = "", "n.i.O.", ' + KRIT_R + '.TextNIO) & " war ein Versehen – Antwort zurücknehmen"')
     aendern(st, p, "12.6", "htmProtokoll.HtmlText", lambda t: rep(
         t, """<td style='padding:6px 8px;width:64px;white-space:nowrap;font-weight:600;color:" & If(b = "NIO", "#B3261E", w, "#9A5B00", "#0F7B3F") & "'>" & Switch(b, "IO", "i.O.", "NIO", "n.i.O.", "") & "</td>""",
         """<td style='padding:6px 8px;width:110px;font-weight:600;color:" & If(b = "NIO", "#B3261E", w, "#9A5B00", "#0F7B3F") & "'>" & Switch(b, "IO", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextIO), "") = "", Blank(), Text(a.Value.TextIO)), "i.O.")), "NIO", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextNIO), "") = "", Blank(), Text(a.Value.TextNIO)), "n.i.O.")), "") & "</td>"""))
@@ -933,14 +938,15 @@ def paket16(st):
     aendern(st, p, "16.3", "App.Formulas", formulas)
 
     def onvisible(t):
-        t = rep(t, 'TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), Inaktiv: false}', 'TextNIO: Coalesce(Text(a.TextNIO), pp.TextNIO, ""), NMErlaubt: false, Inaktiv: false}')
+        t = rep(t, 'TextNIO: Coalesce(Text(a.TextNIO), ""), Inaktiv: false}', 'TextNIO: Coalesce(Text(a.TextNIO), ""), NMErlaubt: false, Inaktiv: false}')
         t = rep(t, "                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n",
                 "                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n")
         t = rep(t, 'TextNIO: Coalesce(Text(o.Value.TextNIO), ""), Inaktiv: true}', 'TextNIO: Coalesce(Text(o.Value.TextNIO), ""), NMErlaubt: false, Inaktiv: true}')
         return t
     aendern(st, p, "16.4", "scrKategorie.OnVisible", onvisible)
     aendern(st, p, "16.5", "txtKaZahl.OnChange", lambda t: rep(t, "{WertZahl: z, Bewertung: b,", '{WertZahl: z, WertText: "", Bewertung: b,'))
-    aendern(st, p, "16.5", "lblKaZahlInfo.Width", lambda t: rep(t, "Parent.Width - 256", "Parent.Width - 256 - If(btnKaNM.Visible, 180, 0)"))
+    aendern(st, p, "16.5", "lblKaZahlInfo.Width", lambda t: rep(t, "Parent.Width - 256", "Parent.Width - 256 - If(btnKaNM.Visible, 136, 0)"))
+    aendern(st, p, "16.5", "lblKaZahlInfo.Size", lambda t: rep(t, "14", "If(btnKaNM.Visible, 12, 14)"))
     neues_control(st, p, "btnKaNM", "conKaKarte", "Classic/Button@2.2.0", {
         "BorderColor": "clrTextGrau", "BorderThickness": "1",
         "Color": 'If(ThisItem.WertText = ' + NM + ', Color.White, clrTextGrau)',
@@ -951,14 +957,16 @@ def paket16(st):
         "OnSelect": 'If(ThisItem.WertText = ' + NM + ',\n'
                     '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ""}),\n'
                     '    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: ' + NM + ', WertZahl: Blank(), Bewertung: "", KritischOk: false, KritischZeit: "", KritischVon: ""});\n'
+                    '    Set(varRueckPP, 0);\n'
+                    '    Set(varKritPP, 0);\n'
                     '    Reset(txtKaZahl)\n'
                     ');\n'
                     'Set(varGeaendert, true)',
         "PressedColor": "Color.White", "PressedFill": "clrTextGrau",
         "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
-        "Size": "14", "Text": 'If(ThisItem.WertText = ' + NM + ', "✓ nicht messbar", "nicht messbar")',
+        "Size": "13", "Text": 'If(ThisItem.WertText = ' + NM + ', "✓ nicht messbar", "nicht messbar")',
         "Visible": 'ThisItem.Typ = "ZAHL" && (ThisItem.NMErlaubt || ThisItem.WertText = ' + NM + ')',
-        "Width": "164", "X": "Parent.Width - 184", "Y": '54 + If(ThisItem.Hinweis <> "", 24, 0)'})
+        "Width": "120", "X": "Parent.Width - 140", "Y": '54 + If(ThisItem.Hinweis <> "", 24, 0)'})
     return p
 
 

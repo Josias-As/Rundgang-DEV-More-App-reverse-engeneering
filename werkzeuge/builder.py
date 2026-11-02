@@ -1099,6 +1099,7 @@ ZAHL_FELD = lambda feld, ctl: ('With({v: If(Trim(Self.Text) = "", Blank(), IfErr
                                ')')
 
 ist_typ = lambda *t: "(" + " || ".join('%s.Eingabetyp.Value = "%s"' % (CUR, x) for x in t) + ")"  # noqa: E731
+VS_W = 'If(Max(Len(Coalesce(%s.TextIO, "")), Len(Coalesce(%s.TextNIO, ""))) > 8, 200, 120)'
 REST_Y = 'If(%s, 360, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
 
 
@@ -1163,15 +1164,15 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         lbl("lblPTextNIO", '"Knopf „n.i.O.“ heißt (Mangel)"', "272", "0", "256", "20", size=12, color="clrTextGrau"),
         txt("txtPTextIO", 'Coalesce(%s.TextIO, "")' % CUR,
             'If(Trim(Self.Text) <> Trim(Coalesce(%s.TextIO, "")),\n    %s\n)' % (CUR, ind(PP('{TextIO: Left(Trim(Self.Text), 18)}'), 4)),
-            "0", "20", "256", "36", '"i.O. (z. B. durchgeführt)"', '"Beschriftung des i.O.-Knopfs"'),
+            "0", "20", "256", "36", '"z. B. durchgeführt"', '"Beschriftung des i.O.-Knopfs"', MaxLength="18"),
         txt("txtPTextNIO", 'Coalesce(%s.TextNIO, "")' % CUR,
             'If(Trim(Self.Text) <> Trim(Coalesce(%s.TextNIO, "")),\n    %s\n)' % (CUR, ind(PP('{TextNIO: Left(Trim(Self.Text), 18)}'), 4)),
-            "272", "20", "256", "36", '"n.i.O. (z. B. nicht durchgeführt)"', '"Beschriftung des n.i.O.-Knopfs"'),
+            "272", "20", "256", "36", '"z. B. nicht durchgeführt"', '"Beschriftung des n.i.O.-Knopfs"', MaxLength="18"),
     ]),
     con("conPZahl", {"X": "0", "Y": "232", "Width": "528", "Height": "120", "Fill": "clrHintergrund", "Visible": ist_typ("ZAHL")}, [
         lbl("lblPNM", '"nicht messbar"', "416", "0", "112", "20", size=12, color="clrTextGrau", PaddingLeft="0", PaddingRight="0"),
         btn("btnPNM", 'If(Coalesce(%s.NichtMessbar, false), "✓ erlaubt", "nicht erlaubt")' % CUR, "416", "20", "112", "36",
-            'If(varSchreibbar && varAuswahlEbene = 3,\n    %s\n)' % ind(PP('{NichtMessbar: !Coalesce(%s.NichtMessbar, false)}' % CUR), 4), art="sekundaer", size=12,
+            'If(varSchreibbar && varAuswahlEbene = 3 && ' + FREI + ',\n    ' + LOCK + ';\n    %s\n)' % ind(PP('{NichtMessbar: !Coalesce(%s.NichtMessbar, false)}' % CUR), 4), art="sekundaer", size=12,
             DisplayMode=EDIT.replace("DisplayMode.View", "DisplayMode.Disabled"),
             Fill='If(Coalesce(%s.NichtMessbar, false), clrPrimaer, clrKarte)' % CUR, Color='If(Coalesce(%s.NichtMessbar, false), Color.White, clrPrimaer)' % CUR,
             HoverColor='If(Coalesce(%s.NichtMessbar, false), Color.White, clrPrimaer)' % CUR),
@@ -1302,9 +1303,9 @@ vs_karte = con("conVsKarte", dict({"X": "16", "Y": "40", "Width": "Parent.Width 
                                    "BorderThickness": "1", "Visible": "varAuswahlEbene = 3"}, **radius(8)), [
     lbl("lblVsFrage", '%s.Title & If(Coalesce(%s.Pflicht, false), " *", "")' % (CUR, CUR), "16", "8", "Parent.Width - 32", "44", size=15, bold=True),
     lbl("lblVsHinweis", 'Coalesce(%s.Hinweis, "")' % CUR, "16", "52", "Parent.Width - 32", "22", size=12, color="clrTextGrau", Wrap="false"),
-    btn("btnVsIO", 'If(Trim(Coalesce(%s.TextIO, "")) = "", "i.O.", %s.TextIO)' % (CUR, CUR), "16", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
+    btn("btnVsIO", 'If(Trim(Coalesce(%s.TextIO, "")) = "", "i.O.", %s.TextIO)' % (CUR, CUR), "16", "80", VS_W % (CUR, CUR), "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
         DisabledFill="clrErfolgHell", DisabledColor="clrErfolg", DisabledBorderColor="clrErfolg", Visible=ist_typ("IONIO")),
-    btn("btnVsNIO", 'If(Trim(Coalesce(%s.TextNIO, "")) = "", "n.i.O.", %s.TextNIO)' % (CUR, CUR), "144", "80", "120", "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
+    btn("btnVsNIO", 'If(Trim(Coalesce(%s.TextNIO, "")) = "", "n.i.O.", %s.TextNIO)' % (CUR, CUR), "24 + btnVsIO.Width", "80", VS_W % (CUR, CUR), "44", "false", art="sekundaer", DisplayMode="DisplayMode.Disabled",
         DisabledFill="clrFehlerHell", DisabledColor="clrFehler", DisabledBorderColor="clrFehler", Visible=ist_typ("IONIO")),
     txt("txtVsWert", '""', "false", "16", "80", 'If(%s, 160, Parent.Width - 32)' % ist_typ("ZAHL"), "44", 'If(%s, "Wert", "Eingabe")' % ist_typ("ZAHL"),
         '"Vorschau Eingabe"', DisplayMode="DisplayMode.Disabled", Visible=ist_typ("ZAHL", "TEXT")),

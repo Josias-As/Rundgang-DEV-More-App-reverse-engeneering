@@ -8,7 +8,7 @@ Stand 02.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket12_
 - **Paket 16 – „nicht messbar“:** Bei Zahlen, für die es im Builder erlaubt ist, gibt es den Knopf „nicht messbar“ (z. B. Anlage aus). Dann ist das Feld leer, die Frage gilt als beantwortet, aber eine **Begründung (Kommentar) ist Pflicht**. Im Protokoll steht „nicht messbar“ statt „0“. Kein Mangel.
 - Im Prüfpunkt-Editor: bei i.O./n.i.O. zwei Felder „Knopf heißt …“, bei Zahl der Knopf „nicht messbar: erlaubt“. Kopie, Fassungen, Änderungsliste, Vorschau und Prüfung kennen die Felder.
 - Dazu: Der Erklärtext bei Kategorien sagt jetzt „beliebige Reihenfolge“ (Paket 10).
-- Umfang: 3 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, 18 geänderte Properties. Generator 0 Fehler, Mutation 13/13, Logik 27. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 3 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, 21 geänderte Properties. Generator 0 Fehler, Mutation 13/13, Logik 27, unabhängig geprüft. **Nicht in Studio getestet.**
 
 ## Schritt 0 – SharePoint
 
@@ -67,8 +67,9 @@ Die drei Spalten aus `PAKET_12_16_APP.md`, Schritt 1 (nur einmal anlegen). Im Bu
             FocusedBorderColor: =clrPrimaer
             Font: =Font.'Segoe UI'
             Height: =36
-            HintText: ="i.O. (z. B. durchgeführt)"
+            HintText: ="z. B. durchgeführt"
             HoverBorderColor: =clrPrimaer
+            MaxLength: =18
             OnChange: |-
               =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextIO, "")),
                   If(varSchreibbar && varAuswahlEbene = 3,
@@ -102,8 +103,9 @@ Die drei Spalten aus `PAKET_12_16_APP.md`, Schritt 1 (nur einmal anlegen). Im Bu
             FocusedBorderColor: =clrPrimaer
             Font: =Font.'Segoe UI'
             Height: =36
-            HintText: ="n.i.O. (z. B. nicht durchgeführt)"
+            HintText: ="z. B. nicht durchgeführt"
             HoverBorderColor: =clrPrimaer
+            MaxLength: =18
             OnChange: |-
               =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).TextNIO, "")),
                   If(varSchreibbar && varAuswahlEbene = 3,
@@ -161,7 +163,8 @@ Die drei Spalten aus `PAKET_12_16_APP.md`, Schritt 1 (nur einmal anlegen). Im Bu
       HoverColor: =If(Coalesce(LookUp(colP, ID = varAuswahlID).NichtMessbar, false), Color.White, clrPrimaer)
       HoverFill: =clrPrimaerHell
       OnSelect: |-
-        =If(varSchreibbar && varAuswahlEbene = 3,
+        =If(varSchreibbar && varAuswahlEbene = 3 && !varIsLoading && Now() >= varSperreBis,
+            Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
             If(varSchreibbar && varAuswahlEbene = 3,
                 Refresh(RG_Rundgaenge);
                 Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
@@ -279,7 +282,58 @@ If(Trim(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; "")) = ""; "n.i.O."; L
 
 **Nachprüfen:** endet auf `uswahlID).TextNIO; "")) = ""; "n.i.O."; LookUp(colP; ID = varAuswahlID).TextNIO)`
 
-### 2.6 · `lblVsRegeln.Text`
+### 2.6 · `btnVsIO.Width`
+
+**Pfad:** `scrEditor › conEdRechts › conVsKarte › btnVsIO` → Width
+
+```
+If(Max(Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextIO; "")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)
+```
+
+```diff
+-120
++If(Max(Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextIO; "")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)
+```
+
+**Kurz erklärt:** Vorschau-Knöpfe breiter bei langen Wörtern.
+
+**Nachprüfen:** endet auf `"")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)`
+
+### 2.7 · `btnVsNIO.Width`
+
+**Pfad:** `scrEditor › conEdRechts › conVsKarte › btnVsNIO` → Width
+
+```
+If(Max(Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextIO; "")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)
+```
+
+```diff
+-120
++If(Max(Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextIO; "")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)
+```
+
+**Kurz erklärt:** Wie btnVsIO.Width.
+
+**Nachprüfen:** endet auf `"")); Len(Coalesce(LookUp(colP; ID = varAuswahlID).TextNIO; ""))) > 8; 200; 120)`
+
+### 2.8 · `btnVsNIO.X`
+
+**Pfad:** `scrEditor › conEdRechts › conVsKarte › btnVsNIO` → X
+
+```
+24 + btnVsIO.Width
+```
+
+```diff
+-144
++24 + btnVsIO.Width
+```
+
+**Kurz erklärt:** Steht immer neben dem i.O.-Knopf.
+
+**Nachprüfen:** endet auf `24 + btnVsIO.Width`
+
+### 2.9 · `lblVsRegeln.Text`
 
 **Pfad:** `scrEditor › conEdRechts › conVsKarte › lblVsRegeln` → Text
 
@@ -1300,7 +1354,8 @@ Set(varIsLoading; false)
 ## Test
 
 1. Prüfpunkt i.O./n.i.O. wählen → „durchgeführt“ / „nicht durchgeführt“ eintragen → Vorschau-Knöpfe heißen so.
-2. Zahl-Prüfpunkt → „nicht messbar: nicht erlaubt“ antippen → „✓ erlaubt“, Vorschau nennt es.
+2. Zahl-Prüfpunkt → „nicht messbar: nicht erlaubt“ antippen → „✓ erlaubt“, Vorschau nennt es. Schnell zweimal tippen → schaltet nur einmal um.
+2b. „durchgeführt“/„nicht durchgeführt“ eintragen → Vorschau-Knöpfe werden breiter, nichts abgeschnitten. Mehr als 18 Zeichen lassen sich nicht eintippen.
 3. Anderen Prüfpunkt wählen und zurück → Felder zeigen die richtigen Werte.
 4. Aktivieren → Änderungsliste „geändert“. Neue Fassung → Werte noch da.
 
@@ -1338,6 +1393,24 @@ If((LookUp(colP; ID = varAuswahlID).Eingabetyp.Value = "ZAHL"); 360; (LookUp(col
 
 ```
 "n.i.O."
+```
+
+**`btnVsIO.Width` vorher**
+
+```
+120
+```
+
+**`btnVsNIO.Width` vorher**
+
+```
+120
+```
+
+**`btnVsNIO.X` vorher**
+
+```
+144
 ```
 
 **`lblVsRegeln.Text` vorher**
