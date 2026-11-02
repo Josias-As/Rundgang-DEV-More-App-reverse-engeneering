@@ -1,3 +1,4 @@
+# HINWEIS: nach Paket 9 nicht mehr neu erzeugen (Vorher/Nachher-Stand Paket 8 eingefroren, siehe arbeit/2026-11-02_Paket8/gruppen.json)
 """Paket 8 (Abschnitte + Bereich ausblendbar), Teil Builder: Einbau-Dokument aus dem Generator-Stand vorher/nachher.
 Aufruf: python3 -I werkzeuge/doc_paket8_builder.py  ->  pakete/builder/PAKET_8_BUILDER.md, arbeit/2026-11-02_Paket8/gruppen.json"""
 import difflib

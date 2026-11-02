@@ -1042,6 +1042,40 @@
                         Width: =528
                         X: =0
                         Y: =20
+            - btnPNio:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), clrFehler, clrPrimaer)
+                  BorderThickness: =1
+                  Color: =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), clrFehler, clrPrimaer)
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =32
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(!varIsLoading,
+                        ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));
+                        Reset(txtNioRueckText);
+                        Reset(txtNioKritText);
+                        Set(varNioOffen, true)
+                    )
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: |-
+                    =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "⚠ ", "") & "Bei n.i.O.: " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) || Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "Rückfrage", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) && Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), " + ", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "kritisch", ""), "nichts Besonderes") & "  ›"
+                  Width: =528
+                  X: =0
+                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 360, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, 232) + 256
             - conPRest:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout

@@ -134,6 +134,37 @@ Screens:
             Width: =150
             X: =488
             Y: =84
+      - btnLiKontakte:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varFrage, "");
+                  Navigate(scrKontakte, ScreenTransition.None)
+              )
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="Ansprechpartner"
+            Width: =200
+            X: =650
+            Y: =84
       - btnLiAlle:
           Control: Classic/Button@2.2.0
           Properties:

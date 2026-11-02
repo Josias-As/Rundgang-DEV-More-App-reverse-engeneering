@@ -1,0 +1,560 @@
+Screens:
+  scrKontakte:
+    Properties:
+      Fill: =clrHintergrund
+      OnVisible: |-
+        =Set(varIsLoading, true);
+        Set(varLadeText, "");
+        Refresh(RG_Ansprechpartner);
+        ClearCollect(colKoAlle, RG_Ansprechpartner);
+        Set(varKoID, Coalesce(First(Sort(colKoAlle, Title)).ID, 0));
+        Reset(txtKoRolle);
+        Reset(txtKoName);
+        Reset(txtKoTelefon);
+        Reset(txtKoHinweis);
+        Set(varIsLoading, false)
+    Children:
+      - conKoKopf:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrPrimaer
+            Height: =64
+            Width: =Parent.Width
+          Children:
+            - btnKoZurueck:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(255, 255, 255, 0.12)
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.24)
+                  OnSelect: =If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.32)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="← Übersicht"
+                  Width: =140
+                  X: =16
+                  Y: =12
+            - lblKoTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =Color.White
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =64
+                  Size: =20
+                  Text: ="Ansprechpartner"
+                  Width: =600
+                  X: =172
+                  Y: =0
+      - lblKoHilfe:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =44
+            Size: =13
+            Text: |-
+              ="Wer soll bei einem kritischen Mangel informiert werden? „bei jedem“ erscheint bei jedem kritischen Mangel. Nicht mehr gebraucht: auf „inaktiv“ stellen, nicht löschen."
+            Width: =Parent.Width - 48
+            X: =24
+            Y: =72
+      - btnKoNeu:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =44
+            HoverColor: =Color.White
+            HoverFill: =ColorFade(clrPrimaer, -20%)
+            OnSelect: |-
+              =If(!varIsLoading && Now() >= varSperreBis,
+                  Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                  Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: "Neuer Ansprechpartner", Name: "", Telefon: "", Hinweis: "", Allgemein: false, Aktiv: true}).ID, 0));
+                  If(varNeuID = 0,
+                      Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
+                      Collect(colKoAlle, LookUp(RG_Ansprechpartner, ID = varNeuID));
+                      Set(varKoID, varNeuID);
+                      Reset(txtKoRolle);
+                      Reset(txtKoName);
+                      Reset(txtKoTelefon);
+                      Reset(txtKoHinweis);
+                      SetFocus(txtKoRolle)
+                  )
+              )
+            PressedColor: =Color.White
+            PressedFill: =ColorFade(clrPrimaer, -35%)
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =14
+            Text: ="+ Ansprechpartner"
+            Width: =240
+            X: =24
+            Y: =124
+      - galKo:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            AccessibleLabel: ="Ansprechpartner"
+            Height: =Parent.Height - 196
+            Items: =Sort(colKoAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))
+            ShowScrollbar: =true
+            TemplatePadding: =0
+            TemplateSize: =64
+            Width: =520
+            X: =24
+            Y: =180
+          Children:
+            - lblKoHinter:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Fill: =If(ThisItem.ID = varKoID, clrPrimaerHell, Color.White)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.TemplateHeight - 4
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =0
+            - lblKoRolle:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =28
+                  Size: =14
+                  Text: =ThisItem.Title
+                  Width: =Parent.TemplateWidth - 24
+                  Wrap: =false
+                  X: =12
+                  Y: =4
+            - lblKoName:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =24
+                  Size: =12
+                  Text: =Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & If(Coalesce(ThisItem.Allgemein, false), "  ·  bei jedem", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  ·  inaktiv")
+                  Width: =Parent.TemplateWidth - 24
+                  Wrap: =false
+                  X: =12
+                  Y: =32
+            - btnKoZeile:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.TemplateHeight - 4
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(23, 20, 150, 0.06)
+                  OnSelect: |-
+                    =Set(varKoID, ThisItem.ID);
+                    Reset(txtKoRolle);
+                    Reset(txtKoName);
+                    Reset(txtKoTelefon);
+                    Reset(txtKoHinweis)
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(23, 20, 150, 0.12)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.TemplateWidth
+                  X: =0
+                  Y: =0
+      - lblKoLeer:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =48
+            Size: =13
+            Text: ="Noch keine Ansprechpartner. „+ Ansprechpartner“ legt einen an."
+            Visible: =IsEmpty(colKoAlle) && !varIsLoading
+            Width: =520
+            X: =24
+            Y: =190
+      - conKoForm:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrHintergrund
+            Height: =560
+            Visible: =varKoID > 0
+            Width: =Parent.Width - 592
+            X: =568
+            Y: =124
+          Children:
+            - lblKoRolleT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Gewerk / Rolle"
+                  Width: =400
+                  X: =0
+                  Y: =0
+            - txtKoRolle:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Gewerk oder Rolle"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Title, "")
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HintText: ="z. B. Elektriker"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: |-
+                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Title, "")),
+                        If(varKoID > 0 && !varIsLoading,
+                            Set(varPatchFehler, false);
+                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            If(varPatchFehler,
+                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =20
+            - lblKoNameT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Name / Firma"
+                  Width: =400
+                  X: =0
+                  Y: =72
+            - txtKoName:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Name oder Firma"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Name, "")
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HintText: ="z. B. Elektro Müller GmbH"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: |-
+                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Name, "")),
+                        If(varKoID > 0 && !varIsLoading,
+                            Set(varPatchFehler, false);
+                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Name: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            If(varPatchFehler,
+                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =92
+            - lblKoTelT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Telefon"
+                  Width: =400
+                  X: =0
+                  Y: =144
+            - txtKoTelefon:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Telefon"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Telefon, "")
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HintText: ="z. B. 0561 123456"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: |-
+                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Telefon, "")),
+                        If(varKoID > 0 && !varIsLoading,
+                            Set(varPatchFehler, false);
+                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Telefon: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            If(varPatchFehler,
+                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =164
+            - lblKoHinweisT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Hinweis (z. B. Erreichbarkeit)"
+                  Width: =400
+                  X: =0
+                  Y: =216
+            - txtKoHinweis:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Hinweis"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =Coalesce(LookUp(colKoAlle, ID = varKoID).Hinweis, "")
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =80
+                  HintText: |-
+                    ="z. B. nach 16 Uhr: Bereitschaft 0170 …"
+                  HoverBorderColor: =clrPrimaer
+                  Mode: =TextMode.MultiLine
+                  OnChange: |-
+                    =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colKoAlle, ID = varKoID).Hinweis, "")),
+                        If(varKoID > 0 && !varIsLoading,
+                            Set(varPatchFehler, false);
+                            IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Hinweis: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            If(varPatchFehler,
+                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =236
+            - lblKoAllgT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Bei jedem kritischen Mangel zeigen"
+                  Width: =400
+                  X: =0
+                  Y: =332
+            - galKoAllg:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Bei jedem kritischen Mangel"
+                  Height: =40
+                  Items: |-
+                    =Table({W: "nein", N: "nein"}, {W: "ja", N: "bei jedem"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =40
+                  Width: =300
+                  WrapCount: =2
+                  X: =0
+                  Y: =352
+                Children:
+                  - btnKoAllg:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), clrPrimaerHell, clrKarte)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: |-
+                          =If((ThisItem.W = "ja") <> Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false),
+                              If(varKoID > 0 && !varIsLoading,
+                                  Set(varPatchFehler, false);
+                                  IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Allgemein: ThisItem.W = "ja"}), Set(varPatchFehler, true));
+                                  If(varPatchFehler,
+                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                      Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                                  )
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
+            - lblKoAktivT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Status"
+                  Width: =400
+                  X: =0
+                  Y: =408
+            - galKoAktiv:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Status"
+                  Height: =40
+                  Items: |-
+                    =Table({W: "ja", N: "aktiv"}, {W: "nein", N: "inaktiv"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =40
+                  Width: =300
+                  WrapCount: =2
+                  X: =0
+                  Y: =428
+                Children:
+                  - btnKoAktiv:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), clrPrimaerHell, clrKarte)
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: |-
+                          =If((ThisItem.W = "ja") <> Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false),
+                              If(varKoID > 0 && !varIsLoading,
+                                  Set(varPatchFehler, false);
+                                  IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true));
+                                  If(varPatchFehler,
+                                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                      Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))
+                                  )
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
+      - conKoLaden:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(255, 255, 255, 0.7)
+            Height: =Parent.Height
+            Visible: =varIsLoading
+            Width: =Parent.Width
+          Children:
+            - btnKoLadenSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - lblKoLadenText:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =60
+                  Size: =18
+                  Text: =If(varLadeText = "", "Bitte warten …", varLadeText)
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =(Parent.Height - 60) / 2

@@ -13,10 +13,13 @@ MUTATIONEN = [
     ("Ja/Nein ohne Coalesce", "scrKategorie.OnVisible", "Coalesce(p.KommentarPflicht, false)", "p.KommentarPflicht"),
     ("Kommentar in Formel", "lblKaFehlendAnzahl.Text", "CountRows(", "// Zähler\nCountRows("),
     ("unbekannter Name", "btnKaFoto.Visible", "fnLinkAnzahl(ThisItem.Fotos) > 0", "fnLinkAnzahlX(ThisItem.Fotos) > 0"),
-    ("fnFehlt mit 11 Argumenten", "conKaKarte.BorderColor", ", ThisItem.MinWert, ThisItem.MaxWert)", ", ThisItem.MinWert)"),
+    ("fnFehlt mit 12 statt 13 Argumenten", "conKaKarte.BorderColor", ", ThisItem.MinWert, ThisItem.MaxWert, ThisItem.Kritisch", ", ThisItem.MinWert, ThisItem.Kritisch"),
     ("Klammer fehlt", "txtKaKommentar.Visible", "ThisItem.MaxWert))", "ThisItem.MaxWert)"),
     ("Feld nicht in colAntworten", "btnKaFoto.Text", "ThisItem.FotoModus", "ThisItem.FotoModu"),
     ("FotoMoeglich außerhalb OnVisible", "btnKaFoto.Visible", 'ThisItem.FotoModus <> "Aus"', "ThisItem.FotoMoeglich"),
+    ("Paket 9: Feld KritischOk fehlt im Bearbeiten-Zweig", "scrKategorie.OnVisible", "                     KritischOk: If(IsBlank(alt), false, Coalesce(IfError(Boolean(alt.Value.KritischOk), false), false)),\n", ""),
+    ("Paket 9: fnFehlt ohne 13. Argument", "lblKaFehlendAnzahl.Text", ", a.MaxWert, a.Kritisch && !a.KritischOk)", ", a.MaxWert)"),
+    ("Paket 8: Abschnitt fehlt im Zweig für deaktivierte Punkte", "scrKategorie.OnVisible", 'Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt), "")), ', ""),
 ]
 
 

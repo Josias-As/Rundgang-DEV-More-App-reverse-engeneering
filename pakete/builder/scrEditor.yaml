@@ -1708,6 +1708,40 @@ Screens:
                               Width: =528
                               X: =0
                               Y: =20
+                  - btnPNio:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), clrFehler, clrPrimaer)
+                        BorderThickness: =1
+                        Color: =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), clrFehler, clrPrimaer)
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =32
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!varIsLoading,
+                              ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));
+                              Reset(txtNioRueckText);
+                              Reset(txtNioKritText);
+                              Set(varNioOffen, true)
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: |-
+                          =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "⚠ ", "") & "Bei n.i.O.: " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) || Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "Rückfrage", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) && Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), " + ", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "kritisch", ""), "nichts Besonderes") & "  ›"
+                        Width: =528
+                        X: =0
+                        Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 360, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, 232) + 256
                   - conPRest:
                       Control: GroupContainer@1.5.0
                       Variant: ManualLayout
@@ -2322,7 +2356,7 @@ Screens:
                         Height: =124
                         Size: =12
                         Text: |-
-                          ="• " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false), "Pflichtfrage", "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))) & Char(10) & "• Kommentar " & If(Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false), "immer Pflicht", "Pflicht bei Mangel") & If(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL", Char(10) & "• " & fnGrenzText(LookUp(colP, ID = varAuswahlID).MinWert, LookUp(colP, ID = varAuswahlID).MaxWert, LookUp(colP, ID = varAuswahlID).Einheit) & If(IsBlank(LookUp(colP, ID = varAuswahlID).MinWert) && IsBlank(LookUp(colP, ID = varAuswahlID).MaxWert), "", ", außerhalb: " & Switch(fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value), "Warnen", "Hinweis + Begründung", "Sperren", "nicht speicherbar", "Mangel")), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title & "“ = " & fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "")
+                          ="• " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Pflicht, false), "Pflichtfrage", "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))) & Char(10) & "• Kommentar " & If(Coalesce(LookUp(colP, ID = varAuswahlID).KommentarPflicht, false), "immer Pflicht", "Pflicht bei Mangel") & If(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL", Char(10) & "• " & fnGrenzText(LookUp(colP, ID = varAuswahlID).MinWert, LookUp(colP, ID = varAuswahlID).MaxWert, LookUp(colP, ID = varAuswahlID).Einheit) & If(IsBlank(LookUp(colP, ID = varAuswahlID).MinWert) && IsBlank(LookUp(colP, ID = varAuswahlID).MaxWert), "", ", außerhalb: " & Switch(fnGrenzmodus(LookUp(colP, ID = varAuswahlID).Grenzmodus.Value), "Warnen", "Hinweis + Begründung", "Sperren", "nicht speicherbar", "Mangel")), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).BedingungPunkt).Title & "“ = " & fnBedText(LookUp(colP, ID = varAuswahlID).BedingungWert), "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), Char(10) & "• bei n.i.O. Rückfrage „Ist das wirklich so?“", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "")
                         VerticalAlign: =VerticalAlign.Top
                         Width: =Parent.Width - 32
                         X: =16
@@ -2585,7 +2619,7 @@ Screens:
                           =Ungroup(
                               Table(
                                   {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},
-                                  {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coalesce(a.Eingabetyp.Value, "") || Coalesce(p.Pflicht, false) <> Coalesce(a.Pflicht, false) || Coalesce(p.Auswahlwerte, "") <> Coalesce(a.Auswahlwerte, "") || Coalesce(p.Einheit, "") <> Coalesce(a.Einheit, "") || Coalesce(p.MinWert, -999999) <> Coalesce(a.MinWert, -999999) || Coalesce(p.MaxWert, -999999) <> Coalesce(a.MaxWert, -999999) || Coalesce(p.Hinweis, "") <> Coalesce(a.Hinweis, "") || fnFotoWert(p.Foto.Value, Coalesce(p.FotoMoeglich, false)) <> fnFotoWert(a.Foto.Value, Coalesce(a.FotoMoeglich, false)) || Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, ""))))) As p, {Art: "geändert", Text: p.Title})},
+                                  {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coalesce(a.Eingabetyp.Value, "") || Coalesce(p.Pflicht, false) <> Coalesce(a.Pflicht, false) || Coalesce(p.Auswahlwerte, "") <> Coalesce(a.Auswahlwerte, "") || Coalesce(p.Einheit, "") <> Coalesce(a.Einheit, "") || Coalesce(p.MinWert, -999999) <> Coalesce(a.MinWert, -999999) || Coalesce(p.MaxWert, -999999) <> Coalesce(a.MaxWert, -999999) || Coalesce(p.Hinweis, "") <> Coalesce(a.Hinweis, "") || fnFotoWert(p.Foto.Value, Coalesce(p.FotoMoeglich, false)) <> fnFotoWert(a.Foto.Value, Coalesce(a.FotoMoeglich, false)) || Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, "")) || Coalesce(p.Kritisch, false) <> Coalesce(a.Kritisch, false) || Coalesce(p.KritischText, "") <> Coalesce(a.KritischText, "") || Coalesce(p.Ansprechpartner, "") <> Coalesce(a.Ansprechpartner, "") || Coalesce(p.Rueckfrage, false) <> Coalesce(a.Rueckfrage, false) || Coalesce(p.RueckfrageText, "") <> Coalesce(a.RueckfrageText, "")))) As p, {Art: "geändert", Text: p.Title})},
                                   {T: ForAll(Filter(colAltP As a, IsBlank(LookUp(colP As p, p.QuelleID = a.ID))) As a, {Art: "entfernt", Text: a.Title})}
                               ),
                               T
@@ -3722,6 +3756,447 @@ Screens:
                         Text: ="✕"
                         Width: =40
                         X: =920
+                        Y: =16
+      - conNio:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0.45)
+            Height: =Parent.Height
+            Visible: =varNioOffen
+            Width: =Parent.Width
+          Children:
+            - btnNioSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - conNioKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderThickness: =0
+                  Fill: =clrKarte
+                  Height: =640
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =660
+                  X: =(Parent.Width - Self.Width) / 2
+                  Y: =(Parent.Height - Self.Height) / 2
+                Children:
+                  - lblNioTitel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        Size: =18
+                        Text: ="Bei n.i.O."
+                        Width: =612
+                        X: =24
+                        Y: =16
+                  - lblNioFrage:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Size: =14
+                        Text: =LookUp(colP, ID = varAuswahlID).Title
+                        Width: =612
+                        X: =24
+                        Y: =56
+                  - lblNioRueck:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =24
+                        Size: =13
+                        Text: ="Rückfrage „Ist das wirklich so?“"
+                        Width: =300
+                        X: =24
+                        Y: =92
+                  - galNioRueck:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AccessibleLabel: ="Rückfrage"
+                        Height: =36
+                        Items: |-
+                          =Table({W: "nein", N: "aus"}, {W: "ja", N: "an"})
+                        ShowScrollbar: =false
+                        TemplatePadding: =0
+                        TemplateSize: =36
+                        Width: =200
+                        WrapCount: =2
+                        X: =336
+                        Y: =88
+                      Children:
+                        - btnNioRueck:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                              BorderThickness: =1
+                              Color: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), Color.White, clrText)
+                              DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                              DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), clrPrimaer, clrTextGrau)
+                              DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), clrPrimaerHell, clrKarte)
+                              DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
+                              Fill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), clrPrimaer, clrKarte)
+                              Font: =Font.'Segoe UI'
+                              Height: =32
+                              HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), Color.White, clrText)
+                              HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                              OnSelect: |-
+                                =If((ThisItem.W = "ja") <> Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false),
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Rueckfrage: ThisItem.W = "ja"}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
+                                        )
+                                    )
+                                )
+                              PressedColor: =Color.White
+                              PressedFill: =ColorFade(clrPrimaer, -35%)
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =13
+                              Text: =ThisItem.N
+                              Width: =Parent.TemplateWidth - 6
+                              X: =0
+                              Y: =0
+                  - txtNioRueckText:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: ="Text der Rückfrage"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        Default: =Coalesce(LookUp(colP, ID = varAuswahlID).RueckfrageText, "")
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                        Fill: =clrKarte
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HintText: |-
+                          ="Normalerweise … (leer: bei Zahlen die Grenzen)"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).RueckfrageText, "")),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {RueckfrageText: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        Size: =14
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false)
+                        Width: =612
+                        X: =24
+                        Y: =132
+                  - lblNioKrit:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrFehler
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =24
+                        Size: =13
+                        Text: ="Kritischer Mangel – sofort melden"
+                        Width: =300
+                        X: =24
+                        Y: =192
+                  - galNioKrit:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AccessibleLabel: ="Kritisch"
+                        Height: =36
+                        Items: |-
+                          =Table({W: "nein", N: "nein"}, {W: "ja", N: "ja"})
+                        ShowScrollbar: =false
+                        TemplatePadding: =0
+                        TemplateSize: =36
+                        Width: =200
+                        WrapCount: =2
+                        X: =336
+                        Y: =188
+                      Children:
+                        - btnNioKrit:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                              BorderThickness: =1
+                              Color: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), Color.White, clrText)
+                              DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), clrPrimaer, clrRahmen)
+                              DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), clrPrimaer, clrTextGrau)
+                              DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), clrPrimaerHell, clrKarte)
+                              DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
+                              Fill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), clrPrimaer, clrKarte)
+                              Font: =Font.'Segoe UI'
+                              Height: =32
+                              HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), Color.White, clrText)
+                              HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                              OnSelect: |-
+                                =If((ThisItem.W = "ja") <> Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false),
+                                    If(varSchreibbar && varAuswahlEbene = 3,
+                                        Refresh(RG_Rundgaenge);
+                                        Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                        If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                        If(varEntwurfOk,
+                                            Set(varPatchFehler, false);
+                                            IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Kritisch: ThisItem.W = "ja"}), Set(varPatchFehler, true));
+                                            If(varPatchFehler,
+                                                Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                            )
+                                        )
+                                    )
+                                )
+                              PressedColor: =Color.White
+                              PressedFill: =ColorFade(clrPrimaer, -35%)
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =13
+                              Text: =ThisItem.N
+                              Width: =Parent.TemplateWidth - 6
+                              X: =0
+                              Y: =0
+                  - txtNioKritText:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        AccessibleLabel: ="Text für den kritischen Mangel"
+                        BorderColor: =clrRahmen
+                        Color: =clrText
+                        Default: =Coalesce(LookUp(colP, ID = varAuswahlID).KritischText, "")
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                        Fill: =clrKarte
+                        FocusedBorderColor: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HintText: ="Was ist zu tun? z. B. Anlage nicht weiter betreiben"
+                        HoverBorderColor: =clrPrimaer
+                        OnChange: |-
+                          =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colP, ID = varAuswahlID).KritischText, "")),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KritischText: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        Size: =14
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false)
+                        Width: =612
+                        X: =24
+                        Y: =232
+                  - lblNioKontakte:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =24
+                        Size: =12
+                        Text: ="Ansprechpartner – antippen zum Auswählen"
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false)
+                        Width: =612
+                        X: =24
+                        Y: =282
+                  - galNioKontakte:
+                      Control: Gallery@2.15.0
+                      Variant: Vertical
+                      Properties:
+                        AccessibleLabel: ="Ansprechpartner"
+                        Height: =220
+                        Items: =Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))
+                        ShowScrollbar: =true
+                        TemplatePadding: =0
+                        TemplateSize: =44
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false)
+                        Width: =612
+                        X: =24
+                        Y: =310
+                      Children:
+                        - btnNioKontakt:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              Align: =Align.Left
+                              BorderColor: =clrPrimaer
+                              BorderThickness: =1
+                              Color: =clrPrimaer
+                              DisabledBorderColor: =clrGesperrtHell
+                              DisabledColor: =clrGesperrt
+                              DisabledFill: =clrGesperrtHell
+                              DisplayMode: =If(varSchreibbar && !varIsLoading && !Coalesce(ThisItem.Allgemein, false), DisplayMode.Edit, DisplayMode.Disabled)
+                              Fill: =clrKarte
+                              Font: =Font.'Segoe UI'
+                              Height: =40
+                              HoverColor: =clrPrimaer
+                              HoverFill: =clrPrimaerHell
+                              OnSelect: |-
+                                =If(!Coalesce(ThisItem.Allgemein, false),
+                                    With({ids: Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "")},
+                                        With({neu: If(Text(ThisItem.ID) in ids.Value, Concat(Filter(ids, Trim(Value) <> Text(ThisItem.ID)) As s, Trim(s.Value), ";"), Concat(ids As s2, Trim(s2.Value) & ";") & Text(ThisItem.ID))},
+                                            If(varSchreibbar && varAuswahlEbene = 3,
+                                                Refresh(RG_Rundgaenge);
+                                                Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                                If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                                If(varEntwurfOk,
+                                                    Set(varPatchFehler, false);
+                                                    IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Ansprechpartner: neu}), Set(varPatchFehler, true));
+                                                    If(varPatchFehler,
+                                                        Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                                        Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                                        Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                              PaddingLeft: =12
+                              PressedColor: =clrPrimaer
+                              PressedFill: =clrPrimaerHell
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =13
+                              Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Name, "")) = "", "", " – " & ThisItem.Name) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")
+                              Width: =Parent.TemplateWidth - 4
+                              X: =0
+                              Y: =2
+                  - lblNioLeer:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrFehler
+                        Font: =Font.'Segoe UI'
+                        Height: =48
+                        Size: =13
+                        Text: ="Noch keine Ansprechpartner. Lege sie in der Übersicht unter „Ansprechpartner“ an."
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false) && IsEmpty(colKontakte)
+                        Width: =612
+                        X: =24
+                        Y: =320
+                  - lblNioHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        Size: =12
+                        Text: ="Wirkt bei n.i.O. und bei Zahlen außerhalb der Grenzen (Modus „Mangel“). Es wird nichts verschickt."
+                        Width: =612
+                        X: =24
+                        Y: =532
+                  - btnNioFertig:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =Color.White
+                        HoverFill: =ColorFade(clrPrimaer, -20%)
+                        OnSelect: =Set(varNioOffen, false)
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Fertig"
+                        Width: =160
+                        X: =476
+                        Y: =576
+                  - btnNioZu:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: =Set(varNioOffen, false)
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =16
+                        Text: ="✕"
+                        Width: =40
+                        X: =600
                         Y: =16
       - conEdLaden:
           Control: GroupContainer@1.5.0

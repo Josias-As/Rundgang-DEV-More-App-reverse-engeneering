@@ -5,7 +5,7 @@ Stand: 30.10.2026 · erzeugt mit `werkzeuge/builder.py` (Formeln und Bildschirme
 ## Kurzfassung
 
 - **Neue Canvas-App „Rundgang Builder“** (Tablet-Format quer, 1366 × 768, für den PC gedacht) mit drei Bildschirmen: **Übersicht** (alle Rundgänge), **Editor** (Gliederung · Bearbeiten · Vorschau und Prüfung) und **Plan**.
-- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 236 Steuerelemente, 3318 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
+- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 287 Steuerelemente, 4014 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
 - **Die Rundgang-App wird nicht geändert** (außer Paket 7, das vorher eingefügt sein muss). Der Builder schreibt nur Daten, die die Rundgang-App schon richtig liest.
 - **Fassungen:** Ein aktiver Rundgang wird nie direkt geändert. „Bearbeiten“ legt einen Entwurf (neue Fassung) an. „Aktivieren“ schaltet die Bereiche der alten Fassung aus und die der neuen an. Rundgang-Nummer, Plan und Auswertung bleiben gleich. Laufende Rundgänge von heute werden mit der alten Fassung beendet.
 - **Vorlagen** sind ein eigener Rundgang „Vorlagen (Builder)“ mit 10 Startvorlagen; „Aus Vorlage holen“ kopiert Prüfpunkte, Kategorien oder ganze Bereiche – auch aus anderen Rundgängen.
@@ -55,6 +55,17 @@ Nur Spalten hinzufügen, nichts umbenennen. Name **genau so** (intern = Anzeigen
 | RG_Pruefpunkte | Fassung | Zahl, 0 Dezimalstellen |
 | RG_Pruefpunkte | QuelleID | Zahl, 0 Dezimalstellen |
 | RG_Pruefpunkte | Abschnitt | Eine Textzeile |
+| RG_Pruefpunkte | Kritisch | Ja/Nein, Standard Nein |
+| RG_Pruefpunkte | KritischText | Eine Textzeile |
+| RG_Pruefpunkte | Ansprechpartner | Eine Textzeile |
+| RG_Pruefpunkte | Rueckfrage | Ja/Nein, Standard Nein |
+| RG_Pruefpunkte | RueckfrageText | Eine Textzeile |
+| RG_Ansprechpartner | Title | Eine Textzeile |
+| RG_Ansprechpartner | Name | Eine Textzeile |
+| RG_Ansprechpartner | Telefon | Eine Textzeile |
+| RG_Ansprechpartner | Hinweis | Eine Textzeile |
+| RG_Ansprechpartner | Allgemein | Ja/Nein, Standard Nein |
+| RG_Ansprechpartner | Aktiv | Ja/Nein, Standard Nein |
 
 Empfohlen (für später, mehr als 5000 Zeilen): in `RG_Kategorien` und `RG_Pruefpunkte` die Spalte **RundgangID** indizieren (Listeneinstellungen → Indizierte Spalten).
 
@@ -62,7 +73,7 @@ Empfohlen (für später, mehr als 5000 Zeilen): in `RG_Kategorien` und `RG_Pruef
 
 1. make.powerapps.com → gleiche Umgebung wie „Rundgang DEV“ → **Erstellen → Leere App → Leere Canvas-App** → Name **Rundgang Builder**, Format **Tablet** → Erstellen.
 2. **Einstellungen → Allgemein:** Datenzeilen-Grenzwert **2000**. **Einstellungen → Updates → Neu:** **Benutzerdefinierte Funktionen** an (wie in der Rundgang-App). **Anzeige:** Querformat, „An Bildschirm anpassen“ an (Standard).
-3. **Daten → Daten hinzufügen → SharePoint** → IMS+ (`https://technoformgroup.sharepoint.com/sites/IMSKonzept`) → diese 7 Listen/Bibliotheken: `RG_Rundgaenge`, `RG_Bereiche`, `RG_Kategorien`, `RG_Pruefpunkte`, `RG_Plan`, `RG_Durchfuehrungen`, `RG_Hinweisbilder`.
+3. **Daten → Daten hinzufügen → SharePoint** → IMS+ (`https://technoformgroup.sharepoint.com/sites/IMSKonzept`) → diese 7 Listen/Bibliotheken: `RG_Rundgaenge`, `RG_Bereiche`, `RG_Kategorien`, `RG_Pruefpunkte`, `RG_Plan`, `RG_Durchfuehrungen`, `RG_Hinweisbilder`, `RG_Ansprechpartner`.
 4. Speichern.
 
 ## 6. Schritt B2/B3 – App.Formulas und App.OnStart
@@ -156,7 +167,9 @@ Set(varPlanRgID; 0);;
 Set(varPlanRg; Defaults(RG_Rundgaenge));;
 Set(varEntwurfOk; true);;
 Set(varAktivRest; false);;
-Set(varVorlageNeu; Defaults(RG_Rundgaenge))
+Set(varVorlageNeu; Defaults(RG_Rundgaenge));;
+Set(varNioOffen; false);;
+Set(varKoID; 0)
 ```
 
 Rot erwartet: Nichts. Die Listen müssen schon als Daten hinzugefügt sein (sonst sind `RG_…` rot).
@@ -176,9 +189,10 @@ Falls Strg+V keinen Bildschirm anlegt (UNSICHER, U1): Bildschirm von Hand anlege
 
 | Datei | Bildschirm | Steuerelemente (Container oben) |
 |---|---|---|
-| `pakete/builder/scrListe.yaml` | scrListe | conLiKopf, btnLiNeu, btnLiVorlagen, btnLiNeuLaden, btnLiAlle, galLi, lblLiLeer, conNeu, conLiLaden |
-| `pakete/builder/scrEditor.yaml` | scrEditor | conEdKopf, conEdGl, conEdMitte, conEdRechts, tmrArbeit, conAkt, conHolen, conMehr, conBild, conEdLaden |
+| `pakete/builder/scrListe.yaml` | scrListe | conLiKopf, btnLiNeu, btnLiVorlagen, btnLiNeuLaden, btnLiKontakte, btnLiAlle, galLi, lblLiLeer, conNeu, conLiLaden |
+| `pakete/builder/scrEditor.yaml` | scrEditor | conEdKopf, conEdGl, conEdMitte, conEdRechts, tmrArbeit, conAkt, conHolen, conMehr, conBild, conNio, conEdLaden |
 | `pakete/builder/scrPlan.yaml` | scrPlan | conPlKopf, lblPlHinweis, lblPlKopf1, lblPlKopf2, lblPlKopf3, lblPlKopf4, lblPlKopf5, galPl, lblPlLeer, btnPlNeu, conPlTermine, conPlLaden |
+| `pakete/builder/scrKontakte.yaml` | scrKontakte | conKoKopf, lblKoHilfe, btnKoNeu, galKo, lblKoLeer, conKoForm, conKoLaden |
 
 Wichtig: In der Strukturansicht müssen die Fenster (`conNeu`, `conAkt`, `conHolen`, `conMehr`, `conBild`) und die Lade-Fläche (`conLiLaden`, `conEdLaden`, `conPlLaden`) **ganz oben** stehen (sie liegen in der Datei am Ende = vorne). Falls nicht: Rechtsklick → Nach vorne bringen.
 

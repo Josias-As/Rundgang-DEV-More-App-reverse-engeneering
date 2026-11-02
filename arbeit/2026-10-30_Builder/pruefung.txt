@@ -1,8 +1,9 @@
-Rundgang-Builder: 3 Bildschirme, 236 Steuerelemente, 3318 Properties, 49 Variablen, 17 Funktionen
-Patch-Felder geprüft: 244
-YAML scrListe: 565 Properties zeichengleich zurückgelesen
-YAML scrEditor: 2380 Properties zeichengleich zurückgelesen
+Rundgang-Builder: 4 Bildschirme, 287 Steuerelemente, 4014 Properties, 51 Variablen, 17 Funktionen
+Patch-Felder geprüft: 266
+YAML scrListe: 589 Properties zeichengleich zurückgelesen
+YAML scrEditor: 2688 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
+YAML scrKontakte: 364 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnLiNeu                166 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '+ Neuer Rundgang'
@@ -159,6 +160,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPWerte.OnChange             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler,
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  btnPNio.OnSelect               Filter(RG_Ansprechpartner, Aktiv = true))
   ddPFoto.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Foto: {Value: Self.Selected.W}}), Set(va
   ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
@@ -232,6 +234,21 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnBildKeins.OnSelect          LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnBildKeins.OnSelect          LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {HinweisBildID: 0}), Set(varPatchFehler, 
   btnBildKeins.OnSelect          LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  btnNioRueck.OnSelect           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnNioRueck.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Rueckfrage: ThisItem.W = "ja"}), Set(var
+  btnNioRueck.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  txtNioRueckText.OnChange       LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtNioRueckText.OnChange       LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {RueckfrageText: Left(Trim(Self.Text), 25
+  txtNioRueckText.OnChange       LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  btnNioKrit.OnSelect            LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnNioKrit.OnSelect            LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Kritisch: ThisItem.W = "ja"}), Set(varPa
+  btnNioKrit.OnSelect            LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  txtNioKritText.OnChange        LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  txtNioKritText.OnChange        LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KritischText: Left(Trim(Self.Text), 255)
+  txtNioKritText.OnChange        LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  btnNioKontakt.OnSelect         LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  btnNioKontakt.OnSelect         LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Ansprechpartner: neu}), Set(varPatchFehl
+  btnNioKontakt.OnSelect         LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   scrPlan.OnVisible              LookUp(RG_Rundgaenge, ID = varPlanRgID))
   scrPlan.OnVisible              Filter(RG_Plan, RundgangID = varPlanRgID))
   ddPlTag.OnChange               LookUp(RG_Plan, ID = ThisItem.ID), {Wochentag: Self.Selected.W, Title: Left(varPlanRg.Title & " – " & Self.Selected.N, 255)})
@@ -247,5 +264,18 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID))
   btnPlNeu.OnSelect              Filter(RG_Plan, RundgangID = varPlanRgID))
+  btnKoNeu.OnSelect              LookUp(RG_Ansprechpartner, ID = varNeuID))
+  txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID))
+  txtKoName.OnChange             LookUp(RG_Ansprechpartner, ID = varKoID), {Name: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKoName.OnChange             LookUp(RG_Ansprechpartner, ID = varKoID))
+  txtKoTelefon.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID), {Telefon: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKoTelefon.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID))
+  txtKoHinweis.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID), {Hinweis: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtKoHinweis.OnChange          LookUp(RG_Ansprechpartner, ID = varKoID))
+  btnKoAllg.OnSelect             LookUp(RG_Ansprechpartner, ID = varKoID), {Allgemein: ThisItem.W = "ja"}), Set(varPatchFehler, true))
+  btnKoAllg.OnSelect             LookUp(RG_Ansprechpartner, ID = varKoID))
+  btnKoAktiv.OnSelect            LookUp(RG_Ansprechpartner, ID = varKoID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
+  btnKoAktiv.OnSelect            LookUp(RG_Ansprechpartner, ID = varKoID))
 
 Fehler gesamt: 0

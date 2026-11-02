@@ -37,10 +37,12 @@ NEU_SPALTEN = {
     "RG_Kategorien": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl"},
     "RG_Pruefpunkte": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl",
                        "Foto": "Auswahl", "KommentarPflicht": "Ja/Nein", "Grenzmodus": "Auswahl",
-                       "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text"},
+                       "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text",
+                       "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text"},
+    "RG_Ansprechpartner": {"Title": "Text", "Name": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
-QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder"]
+QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner"]
 
 # ---------------------------------------------------------------- App.Formulas und App.OnStart
 
@@ -91,6 +93,7 @@ ONSTART_VARS = [
     ("varKopieZusatz", '""'), ("varKopieFehler", "0"), ("varQuelleR", "0"), ("varQuelleF", "0"),
     ("varQuelleNurAktiv", "false"), ("varHeuteLaeuft", "false"), ("varPlanRgID", "0"),
     ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varEntwurfOk", "true"), ("varAktivRest", "false"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
+    ("varNioOffen", "false"), ("varKoID", "0"),
 ]
 ONSTART = ";\n".join("Set(%s, %s)" % kv for kv in ONSTART_VARS)
 
@@ -306,7 +309,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, "")}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, "")}).ID, 0))}
                     )
                 )
             )
@@ -470,6 +473,10 @@ REGELN = [
     'ForAll(Filter(colP As p, Trim(Coalesce(p.Abschnitt, "")) <> "" && With({v: First(Sort(Filter(colP As q, q.KategorieID = p.KategorieID && q.RgReihenfolge * 1000000 + q.ID < p.RgReihenfolge * 1000000 + p.ID), RgReihenfolge * 1000000 + ID, SortOrder.Descending))}, '
     '!IsBlank(v) && Lower(Trim(Coalesce(v.Abschnitt, ""))) <> Lower(Trim(p.Abschnitt))) && CountRows(Filter(colP As q, q.KategorieID = p.KategorieID && q.RgReihenfolge * 1000000 + q.ID < p.RgReihenfolge * 1000000 + p.ID && Lower(Trim(Coalesce(q.Abschnitt, ""))) = Lower(Trim(p.Abschnitt)))) > 0) As p, '
     + P_REGEL("Hinweis", '"Abschnitt „" & Trim(p.Abschnitt) & "“ ist unterbrochen: Die Fragen stehen nicht zusammen (bei „" & p.Title & "“). Mit ↑ ↓ zusammenschieben."') + ')',
+    'ForAll(Filter(colP As p, (Coalesce(p.Kritisch, false) || Coalesce(p.Rueckfrage, false)) && p.Eingabetyp.Value <> "IONIO" && p.Eingabetyp.Value <> "ZAHL") As p, '
+    + P_REGEL("Hinweis", '"„" & p.Title & "“: Rückfrage und „kritisch“ wirken nur bei i.O./n.i.O. und Zahl."') + ')',
+    'ForAll(Filter(colP As p, Coalesce(p.Kritisch, false) && Trim(Coalesce(p.Ansprechpartner, "")) = "") As p, '
+    + P_REGEL("Hinweis", '"„" & p.Title & "“ ist kritisch, aber ohne eigenen Ansprechpartner (es erscheinen nur die allgemeinen)."') + ')',
     'ForAll(Filter(colP As p, p.Title = "Neue Frage") As p, ' + P_REGEL("Hinweis", '"Eine Frage heißt noch „Neue Frage“."') + ')',
     'ForAll(Filter(colK As k, CountRows(Filter(colP As p, p.KategorieID = k.ID)) > 30) As k, '
     + regel("Hinweis", 2, "k.ID", "k.ID", "k.BereichID", '"Kategorie „" & k.Title & "“ hat über 30 Prüfpunkte (lange Seite für den Prüfer)."') + ')',
@@ -490,7 +497,9 @@ P_GEAENDERT = ('p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coales
                'Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || '
                'Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || '
                'Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || '
-               'Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, ""))')
+               'Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, "")) || Coalesce(p.Kritisch, false) <> Coalesce(a.Kritisch, false) || '
+               'Coalesce(p.KritischText, "") <> Coalesce(a.KritischText, "") || Coalesce(p.Ansprechpartner, "") <> Coalesce(a.Ansprechpartner, "") || '
+               'Coalesce(p.Rueckfrage, false) <> Coalesce(a.Rueckfrage, false) || Coalesce(p.RueckfrageText, "") <> Coalesce(a.RueckfrageText, "")')
 AKT_ITEMS = ('Ungroup(\n    Table(\n'
              '        {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},\n'
              '        {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (' + P_GEAENDERT + '))) As p, {Art: "geändert", Text: p.Title})},\n'
@@ -851,6 +860,8 @@ scr_liste = C("scrListe", "Screen", {
         "If(" + FREI + ",\n    Set(varFrage, \"\");\n    Set(varNeuLeer, true);\n    Reset(txtNeuName);\n    Set(varNeuOffen, true)\n)"),
     btn("btnLiVorlagen", '"Vorlagen bearbeiten"', "256", "84", "220", "44", LI_VORLAGEN, art="sekundaer"),
     btn("btnLiNeuLaden", '"↻ Neu laden"', "488", "84", "150", "44", LI_NEU_LADEN, art="sekundaer"),
+    btn("btnLiKontakte", '"Ansprechpartner"', "650", "84", "200", "44",
+        "If(" + FREI + ",\n    Set(varFrage, \"\");\n    Navigate(scrKontakte, ScreenTransition.None)\n)", art="sekundaer"),
     btn("btnLiAlle", 'If(varAlleZeigen, "✓ Archivierte zeigen", "Archivierte zeigen")', "Parent.Width - 264", "84", "240", "44",
         "Set(varAlleZeigen, !varAlleZeigen);\nSet(varFrage, \"\")", art="sekundaer"),
     gal("galLi", LI_ITEMS, "24", "144", "Parent.Width - 48", "Parent.Height - 160", 116, [li_karte], '"Rundgänge"'),
@@ -1086,6 +1097,44 @@ ist_typ = lambda *t: "(" + " || ".join('%s.Eingabetyp.Value = "%s"' % (CUR, x) f
 REST_Y = 'If(%s, 360, %s, 350, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"))
 
 
+NIO_OEFFNEN = ('If(!varIsLoading,\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));\n'
+               '    Reset(txtNioRueckText);\n    Reset(txtNioKritText);\n    Set(varNioOffen, true)\n)')
+NIO_IDS = 'Filter(Split(Coalesce(%s.Ansprechpartner, ""), ";"), Trim(Value) <> "")' % CUR
+NIO_TOGGLE = ('If(!Coalesce(ThisItem.Allgemein, false),\n    With({ids: ' + NIO_IDS + '},\n        '
+              + 'With({neu: If(Text(ThisItem.ID) in ids.Value, Concat(Filter(ids, Trim(Value) <> Text(ThisItem.ID)) As s, Trim(s.Value), ";"), '
+              'Concat(ids As s2, Trim(s2.Value) & ";") & Text(ThisItem.ID))},\n            '
+              + ind(PP('{Ansprechpartner: neu}'), 12) + '\n        )\n    )\n)')
+con_nio = overlay("conNio", "varNioOffen", 660, 640, [
+    lbl("lblNioFrage", CUR + ".Title", "24", "56", "612", "28", size=14, color="clrTextGrau"),
+    lbl("lblNioRueck", '"Rückfrage „Ist das wirklich so?“"', "24", "92", "300", "24", size=13, bold=True),
+    optionen("galNioRueck", 'Table({W: "nein", N: "aus"}, {W: "ja", N: "an"})', 'If(Coalesce(%s.Rueckfrage, false), "ja", "nein")' % CUR,
+             'If((ThisItem.W = "ja") <> Coalesce(%s.Rueckfrage, false),\n    %s\n)' % (CUR, ind(PP('{Rueckfrage: ThisItem.W = "ja"}'), 4)),
+             "336", "88", "200", 2, '"Rückfrage"', h=36, size=13),
+    txt("txtNioRueckText", 'Coalesce(%s.RueckfrageText, "")' % CUR,
+        'If(Trim(Self.Text) <> Trim(Coalesce(%s.RueckfrageText, "")),\n    %s\n)' % (CUR, ind(PP('{RueckfrageText: Left(Trim(Self.Text), 255)}'), 4)),
+        "24", "132", "612", "40", '"Normalerweise … (leer: bei Zahlen die Grenzen)"', '"Text der Rückfrage"', Visible='Coalesce(%s.Rueckfrage, false)' % CUR),
+    lbl("lblNioKrit", '"Kritischer Mangel – sofort melden"', "24", "192", "300", "24", size=13, bold=True, Color="clrFehler"),
+    optionen("galNioKrit", 'Table({W: "nein", N: "nein"}, {W: "ja", N: "ja"})', 'If(Coalesce(%s.Kritisch, false), "ja", "nein")' % CUR,
+             'If((ThisItem.W = "ja") <> Coalesce(%s.Kritisch, false),\n    %s\n)' % (CUR, ind(PP('{Kritisch: ThisItem.W = "ja"}'), 4)),
+             "336", "188", "200", 2, '"Kritisch"', h=36, size=13),
+    txt("txtNioKritText", 'Coalesce(%s.KritischText, "")' % CUR,
+        'If(Trim(Self.Text) <> Trim(Coalesce(%s.KritischText, "")),\n    %s\n)' % (CUR, ind(PP('{KritischText: Left(Trim(Self.Text), 255)}'), 4)),
+        "24", "232", "612", "40", '"Was ist zu tun? z. B. Anlage nicht weiter betreiben"', '"Text für den kritischen Mangel"',
+        Visible='Coalesce(%s.Kritisch, false)' % CUR),
+    lbl("lblNioKontakte", '"Ansprechpartner – antippen zum Auswählen"', "24", "282", "612", "24", size=12,
+        color="clrTextGrau", Visible='Coalesce(%s.Kritisch, false)' % CUR),
+    gal("galNioKontakte", 'Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))', "24", "310", "612", "220", 44, [
+        btn("btnNioKontakt", 'If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in ' + NIO_IDS + '.Value, "✓ ", "○ ")) & ThisItem.Title & '
+            'If(Trim(Coalesce(ThisItem.Name, "")) = "", "", " – " & ThisItem.Name) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")',
+            "0", "2", "Parent.TemplateWidth - 4", "40", NIO_TOGGLE, art="sekundaer", size=13, Align="Align.Left", PaddingLeft="12",
+            DisplayMode='If(varSchreibbar && !varIsLoading && !Coalesce(ThisItem.Allgemein, false), DisplayMode.Edit, DisplayMode.Disabled)'),
+    ], '"Ansprechpartner"', Visible='Coalesce(%s.Kritisch, false)' % CUR),
+    lbl("lblNioLeer", '"Noch keine Ansprechpartner. Lege sie in der Übersicht unter „Ansprechpartner“ an."', "24", "320", "612", "48", size=13,
+        color="clrFehler", Visible='Coalesce(%s.Kritisch, false) && IsEmpty(colKontakte)' % CUR),
+    lbl("lblNioHinweis", '"Wirkt bei n.i.O. und bei Zahlen außerhalb der Grenzen (Modus „Mangel“). Es wird nichts verschickt."', "24", "532", "612", "40", size=12, color="clrTextGrau"),
+    btn("btnNioFertig", '"Fertig"', "476", "576", "160", "44", "Set(varNioOffen, false)"),
+], '"Bei n.i.O."', "Set(varNioOffen, false)")
+
 ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.Height - 56", "Fill": "clrHintergrund",
                       "Visible": "varAuswahlEbene = 3"}, [
     lbl("lblPFrage", '"Frage"', "0", "0", "528", "20", size=12, color="clrTextGrau"),
@@ -1128,6 +1177,10 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
             '    If(neu <> Coalesce(%s.Auswahlwerte, ""),\n        %s\n    )\n)' % (CUR, ind(PP('{Auswahlwerte: neu}'), 8)),
             "0", "20", "528", "86", '"gut" & Char(10) & "mäßig" & Char(10) & "schlecht"', '"Antwortmöglichkeiten, eine pro Zeile"', multi=True),
     ]),
+    btn("btnPNio", 'If(Coalesce(%s.Kritisch, false), "⚠ ", "") & "Bei n.i.O.: " & If(Coalesce(%s.Rueckfrage, false) || Coalesce(%s.Kritisch, false), '
+        'If(Coalesce(%s.Rueckfrage, false), "Rückfrage", "") & If(Coalesce(%s.Rueckfrage, false) && Coalesce(%s.Kritisch, false), " + ", "") & If(Coalesce(%s.Kritisch, false), "kritisch", ""), "nichts Besonderes") & "  ›"' % ((CUR,) * 7),
+        "0", REST_Y + " + 256", "528", "32", NIO_OEFFNEN, art="sekundaer", size=13, DisplayMode=BTN_DM,
+        Color='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR, BorderColor='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR),
     con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "250", "Fill": "clrHintergrund"}, [
         lbl("lblPFoto", '"Foto"', "0", "0", "528", "20", size=12, color="clrTextGrau"),
         dd("ddPFoto", FOTO_ITEMS, "N", 'LookUp(%s, W = %s).N' % (FOTO_ITEMS, FOTO_IST),
@@ -1219,7 +1272,9 @@ VS_REGELN = ('"• " & If(Coalesce(%(c)s.Pflicht, false), "Pflichtfrage", "freiw
              'If(%(c)s.Eingabetyp.Value = "ZAHL", Char(10) & "• " & fnGrenzText(%(c)s.MinWert, %(c)s.MaxWert, %(c)s.Einheit) & If(IsBlank(%(c)s.MinWert) && IsBlank(%(c)s.MaxWert), "", ", außerhalb: " & '
              'Switch(fnGrenzmodus(%(c)s.Grenzmodus.Value), "Warnen", "Hinweis + Begründung", "Sperren", "nicht speicherbar", "Mangel")), "") & '
              'If(Coalesce(%(c)s.BedingungPunkt, 0) <> 0, Char(10) & "• nur sichtbar, wenn „" & LookUp(colP, ID = %(c)s.BedingungPunkt).Title & "“ = " & fnBedText(%(c)s.BedingungWert), "") & '
-             'If(Coalesce(%(c)s.HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "")') % {"c": CUR, "f": FOTO_IST}
+             'If(Coalesce(%(c)s.HinweisBildID, 0) > 0, Char(10) & "• mit Beispielbild", "") & '
+             'If(Coalesce(%(c)s.Rueckfrage, false), Char(10) & "• bei n.i.O. Rückfrage „Ist das wirklich so?“", "") & '
+             'If(Coalesce(%(c)s.Kritisch, false), Char(10) & "• bei n.i.O. KRITISCH: rotes Fenster, sofort melden", "")') % {"c": CUR, "f": FOTO_IST}
 
 vs_karte = con("conVsKarte", dict({"X": "16", "Y": "40", "Width": "Parent.Width - 32", "Height": "300", "Fill": "clrKarte", "BorderColor": "clrRahmen",
                                    "BorderThickness": "1", "Visible": "varAuswahlEbene = 3"}, **radius(8)), [
@@ -1475,7 +1530,7 @@ scr_editor = C("scrEditor", "Screen", {
         [ed_leiste, ed_leer, ed_b, ed_k, ed_p]),
     ed_rechts,
     tmr_arbeit,
-    con_akt, con_holen, con_mehr, con_bild,
+    con_akt, con_holen, con_mehr, con_bild, con_nio,
     laden_overlay("conEdLaden", ausweg=True),
 ])
 
@@ -1562,7 +1617,86 @@ scr_plan = C("scrPlan", "Screen", {
     laden_overlay("conPlLaden"),
 ])
 
-SCREENS = [scr_liste, scr_editor, scr_plan]
+
+# ---------------------------------------------------------------- Bildschirm Ansprechpartner (Paket 9)
+KO_CUR = "LookUp(colKoAlle, ID = varKoID)"
+KO_RESET = "Reset(txtKoRolle);\nReset(txtKoName);\nReset(txtKoTelefon);\nReset(txtKoHinweis)"
+
+
+def ko_patch(felder):
+    return ("If(varKoID > 0 && !varIsLoading,\n"
+            "    Set(varPatchFehler, false);\n"
+            "    IfError(Patch(RG_Ansprechpartner, LookUp(RG_Ansprechpartner, ID = varKoID), " + felder + "), Set(varPatchFehler, true));\n"
+            "    If(varPatchFehler,\n"
+            "        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+            "        Patch(colKoAlle, LookUp(colKoAlle, ID = varKoID), LookUp(RG_Ansprechpartner, ID = varKoID))\n"
+            "    )\n"
+            ")")
+
+
+def ko_text(name, feld, y, hint, label, multi=False, h="40"):
+    return txt(name, 'Coalesce(%s.%s, "")' % (KO_CUR, feld),
+               'If(Trim(Self.Text) <> Trim(Coalesce(%s.%s, "")),\n    %s\n)' % (KO_CUR, feld, ind(ko_patch("{%s: Left(Trim(Self.Text), 255)}" % feld), 4)),
+               "0", y, "Parent.Width", h, hint, label, multi=multi, DisplayMode=BTN_DM)
+
+
+KO_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
+          "    Set(varNeuID, IfError(Patch(RG_Ansprechpartner, Defaults(RG_Ansprechpartner), {Title: \"Neuer Ansprechpartner\", Name: \"\", Telefon: \"\", Hinweis: \"\", Allgemein: false, Aktiv: true}).ID, 0));\n"
+          "    If(varNeuID = 0,\n"
+          "        Notify(\"Anlegen fehlgeschlagen. Bitte erneut versuchen.\", NotificationType.Error),\n"
+          "        Collect(colKoAlle, LookUp(RG_Ansprechpartner, ID = varNeuID));\n"
+          "        Set(varKoID, varNeuID);\n"
+          "        " + ind(KO_RESET, 8) + ";\n"
+          "        SetFocus(txtKoRolle)\n"
+          "    )\n"
+          ")")
+scr_kontakte = C("scrKontakte", "Screen", {
+    "Fill": "clrHintergrund",
+    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Ansprechpartner);\nClearCollect(colKoAlle, RG_Ansprechpartner);\n"
+                 "Set(varKoID, Coalesce(First(Sort(colKoAlle, Title)).ID, 0));\n" + KO_RESET + ";\nSet(varIsLoading, false)",
+}, [
+    con("conKoKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
+        btn("btnKoZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
+        lbl("lblKoTitel", '"Ansprechpartner"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
+    ]),
+    lbl("lblKoHilfe", '"Wer soll bei einem kritischen Mangel informiert werden? „bei jedem“ erscheint bei jedem kritischen Mangel. '
+        'Nicht mehr gebraucht: auf „inaktiv“ stellen, nicht löschen."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
+    btn("btnKoNeu", '"+ Ansprechpartner"', "24", "124", "240", "44", KO_NEU),
+    gal("galKo", 'Sort(colKoAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "180", "520", "Parent.Height - 196", 64, [
+        lbl("lblKoHinter", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4",
+            Fill="If(ThisItem.ID = varKoID, clrPrimaerHell, Color.White)"),
+        lbl("lblKoRolle", "ThisItem.Title", "12", "4", "Parent.TemplateWidth - 24", "28", size=14, bold=True,
+            Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
+        lbl("lblKoName", 'Coalesce(ThisItem.Name, "") & If(Trim(Coalesce(ThisItem.Telefon, "")) = "", "", "  ·  " & ThisItem.Telefon) & '
+            'If(Coalesce(ThisItem.Allgemein, false), "  ·  bei jedem", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  ·  inaktiv")',
+            "12", "32", "Parent.TemplateWidth - 24", "24", size=12, color="clrTextGrau", Wrap="false"),
+        btn("btnKoZeile", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4", "Set(varKoID, ThisItem.ID);\n" + KO_RESET, art="kopf",
+            Fill="RGBA(0, 0, 0, 0)", HoverFill="RGBA(23, 20, 150, 0.06)", PressedFill="RGBA(23, 20, 150, 0.12)", DisabledFill="RGBA(0, 0, 0, 0)", **radius(0)),
+    ], '"Ansprechpartner"'),
+    lbl("lblKoLeer", '"Noch keine Ansprechpartner. „+ Ansprechpartner“ legt einen an."', "24", "190", "520", "48", size=13, color="clrTextGrau",
+        Visible="IsEmpty(colKoAlle) && !varIsLoading"),
+    con("conKoForm", {"X": "568", "Y": "124", "Width": "Parent.Width - 592", "Height": "560", "Fill": "clrHintergrund", "Visible": "varKoID > 0"}, [
+        lbl("lblKoRolleT", '"Gewerk / Rolle"', "0", "0", "400", "20", size=12, color="clrTextGrau"),
+        ko_text("txtKoRolle", "Title", "20", '"z. B. Elektriker"', '"Gewerk oder Rolle"'),
+        lbl("lblKoNameT", '"Name / Firma"', "0", "72", "400", "20", size=12, color="clrTextGrau"),
+        ko_text("txtKoName", "Name", "92", '"z. B. Elektro Müller GmbH"', '"Name oder Firma"'),
+        lbl("lblKoTelT", '"Telefon"', "0", "144", "400", "20", size=12, color="clrTextGrau"),
+        ko_text("txtKoTelefon", "Telefon", "164", '"z. B. 0561 123456"', '"Telefon"'),
+        lbl("lblKoHinweisT", '"Hinweis (z. B. Erreichbarkeit)"', "0", "216", "400", "20", size=12, color="clrTextGrau"),
+        ko_text("txtKoHinweis", "Hinweis", "236", '"z. B. nach 16 Uhr: Bereitschaft 0170 …"', '"Hinweis"', multi=True, h="80"),
+        lbl("lblKoAllgT", '"Bei jedem kritischen Mangel zeigen"', "0", "332", "400", "20", size=12, color="clrTextGrau"),
+        optionen("galKoAllg", 'Table({W: "nein", N: "nein"}, {W: "ja", N: "bei jedem"})', 'If(Coalesce(%s.Allgemein, false), "ja", "nein")' % KO_CUR,
+                 'If((ThisItem.W = "ja") <> Coalesce(%s.Allgemein, false),\n    %s\n)' % (KO_CUR, ind(ko_patch('{Allgemein: ThisItem.W = "ja"}'), 4)),
+                 "0", "352", "300", 2, '"Bei jedem kritischen Mangel"', h=40, size=13, aktiv=BTN_DM),
+        lbl("lblKoAktivT", '"Status"', "0", "408", "400", "20", size=12, color="clrTextGrau"),
+        optionen("galKoAktiv", 'Table({W: "ja", N: "aktiv"}, {W: "nein", N: "inaktiv"})', 'If(Coalesce(%s.Aktiv, false), "ja", "nein")' % KO_CUR,
+                 'If((ThisItem.W = "ja") <> Coalesce(%s.Aktiv, false),\n    %s\n)' % (KO_CUR, ind(ko_patch('{Aktiv: ThisItem.W = "ja"}'), 4)),
+                 "0", "428", "300", 2, '"Status"', h=40, size=13, aktiv=BTN_DM),
+    ]),
+    laden_overlay("conKoLaden"),
+])
+
+SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte]
 
 
 def maske(f):
