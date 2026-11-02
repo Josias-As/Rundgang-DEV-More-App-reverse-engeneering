@@ -28,6 +28,8 @@ MUTATIONEN = [
     ("Kommentar in Formel", "btnLiNeuLaden", "OnSelect", lambda f: f + "\n// Test", "Kommentar"),
     ("Feld nach Punkt falsch", "lblVsFrage", "Text", lambda f: f.replace(".Title", ".Titel_", 1), "unbekannte Felder nach Punkt"),
     ("Bildschirm unbekannt", "btnLiPlan", "OnSelect", lambda f: f.replace("Navigate(scrPlan", "Navigate(scrPlaene", 1), "Bildschirm unbekannt"),
+    ("IfError mit Set als Wert (02.11.)", "btnLiVerwerfen", "OnSelect",
+     lambda f: f.replace("If(!varPatchFehler, If(IsError(Patch(", "If(!varPatchFehler, IfError((Patch(", 1), "als Wert"),
 ]
 
 

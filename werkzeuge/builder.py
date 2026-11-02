@@ -1548,6 +1548,60 @@ scr_plan = C("scrPlan", "Screen", {
 SCREENS = [scr_liste, scr_editor, scr_plan]
 
 
+def maske(f):
+    """Gleich lange Kopie der Formel, Text in Anführungszeichen durch _ ersetzt."""
+    out, i, n = [], 0, len(f)
+    while i < n:
+        if f[i] == '"':
+            j = i + 1
+            while j < n:
+                if f[j] == '"':
+                    if j + 1 < n and f[j + 1] == '"':
+                        j += 2
+                        continue
+                    break
+                j += 1
+            out.append('"' + "_" * (j - i - 1) + '"')
+            i = j + 1
+        else:
+            out.append(f[i])
+            i += 1
+    return "".join(out)
+
+
+def iferror_als_wert(f):
+    """IfError(X, Set(...)) als Wert (Zweig eines If, Argument), nicht als Glied einer Kette.
+    Studio (02.11., App-Prüfung): ErrBadType Record/Table vs. Boolean. Liefert (Anfang, Komma, Ende)."""
+    s = maske(f)
+    erg = []
+    for m in re.finditer(r"\bIfError\(", s):
+        tiefe, komma, j = 0, None, m.end() - 1
+        for j in range(m.end() - 1, len(s)):
+            ch = s[j]
+            if ch in "({[":
+                tiefe += 1
+            elif ch in ")}]":
+                tiefe -= 1
+                if tiefe == 0:
+                    break
+            elif ch == "," and tiefe == 1 and komma is None:
+                komma = j
+        k = j + 1
+        while k < len(s) and s[k] in " \n\t":
+            k += 1
+        if (s[k] if k < len(s) else "") != ";" and komma and s[komma + 1:j].strip().startswith("Set("):
+            erg.append((m.start(), komma, j))
+    return erg
+
+
+def iferror_umbauen(f):
+    """IfError(X, Set(...)) als Wert -> If(IsError(X), Set(...)): gleiche Wirkung, beide Zweige Boolean."""
+    for a, k, e in reversed(iferror_als_wert(f)):
+        f = f[:a] + "If(IsError(" + f[a + len("IfError("):k] + ")," + f[k + 1:e] + ")" + f[e + 1:]
+    return f
+
+
+
 # ---------------------------------------------------------------- Ausgabe
 
 def alle(c, eltern=None, out=None):
@@ -1556,6 +1610,12 @@ def alle(c, eltern=None, out=None):
     for k in c.kinder:
         alle(k, c.name, out)
     return out
+
+
+for _s in SCREENS:
+    for _c, _ in alle(_s):
+        for _k in list(_c.props):
+            _c.props[_k] = iferror_umbauen(_c.props[_k])
 
 
 PLAIN = re.compile(r"^[^\n\t]*$")
@@ -1720,6 +1780,10 @@ def pruefen(app_ref):
     for c, _ in kontrollen:
         for k, v in c.props.items():
             props[c.name + "." + k] = v
+    for k, v in props.items():
+        if iferror_als_wert(v):
+            fehler += 1
+            zeilen.append("FEHLER IfError(…, Set(…)) als Wert (Typfehler in Studio): " + k)
     gesamt = "\n".join(props.values())
     s_ges = rg.ausserhalb_strings(gesamt)
     gesetzt = set(re.findall(r"\bSet\(\s*(\w+)", s_ges))
