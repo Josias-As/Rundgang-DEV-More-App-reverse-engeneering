@@ -8,7 +8,7 @@ Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket13), `werkzeuge/bui
 - **Prüfer:** An Prüfpunkten mit Anleitung steht ein runder Knopf **ⓘ**. Er öffnet ein großes Fenster mit dem Text (scrollbar) und, falls vorhanden, dem Beispielbild.
 - **Builder:** neuer Bildschirm „Anleitungen“ (anlegen, ändern, inaktiv stellen) und im Prüfpunkt das Feld „Anleitung“ neben „Foto“. Die Foto-Auswahl hat dafür kürzere Texte (gleiche Werte).
 - Bewusst nicht gebaut: Foto-Aufnahme im ⓘ-Fenster (Pflicht-Fotos bleiben sichtbar in der Karte – „Prüfer sind nicht verlässlich“).
-- Umfang: 1 Liste, 1 Spalte. Rundgang-App 2 Properties + 2 Blöcke. Builder 1 Bildschirm, 2 Blöcke, 11 Properties. Generatoren 0 Fehler. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 1 Liste, 1 Spalte. Rundgang-App 2 Properties + 2 Blöcke. Builder 1 Bildschirm, 2 Blöcke, 11 Properties. Generatoren 0 Fehler. Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket13_17/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Teil A – Rundgang-App
 
@@ -39,10 +39,12 @@ Set(varGeaendert; false);;
 Set(varSchluesselK; "D" & varDurchID & "-K" & varKatID);;
 Set(varNurLesen; varDurch.Status <> stInArbeit);;
 Refresh(RG_KategorieErgebnisse);;
+Refresh(RG_Anleitungen);;
 Concurrent(
     ClearCollect(colPP; Filter(RG_Pruefpunkte; KategorieID = varKatID && Aktiv = true));
     Set(varErgebnis; LookUp(RG_KategorieErgebnisse; Title = varSchluesselK));
-    ClearCollect(colKontakte; Filter(RG_Ansprechpartner; Aktiv = true))
+    ClearCollect(colKontakte; Filter(RG_Ansprechpartner; Aktiv = true));
+    ClearCollect(colAnlAktivApp; ShowColumns(Filter(RG_Anleitungen; Aktiv = true); ID))
 );;
 If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP; !IsBlank(AbwMax) || Coalesce(NurSteigend; false))) > 0;
     Set(varLetzteFuer; varDurchID);;
@@ -66,7 +68,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                 With({a: Index(t; i.Value).Value};
                     With({pp: LookUp(colPP; ID = Value(a.PruefpunktID))};
                         {PruefpunktID: Value(a.PruefpunktID); Frage: Text(a.Frage); Typ: Text(a.Typ); Pflicht: false; Einheit: Coalesce(Text(a.Einheit); ""); MinWert: pp.MinWert; MaxWert: pp.MaxWert; Auswahl: Coalesce(Text(a.WertText); ""); Hinweis: ""; Reihenfolge: i.Value;
-                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); KritischVon: Coalesce(Text(a.KritischVon); ""); TextIO: Coalesce(Text(a.TextIO); ""); TextNIO: Coalesce(Text(a.TextNIO); ""); NMErlaubt: false; KPflOrig: false; Letzter: Value(a.Letzter); LetzterTag: Coalesce(Text(a.LetzterTag); ""); AbwMax: Blank(); AbwProzent: false; NurSteigend: false; VglID: 0; VglTol: 0; AbwText: Coalesce(Text(a.AbwText); ""); AnlID: Coalesce(pp.AnleitungID; 0); Inaktiv: false}
+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFotoModus(pp.Foto.Value; Coalesce(pp.FotoMoeglich; false)); KommentarPflicht: false; Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value); Warnung: Coalesce(IfError(Boolean(a.Warnung); false); false); BedID: 0; BedWert: ""; Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet); false); false); BildID: Coalesce(pp.HinweisBildID; 0); Abschnitt: Trim(Coalesce(Text(a.Abschnitt); "")); AbsKopf: false; Kritisch: Coalesce(IfError(Boolean(a.Kritisch); false); false); KritischText: ""; Ansprechpartner: ""; Rueckfrage: false; RueckfrageText: ""; KritischOk: Coalesce(IfError(Boolean(a.KritischOk); false); false); KritischZeit: Coalesce(Text(a.KritischZeit); ""); KritischVon: Coalesce(Text(a.KritischVon); ""); TextIO: Coalesce(Text(a.TextIO); ""); TextNIO: Coalesce(Text(a.TextNIO); ""); NMErlaubt: false; KPflOrig: false; Letzter: Value(a.Letzter); LetzterTag: Coalesce(Text(a.LetzterTag); ""); AbwMax: Blank(); AbwProzent: false; NurSteigend: false; VglID: 0; VglTol: 0; AbwText: Coalesce(Text(a.AbwText); ""); AnlID: If(IsBlank(LookUp(colAnlAktivApp; ID = Coalesce(pp.AnleitungID; 0))); 0; pp.AnleitungID); Inaktiv: false}
                     )
                 )
             )
@@ -109,7 +111,7 @@ With({t: If(IsBlank(varErgebnis.Antworten); Table(ParseJSON("[]")); Table(ParseJ
                      VglID: Coalesce(p.VergleichPunkt; 0);
                      VglTol: Coalesce(p.VergleichTol; 0);
                      AbwText: "";
-                     AnlID: Coalesce(p.AnleitungID; 0);
+                     AnlID: If(IsBlank(LookUp(colAnlAktivApp; ID = Coalesce(p.AnleitungID; 0))); 0; p.AnleitungID);
                      Warnung: false;
                      Inaktiv: false}
                 )
@@ -147,14 +149,18 @@ Set(varIsLoading; false)
 
 ```diff
 +Set(varInfoID; 0);;
--                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFot …
-+                         Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); ""); Fotos: Coalesce(Text(a.Fotos); ""); FotoModus: fnFot …
-+                     AnlID: Coalesce(p.AnleitungID; 0);
--                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); …
-+                 Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Value.Kommentar); ""); Fotos: Coalesce(Text(o.Value.Fotos); …
++Refresh(RG_Anleitungen);;
+-    ClearCollect(colKontakte; Filter(RG_Ansprechpartner; Aktiv = true))
++    ClearCollect(colKontakte; Filter(RG_Ansprechpartner; Aktiv = true));
++    ClearCollect(colAnlAktivApp; ShowColumns(Filter(RG_Anleitungen; Aktiv = true); ID))
+- Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); " …
++ Bewertung: Coalesce(Text(a.Bewertung); ""); WertText: Coalesce(Text(a.WertText); ""); WertZahl: Value(a.WertZahl); Kommentar: Coalesce(Text(a.Kommentar); " …
++                     AnlID: If(IsBlank(LookUp(colAnlAktivApp; ID = Coalesce(p.AnleitungID; 0))); 0; p.AnleitungID);
+- Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Val …
++ Bewertung: Coalesce(Text(o.Value.Bewertung); ""); WertText: Coalesce(Text(o.Value.WertText); ""); WertZahl: Value(o.Value.WertZahl); Kommentar: Coalesce(Text(o.Val …
 ```
 
-**Kurz erklärt:** Neues Feld `AnlID` in allen drei Zweigen. Das ⓘ-Fenster ist beim Öffnen zu.
+**Kurz erklärt:** Liest die aktiven Anleitungen frisch. Neues Feld `AnlID` in allen drei Zweigen – nur wenn die Anleitung aktiv ist (inaktive sieht der Prüfer nicht). Das ⓘ-Fenster ist beim Öffnen zu.
 
 **Nachprüfen:** endet auf `Set(varIsLoading; false)`
 
@@ -189,7 +195,7 @@ Parent.Width - 40 - If(ThisItem.BildID > 0; 80; 0) - If(ThisItem.AnlID > 0; 64; 
       Fill: =clrKarte
       Font: =Font.'Segoe UI'
       FontWeight: =FontWeight.Semibold
-      Height: =34
+      Height: =40
       HoverColor: =clrPrimaer
       HoverFill: =clrPrimaerHell
       OnSelect: |-
@@ -199,16 +205,16 @@ Parent.Width - 40 - If(ThisItem.BildID > 0; 80; 0) - If(ThisItem.AnlID > 0; 64; 
         If(IsBlank(varInfo.ID), Notify("Die Anleitung wurde nicht gefunden.", NotificationType.Warning), Set(varInfoID, ThisItem.AnlID))
       PressedColor: =clrPrimaer
       PressedFill: =clrPrimaerHell
-      RadiusBottomLeft: =17
-      RadiusBottomRight: =17
-      RadiusTopLeft: =17
-      RadiusTopRight: =17
+      RadiusBottomLeft: =20
+      RadiusBottomRight: =20
+      RadiusTopLeft: =20
+      RadiusTopRight: =20
       Size: =16
       Text: ="ⓘ"
       Visible: =ThisItem.AnlID > 0
-      Width: =48
-      X: =Parent.Width - 68 - If(ThisItem.BildID > 0, 80, 0)
-      Y: =10
+      Width: =40
+      X: =Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0)
+      Y: =7
 ```
 
 **Nachprüfen (E-05):** `btnKaInfo.X` ist eine Formel.
@@ -343,7 +349,7 @@ Screens:
         Set(varLadeText, "");
         Refresh(RG_Anleitungen);
         ClearCollect(colAnAlle, RG_Anleitungen);
-        Set(varAnID, Coalesce(First(Sort(colAnAlle, Title)).ID, 0));
+        Set(varAnID, Coalesce(First(Sort(colAnAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))).ID, 0));
         Reset(txtAnTitel);
         Reset(txtAnText);
         Set(varIsLoading, false)
@@ -403,7 +409,7 @@ Screens:
             Height: =44
             Size: =13
             Text: |-
-              ="Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen."
+              ="Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen – der Prüfer sieht sie dann nicht mehr."
             Width: =Parent.Width - 48
             X: =24
             Y: =72
@@ -786,15 +792,16 @@ Screens:
       ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
       ChevronHoverFill: =Color.White
       Color: =clrText
-      Default: =If(Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0) = 0, "— keine —", Coalesce(LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "(fehlt)"))
+      Default: |-
+        =With({akt: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, If(cur = 0, "— keine —", IsBlank(LookUp(akt As a2, a2.ID = cur)), Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)", With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))
       DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
       Fill: =clrKarte
       Font: =Font.'Segoe UI'
       Height: =36
       HoverFill: =clrPrimaerHell
       Items: |-
-        =Ungroup(Table({T: Table({ID: 0, Title: "— keine —"})}, {T: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)
-      Items.Value: =Title
+        =With({akt: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, Ungroup(Table({T: Table({ID: 0, N: "— keine —"})}, {T: ForAll(akt As n, {ID: n.ID, N: n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", "")})}, {T: Filter(Table({ID: cur, N: Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a2.ID = cur)))}), T))
+      Items.Value: =N
       OnChange: |-
         =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0),
             If(varSchreibbar && varAuswahlEbene = 3,
@@ -957,8 +964,8 @@ LookUp(Table({W: "Aus"; N: "kein Foto"}; {W: "Optional"; N: "Foto freiwillig"}; 
 ```
 
 ```diff
--LookUp(Table({W: "Aus"; N: "kein Foto (bei n.i.O. möglich)"}; {W: "Optional"; N: "Foto freiwillig"}; {W: "Pflicht"; N: "Foto immer Pflicht"}; {W: "Bei Mangel Pflicht"; N: "Foto Pflicht bei Mangel (n.i.O.)"}); W = fnFotoWert(LookUp(colP; …
-+LookUp(Table({W: "Aus"; N: "kein Foto"}; {W: "Optional"; N: "Foto freiwillig"}; {W: "Pflicht"; N: "Foto immer Pflicht"}; {W: "Bei Mangel Pflicht"; N: "Foto bei Mangel"}); W = fnFotoWert(LookUp(colP; ID = varAuswahlID).Foto.Value; Coales …
+- LookUp(Table({W: "Aus"; N: "kein Foto (bei n.i.O. möglich)"}; {W: "Optional"; N: "Foto freiwillig"}; {W: "Pflicht"; N: "Foto immer Pflicht"}; {W: "Bei Mangel Pflicht"; N: "Foto Pfl …
++ LookUp(Table({W: "Aus"; N: "kein Foto"}; {W: "Optional"; N: "Foto freiwillig"}; {W: "Pflicht"; N: "Foto immer Pflicht"}; {W: "Bei Mangel Pflicht"; N: "Foto bei Mangel"}); W = fnFot …
 ```
 
 **Kurz erklärt:** Wie Items.
@@ -976,8 +983,8 @@ LookUp(Table({W: "Aus"; N: "kein Foto"}; {W: "Optional"; N: "Foto freiwillig"}; 
 ```
 
 ```diff
--"• " & If(Coalesce(LookUp(colP; ID = varAuswahlID).Pflicht; false); "Pflichtfrage"; "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP; ID = varAuswahlID).Foto.Value; Coalesce(LookUp(colP; ID = varAuswahlID).FotoMoeglic …
-+"• " & If(Coalesce(LookUp(colP; ID = varAuswahlID).Pflicht; false); "Pflichtfrage"; "freiwillig") & Char(10) & "• " & fnFotoText(fnFotoWert(LookUp(colP; ID = varAuswahlID).Foto.Value; Coalesce(LookUp(colP; ID = varAuswahlID).FotoMoeglic …
+- … LookUp(colP; ID = varAuswahlID).VergleichTol; 0)) & ")"; "") …
++ … LookUp(colP; ID = varAuswahlID).VergleichTol; 0)) & ")"; "") & If(Coalesce(LookUp(colP; ID = varAuswahlID).AnleitungID; 0) > 0; Char(10) & "• ⓘ Anleitung „" & Coalesce(LookUp(RG_An …
 ```
 
 **Kurz erklärt:** Vorschau nennt die Anleitung.
@@ -1029,8 +1036,8 @@ If(varSchreibbar && !varIsLoading && Now() >= varSperreBis;
 ```
 
 ```diff
--        Set(varNeuID; IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: "Neue Frage"; KategorieID: varCtxK; RundgangID: varRgID; Fassung: varFassung; RgReihenfolge: Coalesce(Max(Filter(colP; KategorieID = varCtxK); RgReihe …
-+        Set(varNeuID; IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: "Neue Frage"; KategorieID: varCtxK; RundgangID: varRgID; Fassung: varFassung; RgReihenfolge: Coalesce(Max(Filter(colP; KategorieID = varCtxK); RgReihe …
+- … alse; NurSteigend: false; VergleichPunkt: 0; VergleichTol: 0}).ID; 0));; …
++ … alse; NurSteigend: false; VergleichPunkt: 0; VergleichTol: 0; AnleitungID: 0}).ID; 0));; …
 ```
 
 **Kurz erklärt:** Neuer Prüfpunkt ohne Anleitung.
@@ -1076,8 +1083,8 @@ If(varSchreibbar && !varIsLoading && Now() >= varSperreBis;
 ```
 
 ```diff
--                    {Neu: IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: Index(colMehr; i.Value).F; KategorieID: varCtxK; RundgangID: varRgID; Fassung: varFassung; RgReihenfolge: basis + i.Value * 10; Aktiv: true; Quell …
-+                    {Neu: IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: Index(colMehr; i.Value).F; KategorieID: varCtxK; RundgangID: varRgID; Fassung: varFassung; RgReihenfolge: basis + i.Value * 10; Aktiv: true; Quell …
+- … alse; NurSteigend: false; VergleichPunkt: 0; VergleichTol: 0}).ID; 0)} …
++ … alse; NurSteigend: false; VergleichPunkt: 0; VergleichTol: 0; AnleitungID: 0}).ID; 0)} …
 ```
 
 **Kurz erklärt:** Wie btnGlNeuP.
@@ -1100,8 +1107,8 @@ Ungroup(
 ```
 
 ```diff
--        {T: ForAll(Filter(colP As p; With({a: LookUp(colAltP As a0; a0.ID = p.QuelleID)}; !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value; "") <> Coalesce(a.Eingabetyp.Value; "") || Coalesce(p.Pflicht; false) <> Coales …
-+        {T: ForAll(Filter(colP As p; With({a: LookUp(colAltP As a0; a0.ID = p.QuelleID)}; !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value; "") <> Coalesce(a.Eingabetyp.Value; "") || Coalesce(p.Pflicht; false) <> Coales …
+- … ergleichPunkt).QuelleID; 0) <> Coalesce(a.VergleichPunkt; 0)))) As p; {Art: "geändert"; Text: p.Title})}; …
++ … ergleichPunkt).QuelleID; 0) <> Coalesce(a.VergleichPunkt; 0) || Coalesce(p.AnleitungID; 0) <> Coalesce(a.AnleitungID; 0)))) As p; {Art: "geändert"; Text: p.Title})}; …
 ```
 
 **Kurz erklärt:** Änderung der Anleitung zählt als „geändert“.
@@ -1151,11 +1158,11 @@ Sort(
 ```
 
 ```diff
-+            {T: ForAll(Filter(colP As p; !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & " …
-+            {T: ForAll(Filter(colP As p; Coalesce(p.AnleitungID; 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0; n0.ID = p.AnleitungID))) As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.K …
++ {T: ForAll(Filter(colP As p; !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k …
++ {T: ForAll(Filter(colP As p; Coalesce(p.AnleitungID; 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0; n0.ID = p.AnleitungID))) As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; Kat …
 ```
 
-**Kurz erklärt:** Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.
+**Kurz erklärt:** **Bis zum nächsten Schritt (tmrArbeit) ist `colAnlAktiv` rot – erwartet.** Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.
 
 **Nachprüfen:** endet auf `)`
 
@@ -1333,6 +1340,7 @@ If(varJob = "laden";
         ClearCollect(colP; Filter(RG_Pruefpunkte; RundgangID = varRgID && Fassung = varFassung))
     );;
     ClearCollect(colPlanR; Filter(RG_Plan; RundgangID = varRgID));;
+    Refresh(RG_Anleitungen);;
     ClearCollect(colAnlAktiv; ShowColumns(Filter(RG_Anleitungen; Aktiv = true); ID));;
     Set(varAktivRest; false);;
     If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung; 0) <> varFassung;
@@ -1456,12 +1464,13 @@ Set(varIsLoading; false)
 ```
 
 ```diff
--                         Neu: If(ziel = 0; 0; IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: Left(q.Title & If(IsEmpty(colQK); varKopieZusatz; ""); 255); KategorieID: ziel; RundgangID: varZielR; Fassung: varZielF; RgRei …
-+                         Neu: If(ziel = 0; 0; IfError(Patch(RG_Pruefpunkte; Defaults(RG_Pruefpunkte); {Title: Left(q.Title & If(IsEmpty(colQK); varKopieZusatz; ""); 255); KategorieID: ziel; RundgangID: varZielR; Fassung: varZielF; RgRei …
+- … end; false); VergleichPunkt: 0; VergleichTol: q.VergleichTol}).ID; 0))} …
++ … end; false); VergleichPunkt: 0; VergleichTol: q.VergleichTol; AnleitungID: Coalesce(q.AnleitungID; 0)}).ID; 0))} …
++    Refresh(RG_Anleitungen);;
 +    ClearCollect(colAnlAktiv; ShowColumns(Filter(RG_Anleitungen; Aktiv = true); ID));;
 ```
 
-**Kurz erklärt:** Kopie/neue Fassung übernehmen die Anleitung. Beim Laden werden die aktiven Anleitungen für die Prüfung gelesen.
+**Kurz erklärt:** Kopie/neue Fassung übernehmen die Anleitung. Beim Laden werden die aktiven Anleitungen frisch für die Prüfung gelesen (danach ist galPr nicht mehr rot).
 
 **Nachprüfen:** endet auf `Set(varIsLoading; false)`
 
@@ -1470,7 +1479,11 @@ Set(varIsLoading; false)
 1. Builder → „Anleitungen“ → „+ Anleitung“: Titel „Kompressor ablesen“, Text mit mehreren Absätzen.
 2. Prüfpunkt → „Anleitung“ wählen → Vorschau „ⓘ Anleitung …“. Aktivieren (oder in der Vorlage/im Entwurf).
 3. Rundgang-App: Kategorie öffnen → ⓘ neben der Frage → Fenster mit Text (bei langem Text scrollen), Beispielbild darunter, „Schließen“.
-4. Anleitung im Builder inaktiv stellen → Prüfung zeigt den Hinweis.
+4. Anleitung im Builder inaktiv stellen → Rundgang im Editor neu öffnen → Prüfung zeigt den Hinweis, das Feld zeigt „… (inaktiv oder gelöscht)“.
+5. Rundgang-App: Kategorie neu öffnen → bei dieser Frage ist kein ⓘ mehr da.
+6. Zwei Anleitungen gleichen Titels → Auswahl zeigt „Titel (#ID)“.
+7. Nur-Ansicht (abgeschlossener Lauf): ⓘ öffnet die Anleitung, wenn sie aktiv ist.
+8. Neue Fassung → die Anleitung hängt weiter am Prüfpunkt. Foto-Auswahl: gespeicherte Werte unverändert („Foto bei Mangel“ = „Bei Mangel Pflicht“).
 
 ## Rückweg
 

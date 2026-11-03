@@ -58,9 +58,27 @@ ERKL_BUILDER = {
 STD = "Neu ist `Reset(txtPTextIO)` und `Reset(txtPTextNIO)`: Die neuen Felder zeigen nach jedem Wechsel den richtigen Wert."
 
 
+def _fenster(x, i):
+    """Lange Zeile: Ausschnitt um die erste unterschiedliche Stelle i (Vorzeichen bleibt vorn)."""
+    if len(x) < 240:
+        return x
+    von = max(1, i - 60)
+    return x[0] + " " + ("… " if von > 1 else "") + x[von:von + 180].strip() + " …"
+
+
 def diff(a, b):
     z = [x for x in difflib.unified_diff(a.split("\n"), b.split("\n"), lineterm="", n=0) if not x.startswith(("---", "+++", "@@"))]
-    return "\n".join(x if len(x) < 240 else x[:237] + " …" for x in z)
+    minus = [x for x in z if x.startswith("-")]
+    plus = [x for x in z if x.startswith("+")]
+    aus = []
+    for x in z:
+        partner = plus if x.startswith("-") else minus
+        eigen = minus if x.startswith("-") else plus
+        k = eigen.index(x)
+        g = partner[k] if k < len(partner) else ""
+        i = next((j for j in range(1, min(len(x), len(g))) if x[j] != g[j]), min(len(x), len(g)))
+        aus.append(_fenster(x, i))
+    return "\n".join(aus)
 
 
 def pfad(name, eltern):

@@ -173,8 +173,10 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler,
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   btnPNio.OnSelect               Filter(RG_Ansprechpartner, Aktiv = true))
-  ddPAnl.Items                   Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)
-  ddPAnl.Default                 LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "(fehlt)"))
+  ddPAnl.Items                   Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, Ungroup(Ta
+  ddPAnl.Items                   LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a
+  ddPAnl.Default                 Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, If(cur = 0
+  ddPAnl.Default                 LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)", With({n: LookUp(akt As a3, a3.ID = cur)},
   ddPAnl.OnChange                LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   ddPAnl.OnChange                LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {AnleitungID: Self.Selected.ID}), Set(var
   ddPAnl.OnChange                LookUp(RG_Pruefpunkte, ID = varAuswahlID))

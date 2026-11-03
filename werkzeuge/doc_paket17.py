@@ -14,6 +14,8 @@ ERKL = {
     "btnRuZurueck.OnSelect": "Wer aus dem Archiv kommt, landet mit „Zurück“ wieder im Archiv.",
     "scrStart.OnVisible": "Auf der Startseite gilt man nicht mehr als „aus dem Archiv“.",
     "lblStartListeTitel.Width": "Macht Platz für den Knopf „Archiv“.",
+    "btnRuZurueck.Text": "Der Knopf heißt „‹ Archiv“, wenn man aus dem Archiv kommt.",
+    "scrProtokoll.OnVisible": "Aus dem Archiv wird kein PDF nachträglich erzeugt (nur lesen). Sonst unverändert.",
 }
 
 
@@ -50,15 +52,16 @@ def main():
          "- Liste: Rundgang, Tag mit KW, Prüfer, Anzahl n.i.O. **„Ansehen“** öffnet den Rundgang wie gewohnt nur zum Lesen (Kategorien, Protokoll). "
          "**„PDF“** öffnet das archivierte Protokoll, wenn es eins gibt. „Zurück“ führt wieder ins Archiv.",
          "- Offene (nicht abgeschlossene) Rundgänge werden nur angezeigt. Fortsetzen geht wie bisher über die Startseite am jeweiligen Tag.",
-         "- Daten: nur lesen. SharePoint filtert nach Zeitraum und Rundgang (delegierbar), der Rest in der App. Höchstens 500 je Suche.",
-         "- Umfang: 1 neuer Bildschirm, 1 neuer Knopf, %d Properties. Keine neuen Spalten. Generator 0 Fehler. **Nicht in Studio getestet. Nicht unabhängig geprüft.**" % len(keys), "",
+         "- Daten: **nur lesen** – auch das Protokoll erzeugt aus dem Archiv kein PDF. SharePoint filtert nach Startzeit und Rundgang (delegierbar), der Rest in der App, höchstens 2000 je Suche. "
+         "Nachgeholte Läufe zählen nach ihrer Startzeit (nicht nach dem Rundgangstag).",
+         "- Umfang: 1 neuer Bildschirm, 1 neuer Knopf, %d Properties. Keine neuen Spalten. Generator 0 Fehler. Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket13_17/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**" % len(keys), "",
          "## Schritt 1 – Bildschirm „Archiv“", "",
          "**Wo hin:** In der Strukturansicht einen Bildschirm markieren (z. B. `scrProtokoll`) → Strg+V. Studio legt `scrArchiv` an.", "",
          "```yaml", screen_yaml("scrArchiv", alle), "```", "",
          "**Nachprüfen (E-05):** In `galArListe › conArKarte` müssen `Height` (`Parent.TemplateHeight - 12`) und bei den Knöpfen `Y` Formeln sein, keine Zahlen.", "",
          "## Schritt 2 – Knopf auf der Startseite", "",
          "**Wo hin:** **`scrStart`** markieren → Strg+V.", "", "```yaml"] + doc_app89.yaml_block("btnStartArchiv", alle) + ["```", "",
-         "## Schritt 3 – drei Properties", ""]
+         "## Schritt 3 – geänderte Properties", ""]
     vorher = {c["key"]: c["vorher"] for c in p["props"]}
     for i, k in enumerate(keys, 1):
         z += block("3.%d" % i, k, doc_app89.de(vorher[k]), doc_app89.de([c["nachher"] for c in p["props"] if c["key"] == k][0]), ERKL[k], eltern)
@@ -70,8 +73,10 @@ def main():
           "| T4 | „nur mit Mängeln“ | nur Läufe mit n.i.O. (rote Zeile) |",
           "| T5 | „Ansehen“ | Rundgangsübersicht, Kategorien nur zum Lesen, „Protokoll“ geht. „Zurück“ → wieder im Archiv |",
           "| T6 | „PDF“ (wenn vorhanden) | archiviertes PDF öffnet sich |",
-          "| T7 | „auch offene“ → offenen Lauf „Ansehen“ | Hinweis „… auf der Startseite fortsetzen“ |", "",
-          "## Rückweg", "", "`scrArchiv` und `btnStartArchiv` löschen, die drei Vorher-Fassungen einsetzen.", "",
+          "| T7 | „auch offene“ → offenen Lauf „Ansehen“ | Hinweis „… auf der Startseite fortsetzen“ |",
+          "| T8 | Alten Lauf ohne PDF „Ansehen“ → „Protokoll“ | Protokoll wird angezeigt, es wird **kein** PDF erzeugt |",
+          "| T9 | Start → Archiv (zweites Mal) | Liste wird neu geladen |", "",
+          "## Rückweg", "", "`scrArchiv` und `btnStartArchiv` löschen, die Vorher-Fassungen einsetzen.", "",
           "## Anhang – Vorher-Fassungen", ""]
     for k in keys:
         z += ["**`%s` vorher**" % k, "", "```", doc_app89.de(vorher[k]), "```", ""]

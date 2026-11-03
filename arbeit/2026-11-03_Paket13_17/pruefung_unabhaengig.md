@@ -118,3 +118,25 @@ Kein kritischer Befund, beide Pakete sind formal sauber (Generator 0 Fehler, Vor
 3. **A17-1 (mittel, Entscheidung):** „Ansehen → Protokoll“ erzeugt bei alten Läufen ohne PDF automatisch ein PDF und patcht – „nur lesen“ stimmt nicht.
 4. Niedrig: Grenze 500 vs. 2000 (A17-2), Liste bei Wiederkehr nicht neu geladen (A17-4), `lblArInfo` 2. Zeile knapp (A17-5), Refresh fehlt (A13-3), roter Zwischenstand B6.1 (A13-4), Diffs ohne sichtbare Änderung (A13-5), Testbogen (A13-6).
 Hinweis: `baukasten.py` wurde während der Prüfung geändert; geprüft ist der Stand der Dokumente von 08:16:43.
+
+---
+
+## Einarbeitung (03.11., Engineering-Chat)
+
+| Befund | Umgang |
+|---|---|
+| A13-1 | `ddPAnl.Items` enthält immer den aktuellen Wert (auch inaktiv/gelöscht → „… (inaktiv oder gelöscht)“), doppelte Titel mit „(#ID)“. Kein stilles Zurücksetzen mehr. |
+| A13-2 | **Entscheidung (vorsichtig, änderbar):** Inaktive Anleitungen sieht der Prüfer nicht. `scrKategorie.OnVisible` liest `colAnlAktivApp`, `AnlID` nur bei aktiver Anleitung. Builder-Text passt dazu. |
+| A13-3 | `Refresh(RG_Anleitungen)` vor dem Lesen in App (`scrKategorie.OnVisible`) und Builder (`tmrArbeit` Stufe „laden“). |
+| A13-4 | Roter Zwischenstand von `galPr.Items` bis `tmrArbeit` im Dokument angekündigt. |
+| A13-5 | Diff-Ausgabe zeigt nur echte Änderungen mit Kontext (`doc_paket12_16.block`). |
+| A13-6 | Testbogen ergänzt (inaktiv → neu öffnen, doppelte Titel, Nur-Lesen, neue Fassung, Foto-Werte). |
+| A13-7 | Vorauswahl mit gleicher Sortierung wie die Liste. `btnKaInfo` jetzt rund 40 × 40, Y 7. SetFocus bleibt (harmlos). |
+| A17-1 | **Entscheidung (vorsichtig, änderbar):** Aus dem Archiv wird kein PDF erzeugt. `scrProtokoll.OnVisible` startet die PDF-Erzeugung nur mit `!varAusArchiv`. Test T8. |
+| A17-2 | Grenze einheitlich 2000 (Dokument und Formel). |
+| A17-3 | Nachgeholte Läufe zählen nach Startzeit – in der Kurzfassung genannt. |
+| A17-4 | `scrArchiv.OnVisible` lädt neu, wenn die Liste leer ist oder man nicht aus „Ansehen“ zurückkommt. Test T9. |
+| A17-5 | `lblArInfo` Y 40, Höhe 50 (zwei Zeilen). |
+| Zusatz | `btnRuZurueck.Text` = „‹  Archiv“, wenn man aus dem Archiv kommt. |
+
+Nach der Einarbeitung: `baukasten.py` 0 Fehler, `builder.py` 0 Fehler (YAML zeichengleich zurückgelesen), Mutation 12/12 und 13/13, Logik-Probe 104 Szenarien 0 Fehler. Dokumente neu erzeugt.

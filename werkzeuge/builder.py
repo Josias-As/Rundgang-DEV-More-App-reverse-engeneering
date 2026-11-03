@@ -366,6 +366,7 @@ STUFE_LADEN = '''If(varJob = "laden",
     Set(varIstVorlage, fnStatus(varRg.Status, varRg.Aktiv) = "Vorlage");
     ''' + laden_baum().replace("\n", "\n    ") + ''';
     ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varRgID));
+    Refresh(RG_Anleitungen);
     ClearCollect(colAnlAktiv, ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID));
     Set(varAktivRest, false);
     If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung, 0) <> varFassung,
@@ -1128,6 +1129,14 @@ ZAHL_FELD = lambda feld, ctl: ('With({v: If(Trim(Self.Text) = "", Blank(), IfErr
                                ')')
 
 ist_typ = lambda *t: "(" + " || ".join('%s.Eingabetyp.Value = "%s"' % (CUR, x) for x in t) + ")"  # noqa: E731
+ANL_AKTIV = 'Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)'
+ANL_ITEMS = ('With({akt: %s, cur: Coalesce(%s.AnleitungID, 0)}, Ungroup(Table({T: Table({ID: 0, N: "— keine —"})}, '
+             '{T: ForAll(akt As n, {ID: n.ID, N: n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", "")})}, '
+             '{T: Filter(Table({ID: cur, N: Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)"}), '
+             'cur <> 0 && IsBlank(LookUp(akt As a2, a2.ID = cur)))}), T))') % (ANL_AKTIV, CUR)
+ANL_DEFAULT = ('With({akt: %s, cur: Coalesce(%s.AnleitungID, 0)}, If(cur = 0, "— keine —", IsBlank(LookUp(akt As a2, a2.ID = cur)), '
+               'Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)", '
+               'With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))') % (ANL_AKTIV, CUR)
 VS_W = 'If(Max(Len(Coalesce(%s.TextIO, "")), Len(Coalesce(%s.TextNIO, ""))) > 8, 200, 120)'
 REST_Y = 'If(%s, 360, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
 
@@ -1264,8 +1273,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "250", "Fill": "clrHintergrund"}, [
         lbl("lblPFoto", '"Foto"', "0", "0", "256", "20", size=12, color="clrTextGrau"),
         lbl("lblPAnl", '"Anleitung (ⓘ beim Prüfer)"', "272", "0", "256", "20", size=12, color="clrTextGrau"),
-        dd("ddPAnl", 'Ungroup(Table({T: Table({ID: 0, Title: "— keine —"})}, {T: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)', "Title",
-           'If(Coalesce(%s.AnleitungID, 0) = 0, "— keine —", Coalesce(LookUp(RG_Anleitungen, ID = %s.AnleitungID).Title, "(fehlt)"))' % (CUR, CUR),
+        dd("ddPAnl", ANL_ITEMS, "N", ANL_DEFAULT,
            'If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(%s.AnleitungID, 0),\n    %s\n)' % (CUR, ind(PP('{AnleitungID: Self.Selected.ID}'), 4)),
            "272", "20", "256", "36", '"Anleitung"'),
         dd("ddPFoto", FOTO_ITEMS, "N", 'LookUp(%s, W = %s).N' % (FOTO_ITEMS, FOTO_IST),
@@ -1815,14 +1823,14 @@ AN_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
 scr_anleitungen = C("scrAnleitungen", "Screen", {
     "Fill": "clrHintergrund",
     "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Anleitungen);\nClearCollect(colAnAlle, RG_Anleitungen);\n"
-                 "Set(varAnID, Coalesce(First(Sort(colAnAlle, Title)).ID, 0));\n" + AN_RESET + ";\nSet(varIsLoading, false)",
+                 "Set(varAnID, Coalesce(First(Sort(colAnAlle, If(Coalesce(Aktiv, false), \"0\", \"1\") & Lower(Title))).ID, 0));\n" + AN_RESET + ";\nSet(varIsLoading, false)",
 }, [
     con("conAnKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
         btn("btnAnZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
         lbl("lblAnTitelKopf", '"Anleitungen"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
     ]),
     lbl("lblAnHilfe", '"Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. '
-        'Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
+        'Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen – der Prüfer sieht sie dann nicht mehr."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
     btn("btnAnNeu", '"+ Anleitung"', "24", "124", "220", "44", AN_NEU),
     gal("galAn", 'Sort(colAnAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "180", "420", "Parent.Height - 196", 56, [
         lbl("lblAnHinter", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4",

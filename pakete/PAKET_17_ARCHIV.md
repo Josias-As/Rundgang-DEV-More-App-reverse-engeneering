@@ -7,8 +7,8 @@ Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket17) und `werkzeuge/
 - Neuer Bildschirm **„Archiv“** (Knopf „🗂 Archiv“ auf der Startseite). Zeitraum (Standard: letzte 3 Monate), Rundgang (alle oder einer), Schalter „nur mit Mängeln“, „auch offene“, „Testläufe“.
 - Liste: Rundgang, Tag mit KW, Prüfer, Anzahl n.i.O. **„Ansehen“** öffnet den Rundgang wie gewohnt nur zum Lesen (Kategorien, Protokoll). **„PDF“** öffnet das archivierte Protokoll, wenn es eins gibt. „Zurück“ führt wieder ins Archiv.
 - Offene (nicht abgeschlossene) Rundgänge werden nur angezeigt. Fortsetzen geht wie bisher über die Startseite am jeweiligen Tag.
-- Daten: nur lesen. SharePoint filtert nach Zeitraum und Rundgang (delegierbar), der Rest in der App. Höchstens 500 je Suche.
-- Umfang: 1 neuer Bildschirm, 1 neuer Knopf, 3 Properties. Keine neuen Spalten. Generator 0 Fehler. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Daten: **nur lesen** – auch das Protokoll erzeugt aus dem Archiv kein PDF. SharePoint filtert nach Startzeit und Rundgang (delegierbar), der Rest in der App, höchstens 2000 je Suche. Nachgeholte Läufe zählen nach ihrer Startzeit (nicht nach dem Rundgangstag).
+- Umfang: 1 neuer Bildschirm, 1 neuer Knopf, 5 Properties. Keine neuen Spalten. Generator 0 Fehler. Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket13_17/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Schritt 1 – Bildschirm „Archiv“
 
@@ -24,7 +24,7 @@ Screens:
         Set(varArOffen, Coalesce(varArOffen, false));
         Set(varArNurNio, Coalesce(varArNurNio, false));
         If(IsEmpty(colArRg), ClearCollect(colArRg, Sort(ShowColumns(RG_Rundgaenge, ID, Title), Title)));
-        If(IsEmpty(colArchiv), Select(btnArSuchen))
+        If(IsEmpty(colArchiv) || !varAusArchiv, Select(btnArSuchen))
     Children:
       - conArKopf:
           Control: GroupContainer@1.5.0
@@ -156,7 +156,7 @@ Screens:
                       ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis), StartZeit, SortOrder.Descending)),
                       ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis && RundgangID = varArRg), StartZeit, SortOrder.Descending))
                   );
-                  If(CountRows(colArchiv) >= 500, Notify("Sehr viele Rundgänge im Zeitraum – es werden höchstens 500 angezeigt. Bitte den Zeitraum verkleinern.", NotificationType.Warning));
+                  If(CountRows(colArchiv) >= 2000, Notify("Sehr viele Rundgänge im Zeitraum – es werden höchstens 2000 angezeigt. Bitte den Zeitraum verkleinern.", NotificationType.Warning));
                   Set(varIsLoading, false)
               )
             PressedColor: =Color.White
@@ -328,13 +328,13 @@ Screens:
                   Properties:
                     Color: =If(Coalesce(ThisItem.AnzahlNIO, 0) > 0, clrFehler, clrTextGrau)
                     Font: =Font.'Segoe UI'
-                    Height: =44
+                    Height: =50
                     Size: =13
                     Text: =fnTagAnzeige(DateValue(ThisItem.TagText)) & Char(10) & Coalesce(ThisItem.PrueferName, "") & "  ·  " & If(ThisItem.Status = stAbgeschlossen, Coalesce(ThisItem.AnzahlNIO, 0) & " n.i.O.", "nicht abgeschlossen")
                     VerticalAlign: =VerticalAlign.Top
                     Width: =Parent.Width - 236
                     X: =20
-                    Y: =42
+                    Y: =40
               - btnArPdf:
                   Control: Classic/Button@2.2.0
                   Properties:
@@ -468,7 +468,7 @@ Screens:
       Y: =216
 ```
 
-## Schritt 3 – drei Properties
+## Schritt 3 – geänderte Properties
 
 ### 3.1 · `btnRuZurueck.OnSelect`
 
@@ -528,6 +528,49 @@ Parent.Width - 232
 
 **Nachprüfen:** endet auf `Parent.Width - 232`
 
+### 3.4 · `btnRuZurueck.Text`
+
+**Pfad:** `scrRundgang › conRuKopf › btnRuZurueck` → Text
+
+```
+If(varAusArchiv; "‹  Archiv"; "‹  Übersicht")
+```
+
+```diff
+-"‹  Übersicht"
++If(varAusArchiv; "‹  Archiv"; "‹  Übersicht")
+```
+
+**Kurz erklärt:** Der Knopf heißt „‹ Archiv“, wenn man aus dem Archiv kommt.
+
+**Nachprüfen:** endet auf `If(varAusArchiv; "‹  Archiv"; "‹  Übersicht")`
+
+### 3.5 · `scrProtokoll.OnVisible`
+
+**Pfad:** `scrProtokoll` → OnVisible
+
+```
+Set(varIsLoading; true);;
+Set(varArchivStart; false);;
+Set(varProtokollZeit; Now());;
+Concurrent(Refresh(RG_KategorieErgebnisse); Refresh(RG_Durchfuehrungen));;
+Concurrent(
+    Set(varDurch; LookUp(RG_Durchfuehrungen; ID = varDurchID));
+    ClearCollect(colErgProt; Filter(RG_KategorieErgebnisse; DurchfuehrungID = varDurchID))
+);;
+Set(varIsLoading; false);;
+Set(varArchivStart; !varAusArchiv && varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))
+```
+
+```diff
+-Set(varArchivStart; varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))
++Set(varArchivStart; !varAusArchiv && varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))
+```
+
+**Kurz erklärt:** Aus dem Archiv wird kein PDF nachträglich erzeugt (nur lesen). Sonst unverändert.
+
+**Nachprüfen:** endet auf `usArchiv && varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))`
+
 ## Test
 
 | # | Schritt | erwartet |
@@ -539,10 +582,12 @@ Parent.Width - 232
 | T5 | „Ansehen“ | Rundgangsübersicht, Kategorien nur zum Lesen, „Protokoll“ geht. „Zurück“ → wieder im Archiv |
 | T6 | „PDF“ (wenn vorhanden) | archiviertes PDF öffnet sich |
 | T7 | „auch offene“ → offenen Lauf „Ansehen“ | Hinweis „… auf der Startseite fortsetzen“ |
+| T8 | Alten Lauf ohne PDF „Ansehen“ → „Protokoll“ | Protokoll wird angezeigt, es wird **kein** PDF erzeugt |
+| T9 | Start → Archiv (zweites Mal) | Liste wird neu geladen |
 
 ## Rückweg
 
-`scrArchiv` und `btnStartArchiv` löschen, die drei Vorher-Fassungen einsetzen.
+`scrArchiv` und `btnStartArchiv` löschen, die Vorher-Fassungen einsetzen.
 
 ## Anhang – Vorher-Fassungen
 
@@ -569,5 +614,26 @@ Select(btnStartTagLaden)
 
 ```
 Parent.Width - 48
+```
+
+**`btnRuZurueck.Text` vorher**
+
+```
+"‹  Übersicht"
+```
+
+**`scrProtokoll.OnVisible` vorher**
+
+```
+Set(varIsLoading; true);;
+Set(varArchivStart; false);;
+Set(varProtokollZeit; Now());;
+Concurrent(Refresh(RG_KategorieErgebnisse); Refresh(RG_Durchfuehrungen));;
+Concurrent(
+    Set(varDurch; LookUp(RG_Durchfuehrungen; ID = varDurchID));
+    ClearCollect(colErgProt; Filter(RG_KategorieErgebnisse; DurchfuehrungID = varDurchID))
+);;
+Set(varIsLoading; false);;
+Set(varArchivStart; varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))
 ```
 

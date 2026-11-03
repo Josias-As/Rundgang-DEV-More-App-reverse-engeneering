@@ -167,6 +167,7 @@ If(varJob = "laden";
         ClearCollect(colP; Filter(RG_Pruefpunkte; RundgangID = varRgID && Fassung = varFassung))
     );;
     ClearCollect(colPlanR; Filter(RG_Plan; RundgangID = varRgID));;
+    Refresh(RG_Anleitungen);;
     ClearCollect(colAnlAktiv; ShowColumns(Filter(RG_Anleitungen; Aktiv = true); ID));;
     Set(varAktivRest; false);;
     If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung; 0) <> varFassung;

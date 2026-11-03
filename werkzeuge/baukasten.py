@@ -1086,7 +1086,7 @@ AR_SUCHEN = ('If(!varIsLoading,\n'
              '        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis), StartZeit, SortOrder.Descending)),\n'
              '        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis && RundgangID = varArRg), StartZeit, SortOrder.Descending))\n'
              '    );\n'
-             '    If(CountRows(colArchiv) >= 500, Notify("Sehr viele Rundgänge im Zeitraum – es werden höchstens 500 angezeigt. Bitte den Zeitraum verkleinern.", NotificationType.Warning));\n'
+             '    If(CountRows(colArchiv) >= 2000, Notify("Sehr viele Rundgänge im Zeitraum – es werden höchstens 2000 angezeigt. Bitte den Zeitraum verkleinern.", NotificationType.Warning));\n'
              '    Set(varIsLoading, false)\n'
              ')')
 
@@ -1097,6 +1097,10 @@ def paket17(st):
         t, "Navigate(scrStart, ScreenTransition.None)", "If(varAusArchiv, Navigate(scrArchiv, ScreenTransition.None), Navigate(scrStart, ScreenTransition.None))"))
     aendern(st, p, "17.2", "scrStart.OnVisible", lambda t: rep(t, "Set(varIsLoading, true);\n", "Set(varIsLoading, true);\nSet(varAusArchiv, false);\n"))
     ganz(st, p, "17.2", "lblStartListeTitel.Width", "Parent.Width - 232")
+    ganz(st, p, "17.2", "btnRuZurueck.Text", 'If(varAusArchiv, "‹  Archiv", "‹  Übersicht")')
+    aendern(st, p, "17.2", "scrProtokoll.OnVisible", lambda t: rep(
+        t, "Set(varArchivStart, varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))",
+        "Set(varArchivStart, !varAusArchiv && varDurch.Status = stAbgeschlossen && IsBlank(varDurch.ProtokollUrl))"))
     neues_control(st, p, "btnStartArchiv", "scrStart", "Classic/Button@2.2.0", _knopf(
         "sekundaer", Height="40", Size="15", Text='"🗂 Archiv"', Width="184", X="Parent.Width - 208", Y="216",
         DisplayMode="If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
@@ -1105,7 +1109,7 @@ def paket17(st):
         "Fill": "clrHintergrund",
         "OnVisible": ("Set(varArTest, Coalesce(varArTest, false));\nSet(varArOffen, Coalesce(varArOffen, false));\nSet(varArNurNio, Coalesce(varArNurNio, false));\n"
                       "If(IsEmpty(colArRg), ClearCollect(colArRg, Sort(ShowColumns(RG_Rundgaenge, ID, Title), Title)));\n"
-                      "If(IsEmpty(colArchiv), Select(btnArSuchen))")})
+                      "If(IsEmpty(colArchiv) || !varAusArchiv, Select(btnArSuchen))")})
     neues_control(st, p, "conArKopf", "scrArchiv", "GroupContainer@1.5.0", {"Fill": "clrPrimaer", "Height": "96", "Width": "Parent.Width"})
     neues_control(st, p, "btnArZurueck", "conArKopf", "Classic/Button@2.2.0", _knopf(
         "primaer", Fill="RGBA(255, 255, 255, 0.14)", HoverFill="RGBA(255, 255, 255, 0.26)", PressedFill="RGBA(255, 255, 255, 0.34)",
@@ -1151,10 +1155,10 @@ def paket17(st):
         FontWeight="FontWeight.Semibold", Height="32", Size="16", Text='ThisItem.RundgangName & If(Coalesce(ThisItem.TestDatensatz, false), "  · Test", "")',
         Width="Parent.Width - 236", X="20", Y="10", Wrap="false"))
     neues_control(st, p, "lblArInfo", "conArKarte", "Label@2.5.1", _label(
-        Color='If(Coalesce(ThisItem.AnzahlNIO, 0) > 0, clrFehler, clrTextGrau)', Height="44", Size="13", VerticalAlign="VerticalAlign.Top",
+        Color='If(Coalesce(ThisItem.AnzahlNIO, 0) > 0, clrFehler, clrTextGrau)', Height="50", Size="13", VerticalAlign="VerticalAlign.Top",
         Text=('fnTagAnzeige(DateValue(ThisItem.TagText)) & Char(10) & Coalesce(ThisItem.PrueferName, "") & "  ·  " & '
               'If(ThisItem.Status = stAbgeschlossen, Coalesce(ThisItem.AnzahlNIO, 0) & " n.i.O.", "nicht abgeschlossen")'),
-        Width="Parent.Width - 236", X="20", Y="42"))
+        Width="Parent.Width - 236", X="20", Y="40"))
     neues_control(st, p, "btnArPdf", "conArKarte", "Classic/Button@2.2.0", _knopf(
         "sekundaer", Height="40", Size="14", Text='"PDF"', Width="80", X="Parent.Width - 196", Y="(Parent.Height - 40) / 2",
         Visible='!IsBlank(ThisItem.ProtokollUrl)', OnSelect="Launch(ThisItem.ProtokollUrl)"))
@@ -1191,19 +1195,22 @@ def paket13(st):
 
     def onvisible(t):
         t = rep(t, "Set(varBildID, 0);\n", "Set(varBildID, 0);\nSet(varInfoID, 0);\n")
-        t = rep(t, 'AbwText: Coalesce(Text(a.AbwText), ""), Inaktiv: false}', 'AbwText: Coalesce(Text(a.AbwText), ""), AnlID: Coalesce(pp.AnleitungID, 0), Inaktiv: false}')
-        t = rep(t, "                     AbwText: \"\",\n", "                     AbwText: \"\",\n                     AnlID: Coalesce(p.AnleitungID, 0),\n")
+        t = rep(t, "Refresh(RG_KategorieErgebnisse);\nConcurrent(\n", "Refresh(RG_KategorieErgebnisse);\nRefresh(RG_Anleitungen);\nConcurrent(\n")
+        t = rep(t, "    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true))\n);",
+                "    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true)),\n    ClearCollect(colAnlAktivApp, ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID))\n);")
+        t = rep(t, 'AbwText: Coalesce(Text(a.AbwText), ""), Inaktiv: false}', 'AbwText: Coalesce(Text(a.AbwText), ""), AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(pp.AnleitungID, 0))), 0, pp.AnleitungID), Inaktiv: false}')
+        t = rep(t, "                     AbwText: \"\",\n", "                     AbwText: \"\",\n                     AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(p.AnleitungID, 0))), 0, p.AnleitungID),\n")
         t = rep(t, 'AbwText: Coalesce(Text(o.Value.AbwText), ""), Inaktiv: true}', 'AbwText: Coalesce(Text(o.Value.AbwText), ""), AnlID: 0, Inaktiv: true}')
         return t
     aendern(st, p, "13.3", "scrKategorie.OnVisible", onvisible)
     aendern(st, p, "13.4", "lblKaFrage.Width", lambda t: rep(t, "If(ThisItem.BildID > 0, 80, 0)", "If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 64, 0)"))
     neues_control(st, p, "btnKaInfo", "conKaKarte", "Classic/Button@2.2.0", {
         "BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold",
-        "Height": "34", "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
+        "Height": "40", "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
         "OnSelect": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, LookUp(RG_Anleitungen, ID = ThisItem.AnlID));\n"
                     "If(IsBlank(varInfo.ID), Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning), Set(varInfoID, ThisItem.AnlID))",
-        "RadiusBottomLeft": "17", "RadiusBottomRight": "17", "RadiusTopLeft": "17", "RadiusTopRight": "17", "Size": "16", "Text": '"ⓘ"',
-        "Visible": "ThisItem.AnlID > 0", "Width": "48", "X": "Parent.Width - 68 - If(ThisItem.BildID > 0, 80, 0)", "Y": "10"})
+        "RadiusBottomLeft": "20", "RadiusBottomRight": "20", "RadiusTopLeft": "20", "RadiusTopRight": "20", "Size": "16", "Text": '"ⓘ"',
+        "Visible": "ThisItem.AnlID > 0", "Width": "40", "X": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0)", "Y": "7"})
     neues_control(st, p, "conKaInfo", "scrKategorie", "GroupContainer@1.5.0", {
         "Fill": "RGBA(0, 0, 0, 0.45)", "Height": "Parent.Height", "Visible": "varInfoID > 0", "Width": "Parent.Width"})
     neues_control(st, p, "btnKaInfoSperre", "conKaInfo", "Classic/Button@2.2.0", {

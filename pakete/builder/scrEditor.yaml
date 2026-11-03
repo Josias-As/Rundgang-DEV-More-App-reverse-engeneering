@@ -1998,15 +1998,16 @@ Screens:
                               ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
                               ChevronHoverFill: =Color.White
                               Color: =clrText
-                              Default: =If(Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0) = 0, "— keine —", Coalesce(LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "(fehlt)"))
+                              Default: |-
+                                =With({akt: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, If(cur = 0, "— keine —", IsBlank(LookUp(akt As a2, a2.ID = cur)), Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)", With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))
                               DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                               Fill: =clrKarte
                               Font: =Font.'Segoe UI'
                               Height: =36
                               HoverFill: =clrPrimaerHell
                               Items: |-
-                                =Ungroup(Table({T: Table({ID: 0, Title: "— keine —"})}, {T: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)
-                              Items.Value: =Title
+                                =With({akt: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, Ungroup(Table({T: Table({ID: 0, N: "— keine —"})}, {T: ForAll(akt As n, {ID: n.ID, N: n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", "")})}, {T: Filter(Table({ID: cur, N: Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a2.ID = cur)))}), T))
+                              Items.Value: =N
                               OnChange: |-
                                 =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0),
                                     If(varSchreibbar && varAuswahlEbene = 3,

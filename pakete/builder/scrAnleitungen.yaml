@@ -7,7 +7,7 @@ Screens:
         Set(varLadeText, "");
         Refresh(RG_Anleitungen);
         ClearCollect(colAnAlle, RG_Anleitungen);
-        Set(varAnID, Coalesce(First(Sort(colAnAlle, Title)).ID, 0));
+        Set(varAnID, Coalesce(First(Sort(colAnAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))).ID, 0));
         Reset(txtAnTitel);
         Reset(txtAnText);
         Set(varIsLoading, false)
@@ -67,7 +67,7 @@ Screens:
             Height: =44
             Size: =13
             Text: |-
-              ="Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen."
+              ="Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen – der Prüfer sieht sie dann nicht mehr."
             Width: =Parent.Width - 48
             X: =24
             Y: =72

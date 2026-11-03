@@ -570,10 +570,12 @@
   lblKaZahlInfo.Color              ok
   lblKaZahlInfo.Size               ok
   htmProtokoll.HtmlText            ok
-== Paket 17: 3 Properties, neue Steuerelemente: btnStartArchiv, scrArchiv, conArKopf, btnArZurueck, lblArTitel, lblArVon, dpArVon, lblArBis, dpArBis, btnArSuchen, ddArRg, btnArNurNio, btnArOffen, btnArTest, lblArAnzahl, galArListe, conArKarte, lblArName, lblArInfo, btnArPdf, btnArOeffnen, lblArLeer, conArLaden, lblArLaden
+== Paket 17: 5 Properties, neue Steuerelemente: btnStartArchiv, scrArchiv, conArKopf, btnArZurueck, lblArTitel, lblArVon, dpArVon, lblArBis, dpArBis, btnArSuchen, ddArRg, btnArNurNio, btnArOffen, btnArTest, lblArAnzahl, galArListe, conArKarte, lblArName, lblArInfo, btnArPdf, btnArOeffnen, lblArLeer, conArLaden, lblArLaden
   btnRuZurueck.OnSelect            ok
   scrStart.OnVisible               ok
   lblStartListeTitel.Width         ok
+  btnRuZurueck.Text                ok
+  scrProtokoll.OnVisible           ok
   btnStartArchiv.BorderColor       ok
   btnStartArchiv.BorderThickness   ok
   btnStartArchiv.Color             ok

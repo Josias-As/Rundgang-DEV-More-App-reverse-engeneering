@@ -23,7 +23,7 @@ KURZ = [
     "- Bewusst nicht gebaut: Foto-Aufnahme im ⓘ-Fenster (Pflicht-Fotos bleiben sichtbar in der Karte – „Prüfer sind nicht verlässlich“).",
 ]
 ERKL_APP = {
-    "scrKategorie.OnVisible": "Neues Feld `AnlID` in allen drei Zweigen. Das ⓘ-Fenster ist beim Öffnen zu.",
+    "scrKategorie.OnVisible": "Liest die aktiven Anleitungen frisch. Neues Feld `AnlID` in allen drei Zweigen – nur wenn die Anleitung aktiv ist (inaktive sieht der Prüfer nicht). Das ⓘ-Fenster ist beim Öffnen zu.",
     "lblKaFrage.Width": "Platz für den ⓘ-Knopf.",
 }
 ERKL_B = {
@@ -34,8 +34,8 @@ ERKL_B = {
     "ddPFoto.Default": "Wie Items.",
     "lblVsRegeln.Text": "Vorschau nennt die Anleitung.",
     "galAkt.Items": "Änderung der Anleitung zählt als „geändert“.",
-    "galPr.Items": "Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.",
-    "tmrArbeit.OnTimerEnd": "Kopie/neue Fassung übernehmen die Anleitung. Beim Laden werden die aktiven Anleitungen für die Prüfung gelesen.",
+    "galPr.Items": "**Bis zum nächsten Schritt (tmrArbeit) ist `colAnlAktiv` rot – erwartet.** Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.",
+    "tmrArbeit.OnTimerEnd": "Kopie/neue Fassung übernehmen die Anleitung. Beim Laden werden die aktiven Anleitungen frisch für die Prüfung gelesen (danach ist galPr nicht mehr rot).",
     "btnGlNeuP.OnSelect": "Neuer Prüfpunkt ohne Anleitung.",
     "btnMehrAnlegen.OnSelect": "Wie btnGlNeuP.",
 }
@@ -107,12 +107,16 @@ def main():
          "**Voraussetzung:** Rundgang-App bis Paket 17 eingefügt, Builder bis Paket 14+15 (**Builder 14+15 vorher**, sonst überschreibt es Teile von Paket 13).", "",
          "## Kurzfassung", ""] + KURZ + [
          "- Umfang: 1 Liste, 1 Spalte. Rundgang-App %d Properties + 2 Blöcke. Builder 1 Bildschirm, 2 Blöcke, %d Properties. "
-         "Generatoren 0 Fehler. **Nicht in Studio getestet. Nicht unabhängig geprüft.**" % (na, nb), ""] + za + zb + [
+         "Generatoren 0 Fehler. Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket13_17/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**" % (na, nb), ""] + za + zb + [
          "## Test", "",
          "1. Builder → „Anleitungen“ → „+ Anleitung“: Titel „Kompressor ablesen“, Text mit mehreren Absätzen.",
          "2. Prüfpunkt → „Anleitung“ wählen → Vorschau „ⓘ Anleitung …“. Aktivieren (oder in der Vorlage/im Entwurf).",
          "3. Rundgang-App: Kategorie öffnen → ⓘ neben der Frage → Fenster mit Text (bei langem Text scrollen), Beispielbild darunter, „Schließen“.",
-         "4. Anleitung im Builder inaktiv stellen → Prüfung zeigt den Hinweis.", "",
+         "4. Anleitung im Builder inaktiv stellen → Rundgang im Editor neu öffnen → Prüfung zeigt den Hinweis, das Feld zeigt „… (inaktiv oder gelöscht)“.",
+         "5. Rundgang-App: Kategorie neu öffnen → bei dieser Frage ist kein ⓘ mehr da.",
+         "6. Zwei Anleitungen gleichen Titels → Auswahl zeigt „Titel (#ID)“.",
+         "7. Nur-Ansicht (abgeschlossener Lauf): ⓘ öffnet die Anleitung, wenn sie aktiv ist.",
+         "8. Neue Fassung → die Anleitung hängt weiter am Prüfpunkt. Foto-Auswahl: gespeicherte Werte unverändert („Foto bei Mangel“ = „Bei Mangel Pflicht“).", "",
          "## Rückweg", "", "Vorher-Fassungen im Anhang einsetzen, dann die neuen Steuerelemente und den Bildschirm löschen. Liste/Spalte dürfen bleiben.", "",
          "## Anhang – Vorher-Fassungen", ""]
     p = [q for q in BL["pakete"] if q["nr"] == 13][0]
