@@ -98,7 +98,7 @@ def block(nr, key, alt_de, neu_de, erkl, eltern, standard=False):
 
 def app_doc():
     end, vorher, std = {}, {}, set()
-    for p in BL["pakete"][10:12]:
+    for p in [q for q in BL["pakete"] if q["nr"] in (12, 16)]:
         assert p["nr"] in (12, 16)
         for c in p["props"]:
             vorher.setdefault(c["key"], c["vorher"])

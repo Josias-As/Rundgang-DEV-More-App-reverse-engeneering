@@ -55,7 +55,7 @@ ERKL_BUILDER = {
 
 
 def app_doc():
-    p = BL["pakete"][12]
+    p = [q for q in BL["pakete"] if q["nr"] == 14][0]
     assert p["nr"] == 14
     end = {c["key"]: c["nachher"] for c in p["props"]}
     vorher = {}

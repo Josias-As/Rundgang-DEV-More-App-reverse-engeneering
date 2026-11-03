@@ -513,6 +513,17 @@
   lblRuSymbol.Color                ok
   lblRuKatZustand.Text             ok
   btnRuOeffnen.Text                ok
+== Paket 19: 6 Properties, neue Steuerelemente: -
+  cboKaMehrfach.OnChange           ok
+  ddKaAuswahl.OnChange             ok
+  dpKaDatum.OnChange               ok
+  ddKaStunde.OnChange              ok
+  ddKaMinute.OnChange              ok
+  txtKaText.OnChange               ok
+== Paket 20: 3 Properties, neue Steuerelemente: -
+  App.Formulas                     ok
+  ddKaStunde.Default               ok
+  ddKaMinute.Default               ok
 == Paket 12: 12 Properties, neue Steuerelemente: -
   scrKategorie.OnVisible           ok
   btnKaSpeichern.OnSelect          ok
@@ -1005,13 +1016,6 @@
   btnKaInfoSchliessen.Width        ok
   btnKaInfoSchliessen.X            ok
   btnKaInfoSchliessen.Y            ok
-== Paket 19: 6 Properties, neue Steuerelemente: -
-  cboKaMehrfach.OnChange           ok
-  ddKaAuswahl.OnChange             ok
-  dpKaDatum.OnChange               ok
-  ddKaStunde.OnChange              ok
-  ddKaMinute.OnChange              ok
-  txtKaText.OnChange               ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -1022,12 +1026,13 @@
   Paket 8: colAntworten hat in allen drei Zweigen dieselben 26 Felder
   Paket 9: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 10: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 19: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 20: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 12: colAntworten hat in allen drei Zweigen dieselben 36 Felder
   Paket 16: colAntworten hat in allen drei Zweigen dieselben 37 Felder
   Paket 14: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 17: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 13: colAntworten hat in allen drei Zweigen dieselben 47 Felder
-  Paket 19: colAntworten hat in allen drei Zweigen dieselben 47 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'

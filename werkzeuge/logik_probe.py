@@ -71,7 +71,7 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
         wert = wert or (typ == "MEHRFACH" and trim(wt) == "") or (typ in ("DATUM", "DATUMZEIT") and leer(wt))
     if pflicht and wert:
         return "Wert"
-    if paket >= 5 and typ == "DATUMZEIT" and not leer(wt) and len(wt) < 16:
+    if paket >= 5 and typ == "DATUMZEIT" and not leer(wt) and (len(wt) < 16 or (paket >= 20 and "-" in wt)):
         return "Uhrzeit"
     if paket >= 3 and typ == "ZAHL" and gm == "Sperren" and fnSperreGilt(mi, ma) and fnAusserhalb(wz, mi, ma):
         return "Bereich"
@@ -146,7 +146,7 @@ def fnSichtbar(bid, w, gef, bbid, binaktiv, btyp, bauswahl, bbew, bwt, bwz):
 def fnDatumText(d, h, m, mit_zeit):
     if d is None:
         return ""
-    return d + (" " + h + ":" + m if mit_zeit and h != "" and m != "" else "")
+    return d + (" " + (h or "--") + ":" + (m or "--") if mit_zeit and (h != "" or m != "") else "")
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -243,7 +243,10 @@ SZENARIEN = [
     (5, "Datum+Uhrzeit optional leer", "grund", ("DATUMZEIT", False, "", "", None, "", "Aus", 0, False, "Mangel", None, None), ""),
     (5, "fnDatumText nur Datum (DATUM)", "datum", ("27.10.2026", "07", "05", False), "27.10.2026"),
     (5, "fnDatumText Datum + Zeit", "datum", ("27.10.2026", "07", "05", True), "27.10.2026 07:05"),
-    (5, "fnDatumText Zeit ohne Minute", "datum", ("27.10.2026", "07", "", True), "27.10.2026"),
+    (5, "fnDatumText Zeit ohne Minute (ab 20 mit Platzhalter)", "datum", ("27.10.2026", "07", "", True), "27.10.2026 07:--"),
+    (20, "fnDatumText Minute ohne Stunde", "datum", ("27.10.2026", "", "30", True), "27.10.2026 --:30"),
+    (20, "Datum+Uhrzeit nur Stunde -> Uhrzeit fehlt", "grund", ("DATUMZEIT", True, "", "27.10.2026 07:--", None, "", "Aus", 0, False, "Mangel", None, None), "Uhrzeit"),
+    (20, "Datum+Uhrzeit nur Minute -> Uhrzeit fehlt", "grund", ("DATUMZEIT", False, "", "27.10.2026 --:30", None, "", "Aus", 0, False, "Mangel", None, None), "Uhrzeit"),
     (5, "fnDatumText ohne Datum", "datum", (None, "07", "05", True), ""),
     (7, "fnFotoModus: Bei Mangel Pflicht -> BeiMangel", "foto", ("Bei Mangel Pflicht", False), "BeiMangel"),
     (7, "Bei Mangel Pflicht, i.O., kein Foto -> vollständig", "grund", ("IONIO", True, "IO", "", None, "", "BeiMangel", 0, False, "Mangel", None, None), ""),

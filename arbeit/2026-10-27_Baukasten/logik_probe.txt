@@ -69,7 +69,10 @@ P5  ok    Datum+Uhrzeit vollständig                                            
 P5  ok    Datum+Uhrzeit optional leer                                            erwartet ''           ist ''
 P5  ok    fnDatumText nur Datum (DATUM)                                          erwartet '27.10.2026' ist '27.10.2026'
 P5  ok    fnDatumText Datum + Zeit                                               erwartet '27.10.2026 07:05' ist '27.10.2026 07:05'
-P5  ok    fnDatumText Zeit ohne Minute                                           erwartet '27.10.2026' ist '27.10.2026'
+P5  ok    fnDatumText Zeit ohne Minute (ab 20 mit Platzhalter)                   erwartet '27.10.2026 07:--' ist '27.10.2026 07:--'
+P20  ok    fnDatumText Minute ohne Stunde                                         erwartet '27.10.2026 --:30' ist '27.10.2026 --:30'
+P20  ok    Datum+Uhrzeit nur Stunde -> Uhrzeit fehlt                              erwartet 'Uhrzeit'    ist 'Uhrzeit'
+P20  ok    Datum+Uhrzeit nur Minute -> Uhrzeit fehlt                              erwartet 'Uhrzeit'    ist 'Uhrzeit'
 P5  ok    fnDatumText ohne Datum                                                 erwartet ''           ist ''
 P7  ok    fnFotoModus: Bei Mangel Pflicht -> BeiMangel                           erwartet 'BeiMangel'  ist 'BeiMangel'
 P7  ok    Bei Mangel Pflicht, i.O., kein Foto -> vollständig                     erwartet ''           ist ''
@@ -105,4 +108,4 @@ P14  ok    Vergleich: Toleranz 0 = exakt gleich                                 
 P14  ok    Vergleich: anderer Wert fehlt noch                                     erwartet False        ist False
 P14  ok    Vergleich: 1,1 und 0,8 bei Toleranz 0,3 (Gleitkomma-Grenze)            erwartet False        ist False
 
-Szenarien: 104, Fehler: 0
+Szenarien: 107, Fehler: 0

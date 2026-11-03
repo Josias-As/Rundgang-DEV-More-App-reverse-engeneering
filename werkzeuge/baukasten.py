@@ -1279,7 +1279,31 @@ def paket19(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17, paket13, paket19]
+# ---------------------------------------------------------------- Paket 20 (Fix: Uhrzeit bei DATUMZEIT lässt sich nicht setzen)
+# Befund 03.11. (Studio nach 19): Stunde wählen -> fnDatumText schreibt ohne Minute nur das Datum, Default der Stunde
+# liest Len < 16 -> Stunde springt zurück. Abhilfe: Teilzeit mit Platzhalter "--" speichern ("03.11.2026 08:--"),
+# Defaults lesen nur echte Ziffern, fnFehltGrund meldet "Uhrzeit", solange ein "-" drin ist.
+
+def paket20(st):
+    p = {"nr": 20, "props": [], "neu": []}
+
+    def formeln(t):
+        t = rep(t, 'If(mitZeit && h <> "" && m <> "", " " & h & ":" & m, "")',
+                'If(mitZeit && (h <> "" || m <> ""), " " & If(h = "", "--", h) & ":" & If(m = "", "--", m), "")')
+        t = rep(t, 'typ = "DATUMZEIT" && wt <> "" && Len(wt) < 16, "Uhrzeit"',
+                'typ = "DATUMZEIT" && wt <> "" && (Len(wt) < 16 || "-" in wt), "Uhrzeit"')
+        return t
+    aendern(st, p, "20.1", "App.Formulas", formeln)
+    aendern(st, p, "20.2", "ddKaStunde.Default", lambda t: rep(
+        t, 'If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 12, 2), "")',
+        'If(Len(ThisItem.WertText) >= 16 && Mid(ThisItem.WertText, 12, 2) <> "--", Mid(ThisItem.WertText, 12, 2), "")'))
+    aendern(st, p, "20.3", "ddKaMinute.Default", lambda t: rep(
+        t, 'If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 15, 2), "")',
+        'If(Len(ThisItem.WertText) >= 16 && Mid(ThisItem.WertText, 15, 2) <> "--", Mid(ThisItem.WertText, 15, 2), "")'))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket12, paket16, paket14, paket17, paket13]
 
 
 # ---------------------------------------------------------------- Prüfungen
