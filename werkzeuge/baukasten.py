@@ -1303,7 +1303,34 @@ def paket20(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket12, paket16, paket14, paket17, paket13]
+# ---------------------------------------------------------------- Paket 21 (Fix: Uhrzeit, zweiter Anlauf)
+# Befund 03.11. (Studio nach 20): Stunde springt weiter zurück, WertText bleibt nur Datum. Vermutung Einsetz-Chat (passt):
+# Nach dem Patch feuert dpKaDatum.OnChange erneut und baut den Text aus den (leeren) Nachbarfeldern neu.
+# Abhilfe: Jedes Feld ändert nur seinen Teil, den Rest liest es aus ThisItem.WertText, und schreibt nur bei echter Änderung.
+
+TEIL_H = 'If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 12, 2), "--")'
+TEIL_M = 'If(Len(ThisItem.WertText) >= 16, Mid(ThisItem.WertText, 15, 2), "--")'
+
+
+def paket21(st):
+    p = {"nr": 21, "props": [], "neu": []}
+    patch = "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: %s});\n        Set(varGeaendert, true)"
+    ganz(st, p, "21.1", "dpKaDatum.OnChange",
+         "With({h: " + TEIL_H + ", m: " + TEIL_M + "},\n"
+         "    If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen && Coalesce(Text(Self.SelectedDate, \"dd.mm.yyyy\"), \"\") <> Left(ThisItem.WertText, 10),\n"
+         "        " + patch % 'fnDatumText(Self.SelectedDate, If(h = "--", "", h), If(m = "--", "", m), ThisItem.Typ = "DATUMZEIT")' + "\n"
+         "    )\n)")
+    for nr, key, eigen, anderer, links in ((2, "ddKaStunde.OnChange", TEIL_H, TEIL_M, True), (3, "ddKaMinute.OnChange", TEIL_M, TEIL_H, False)):
+        neu_t = 'If(neu = "--" && rest = "--", "", " " & %s)' % ('neu & ":" & rest' if links else 'rest & ":" & neu')
+        ganz(st, p, "21.%d" % nr, key,
+             "With({neu: If(Coalesce(Self.Selected.Value, \"\") = \"\", \"--\", Self.Selected.Value), alt: " + eigen + ", rest: " + anderer + "},\n"
+             "    If(ThisItem.Typ = \"DATUMZEIT\" && !varNurLesen && Len(ThisItem.WertText) >= 10 && neu <> alt,\n"
+             "        " + patch % ("Left(ThisItem.WertText, 10) & " + neu_t) + "\n"
+             "    )\n)")
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket12, paket16, paket14, paket17, paket13]
 
 
 # ---------------------------------------------------------------- Prüfungen

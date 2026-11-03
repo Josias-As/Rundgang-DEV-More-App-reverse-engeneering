@@ -70,6 +70,14 @@ P5  ok    Datum+Uhrzeit optional leer                                           
 P5  ok    fnDatumText nur Datum (DATUM)                                          erwartet '27.10.2026' ist '27.10.2026'
 P5  ok    fnDatumText Datum + Zeit                                               erwartet '27.10.2026 07:05' ist '27.10.2026 07:05'
 P5  ok    fnDatumText Zeit ohne Minute (ab 20 mit Platzhalter)                   erwartet '27.10.2026 07:--' ist '27.10.2026 07:--'
+P21  ok    Uhr: Datum, Stunde, Minute                                             erwartet '02.11.2026 08:30' ist '02.11.2026 08:30'
+P21  ok    Uhr: Datum, nur Stunde                                                 erwartet '02.11.2026 08:--' ist '02.11.2026 08:--'
+P21  ok    Uhr: Minute vor Stunde                                                 erwartet '02.11.2026 08:30' ist '02.11.2026 08:30'
+P21  ok    Uhr: Datum ändern behält Uhrzeit                                       erwartet '03.11.2026 08:30' ist '03.11.2026 08:30'
+P21  ok    Uhr: Stunde abwählen                                                   erwartet '02.11.2026 --:30' ist '02.11.2026 --:30'
+P21  ok    Uhr: beides abwählen -> nur Datum                                      erwartet '02.11.2026' ist '02.11.2026'
+P21  ok    Uhr: Stunde ohne Datum wird ignoriert                                  erwartet ''           ist ''
+P21  ok    Uhr: Datum löschen                                                     erwartet ''           ist ''
 P20  ok    fnDatumText Minute ohne Stunde                                         erwartet '27.10.2026 --:30' ist '27.10.2026 --:30'
 P20  ok    Datum+Uhrzeit nur Stunde -> Uhrzeit fehlt                              erwartet 'Uhrzeit'    ist 'Uhrzeit'
 P20  ok    Datum+Uhrzeit nur Minute -> Uhrzeit fehlt                              erwartet 'Uhrzeit'    ist 'Uhrzeit'
@@ -108,4 +116,4 @@ P14  ok    Vergleich: Toleranz 0 = exakt gleich                                 
 P14  ok    Vergleich: anderer Wert fehlt noch                                     erwartet False        ist False
 P14  ok    Vergleich: 1,1 und 0,8 bei Toleranz 0,3 (Gleitkomma-Grenze)            erwartet False        ist False
 
-Szenarien: 107, Fehler: 0
+Szenarien: 115, Fehler: 0

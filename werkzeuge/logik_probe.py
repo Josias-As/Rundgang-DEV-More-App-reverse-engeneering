@@ -149,6 +149,45 @@ def fnDatumText(d, h, m, mit_zeit):
     return d + (" " + (h or "--") + ":" + (m or "--") if mit_zeit and (h != "" or m != "") else "")
 
 
+
+def uhr_ablauf(schritte):
+    """Paket 21: Folge von Eingaben (("D", "02.11.2026") / ("H", "08") / ("M", "30"), "" = abgewählt) auf WertText einer DATUMZEIT-Karte.
+    Nach jedem Schreiben feuern alle drei OnChange erneut mit ihrem Default (Neuzeichnen) – das darf nichts ändern."""
+    wt = ""
+
+    def teil(i):
+        return wt[i:i + 2] if len(wt) >= 16 else "--"
+
+    def datum(d):
+        nonlocal wt
+        if (d or "") != wt[:10]:
+            h, m = teil(11), teil(14)
+            wt = fnDatumText(d or None, "" if h == "--" else h, "" if m == "--" else m, True)
+
+    def zeit(wert, eigen, rest_i, links):
+        nonlocal wt
+        neu = wert or "--"
+        if len(wt) >= 10 and neu != teil(eigen):
+            rest = teil(rest_i)
+            wt = wt[:10] + ("" if neu == "--" and rest == "--" else " " + (neu + ":" + rest if links else rest + ":" + neu))
+
+    def neuzeichnen():
+        d = wt[:10] if len(wt) >= 10 else ""
+        h = teil(11) if teil(11) != "--" else ""
+        m = teil(14) if teil(14) != "--" else ""
+        datum(d)
+        zeit(h, 11, 14, True)
+        zeit(m, 14, 11, False)
+
+    for art, wert in schritte:
+        {"D": datum, "H": lambda w: zeit(w, 11, 14, True), "M": lambda w: zeit(w, 14, 11, False)}[art](wert)
+        vorher = wt
+        neuzeichnen()
+        if wt != vorher:
+            return "INSTABIL " + vorher + " -> " + wt
+    return wt
+
+
 # ---------------------------------------------------------------- Prüfungen
 
 def rueckwaerts():
@@ -244,6 +283,14 @@ SZENARIEN = [
     (5, "fnDatumText nur Datum (DATUM)", "datum", ("27.10.2026", "07", "05", False), "27.10.2026"),
     (5, "fnDatumText Datum + Zeit", "datum", ("27.10.2026", "07", "05", True), "27.10.2026 07:05"),
     (5, "fnDatumText Zeit ohne Minute (ab 20 mit Platzhalter)", "datum", ("27.10.2026", "07", "", True), "27.10.2026 07:--"),
+    (21, "Uhr: Datum, Stunde, Minute", "uhr", ([("D", "02.11.2026"), ("H", "08"), ("M", "30")],), "02.11.2026 08:30"),
+    (21, "Uhr: Datum, nur Stunde", "uhr", ([("D", "02.11.2026"), ("H", "08")],), "02.11.2026 08:--"),
+    (21, "Uhr: Minute vor Stunde", "uhr", ([("D", "02.11.2026"), ("M", "30"), ("H", "08")],), "02.11.2026 08:30"),
+    (21, "Uhr: Datum ändern behält Uhrzeit", "uhr", ([("D", "02.11.2026"), ("H", "08"), ("M", "30"), ("D", "03.11.2026")],), "03.11.2026 08:30"),
+    (21, "Uhr: Stunde abwählen", "uhr", ([("D", "02.11.2026"), ("H", "08"), ("M", "30"), ("H", "")],), "02.11.2026 --:30"),
+    (21, "Uhr: beides abwählen -> nur Datum", "uhr", ([("D", "02.11.2026"), ("H", "08"), ("H", "")],), "02.11.2026"),
+    (21, "Uhr: Stunde ohne Datum wird ignoriert", "uhr", ([("H", "08")],), ""),
+    (21, "Uhr: Datum löschen", "uhr", ([("D", "02.11.2026"), ("H", "08"), ("D", "")],), ""),
     (20, "fnDatumText Minute ohne Stunde", "datum", ("27.10.2026", "", "30", True), "27.10.2026 --:30"),
     (20, "Datum+Uhrzeit nur Stunde -> Uhrzeit fehlt", "grund", ("DATUMZEIT", True, "", "27.10.2026 07:--", None, "", "Aus", 0, False, "Mangel", None, None), "Uhrzeit"),
     (20, "Datum+Uhrzeit nur Minute -> Uhrzeit fehlt", "grund", ("DATUMZEIT", False, "", "27.10.2026 --:30", None, "", "Aus", 0, False, "Mangel", None, None), "Uhrzeit"),
@@ -304,6 +351,8 @@ def fuehre(paket, art, args):
         return fnDatumText(*args)
     if art == "neu":
         return fnFotoNeuErlaubt(*args)
+    if art == "uhr":
+        return uhr_ablauf(*args)
     if art == "abw":
         return fnAbweichung(*args)
     if art == "vgl":

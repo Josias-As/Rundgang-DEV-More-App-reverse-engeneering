@@ -94,6 +94,47 @@ def main20():
     print("geschrieben: pakete/PAKET_20_FIX_UHRZEIT.md (%d Properties)" % len(p["props"]))
 
 
+ERKL21 = {
+    "dpKaDatum.OnChange": "Schreibt nur, wenn sich das **Datum** wirklich ändert. Die Uhrzeit nimmt es aus dem gespeicherten Wert, nicht aus den Nachbarfeldern. So überschreibt ein erneutes Feuern beim Neuzeichnen nichts mehr.",
+    "ddKaStunde.OnChange": "Ändert nur die Stunde, die Minute kommt aus dem gespeicherten Wert. Schreibt nur bei echter Änderung und nur, wenn ein Datum da ist.",
+    "ddKaMinute.OnChange": "Wie die Stunde, für die Minute.",
+}
+
+
+def main21():
+    p = [q for q in BL["pakete"] if q["nr"] == 21][0]
+    eltern = dict(rg.App(doc_app89.EXPORT).eltern)
+    for n, i in BL["neue_controls"].items():
+        eltern[n] = i["eltern"]
+    z = ["# Paket 21 – Fix: Uhrzeit (zweiter Anlauf)", "",
+         "Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket21) und `werkzeuge/doc_paket19.py`. Setzt auf den Stand **nach N + 8–10 + 19 + 20** auf (Paket 20 bleibt drin).", "",
+         "## Kurzfassung", "",
+         "- **Fehler (Studio nach 20):** Stunde wählen → springt sofort zurück, `WertText` bleibt nur das Datum.",
+         "- **Ursache (Vermutung Einsetz-Chat, passt zu den Formeln):** Nach dem Schreiben der Stunde wird die Karte neu gezeichnet, `dpKaDatum.OnChange` feuert erneut "
+         "und baute den Text aus `ddKaStunde.Selected` – das in diesem Moment leer ist → nur Datum.",
+         "- **Abhilfe (Vorschlag Einsetz-Chat übernommen):** Jedes der drei Felder ändert nur seinen Teil und liest den Rest aus `ThisItem.WertText`. Jedes schreibt nur bei echter Änderung. "
+         "Ein erneutes Feuern ändert damit nichts mehr (Logik-Probe: nach jedem Schritt alle drei OnChange noch einmal mit ihrem Default → Wert bleibt gleich, 8 Abläufe).",
+         "- 3 Properties (je ganz ersetzen). Generator 0 Fehler, Logik-Probe 115/0. **Nicht in Studio getestet.**", "",
+         "## Schritte", ""]
+    for i, c in enumerate(p["props"], 1):
+        z += block("21.%d" % i, c["key"], doc_app89.de(c["vorher"]), doc_app89.de(c["nachher"]), ERKL21[c["key"]], eltern)
+    z += ["## Test", "",
+          "| # | Schritt | erwartet (`WertText`) |", "|---|---|---|",
+          "| T1 | Datum 02.11. | `02.11.2026`, offen „(Uhrzeit)“ |",
+          "| T2 | Stunde 08 | `02.11.2026 08:--`, 08 bleibt stehen |",
+          "| T3 | Minute 30 | `02.11.2026 08:30`, nicht mehr offen |",
+          "| T4 | Datum auf 03.11. ändern | `03.11.2026 08:30` (Uhrzeit bleibt) |",
+          "| T5 | neue Karte: erst Minute, dann Stunde | `… 08:30` |",
+          "| T6 | speichern, neu öffnen; „Leeren“ | Werte stehen da; danach leer |",
+          "| T7 | Typ DATUM | unverändert |", "",
+          "## Rückweg", "", "Vorher-Fassungen aus dem Anhang einsetzen.", "", "## Anhang – Vorher-Fassungen", ""]
+    for c in p["props"]:
+        z += ["**`%s` vorher**" % c["key"], "", "```", doc_app89.de(c["vorher"]), "```", ""]
+    open(os.path.join(doc_app89.AUS, "PAKET_21_FIX_UHRZEIT_2.md"), "w", encoding="utf-8").write("\n".join(z) + "\n")
+    print("geschrieben: pakete/PAKET_21_FIX_UHRZEIT_2.md (%d Properties)" % len(p["props"]))
+
+
 if __name__ == "__main__":
     main()
     main20()
+    main21()

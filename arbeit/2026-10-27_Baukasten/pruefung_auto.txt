@@ -524,6 +524,10 @@
   App.Formulas                     ok
   ddKaStunde.Default               ok
   ddKaMinute.Default               ok
+== Paket 21: 3 Properties, neue Steuerelemente: -
+  dpKaDatum.OnChange               ok
+  ddKaStunde.OnChange              ok
+  ddKaMinute.OnChange              ok
 == Paket 12: 12 Properties, neue Steuerelemente: -
   scrKategorie.OnVisible           ok
   btnKaSpeichern.OnSelect          ok
@@ -1028,6 +1032,7 @@
   Paket 10: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 19: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 20: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 21: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 12: colAntworten hat in allen drei Zweigen dieselben 36 Felder
   Paket 16: colAntworten hat in allen drei Zweigen dieselben 37 Felder
   Paket 14: colAntworten hat in allen drei Zweigen dieselben 46 Felder
