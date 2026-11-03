@@ -1,6 +1,6 @@
 # Paket 13 – Anleitungen im ⓘ-Fenster (Rundgang-App + Builder)
 
-Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket13), `werkzeuge/builder.py` und `werkzeuge/doc_paket13.py`. **Voraussetzung:** Rundgang-App bis Paket 17 eingefügt, Builder bis Paket 14+15.
+Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket13), `werkzeuge/builder.py` und `werkzeuge/doc_paket13.py`. **Voraussetzung:** Rundgang-App bis Paket 17 eingefügt, Builder bis Paket 14+15 (**Builder 14+15 vorher**, sonst überschreibt es Teile von Paket 13).
 
 ## Kurzfassung
 
@@ -48,7 +48,10 @@ If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP; !IsBla
     Set(varLetzteFuer; varDurchID);;
     Set(varLetzteRg; varDurch.RundgangID);;
     Set(varLetzteTest; varDurch.TestDatensatz);;
-    Set(varLetzteDurch; First(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); ID; SortOrder.Descending)));;
+    Set(varLetzteTag; varDurch.TagText);;
+    Refresh(RG_Durchfuehrungen);;
+    ClearCollect(colLetzteKand; FirstN(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); TagText; SortOrder.Descending); 20));;
+    Set(varLetzteDurch; First(Sort(Filter(colLetzteKand; DateValue(TagText) < DateValue(varLetzteTag)); TagText; SortOrder.Descending)));;
     If(IsBlank(varLetzteDurch.ID);
         Clear(colLetzte);
         Set(varLetzteID; varLetzteDurch.ID);;
@@ -1135,6 +1138,7 @@ Sort(
             {T: ForAll(Filter(colP As p; Coalesce(p.VergleichPunkt; 0) <> 0 && With({w: LookUp(colP As w0; w0.ID = p.VergleichPunkt)}; IsBlank(w) || w.ID = p.ID || w.KategorieID <> p.KategorieID || w.Eingabetyp.Value <> "ZAHL" || p.Eingabetyp.Value <> "ZAHL")) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & "“: Der Vergleich zeigt auf keine Zahl-Frage derselben Kategorie."})};
             {T: ForAll(Filter(colP As p; p.Eingabetyp.Value <> "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend; false))) As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & "“: Verlauf/Vergleich wirkt nur bei Zahlen."})};
             {T: ForAll(Filter(colP As p; !IsBlank(p.AbwMax) && p.AbwMax < 0) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & "“: höchste Abweichung darf nicht negativ sein."})};
+            {T: ForAll(Filter(colP As p; !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & "“: erlaubter Unterschied darf nicht negativ sein."})};
             {T: ForAll(Filter(colP As p; Coalesce(p.AnleitungID; 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0; n0.ID = p.AnleitungID))) As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & "“: Die gewählte Anleitung gibt es nicht mehr oder sie ist inaktiv."})};
             {T: ForAll(Filter(colP As p; p.Title = "Neue Frage") As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "Eine Frage heißt noch „Neue Frage“."})};
             {T: ForAll(Filter(colK As k; CountRows(Filter(colP As p; p.KategorieID = k.ID)) > 30) As k; {Art: "Hinweis"; Ebene: 2; ID: k.ID; KatID: k.ID; BerID: k.BereichID; Text: "Kategorie „" & k.Title & "“ hat über 30 Prüfpunkte (lange Seite für den Prüfer)."})};
@@ -1147,10 +1151,11 @@ Sort(
 ```
 
 ```diff
++            {T: ForAll(Filter(colP As p; !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p; {Art: "Fehler"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.KategorieID).BereichID; Text: "„" & p.Title & " …
 +            {T: ForAll(Filter(colP As p; Coalesce(p.AnleitungID; 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0; n0.ID = p.AnleitungID))) As p; {Art: "Hinweis"; Ebene: 3; ID: p.ID; KatID: p.KategorieID; BerID: LookUp(colK As k9; k9.ID = p.K …
 ```
 
-**Kurz erklärt:** Hinweis, wenn die Anleitung fehlt oder inaktiv ist.
+**Kurz erklärt:** Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.
 
 **Nachprüfen:** endet auf `)`
 
@@ -1498,7 +1503,10 @@ If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP; !IsBla
     Set(varLetzteFuer; varDurchID);;
     Set(varLetzteRg; varDurch.RundgangID);;
     Set(varLetzteTest; varDurch.TestDatensatz);;
-    Set(varLetzteDurch; First(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); ID; SortOrder.Descending)));;
+    Set(varLetzteTag; varDurch.TagText);;
+    Refresh(RG_Durchfuehrungen);;
+    ClearCollect(colLetzteKand; FirstN(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); TagText; SortOrder.Descending); 20));;
+    Set(varLetzteDurch; First(Sort(Filter(colLetzteKand; DateValue(TagText) < DateValue(varLetzteTag)); TagText; SortOrder.Descending)));;
     If(IsBlank(varLetzteDurch.ID);
         Clear(colLetzte);
         Set(varLetzteID; varLetzteDurch.ID);;

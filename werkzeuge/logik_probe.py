@@ -89,11 +89,11 @@ def fnAbweichung(z, l, mx, proz, steig):
         return False
     if steig and z < l:
         return True
-    return mx is not None and abs(z - l) > (abs(l) * mx / 100 if proz else mx)
+    return mx is not None and round(abs(z - l), 6) > round(abs(l) * mx / 100 if proz else mx, 6)
 
 
 def fnVergleich(z, w, tol):
-    return z is not None and w is not None and abs(z - w) > (tol or 0)
+    return z is not None and w is not None and round(abs(z - w), 6) > round(tol or 0, 6)
 
 
 def fnFehlt(paket, *args):
@@ -277,6 +277,7 @@ SZENARIEN = [
     (14, "Vergleich: 7,6 und 8,0 bei Toleranz 0,2", "vgl", (7.6, 8.0, 0.2), True),
     (14, "Vergleich: Toleranz 0 = exakt gleich", "vgl", (5, 5, 0), False),
     (14, "Vergleich: anderer Wert fehlt noch", "vgl", (5, None, 0), False),
+    (14, "Vergleich: 1,1 und 0,8 bei Toleranz 0,3 (Gleitkomma-Grenze)", "vgl", (1.1, 0.8, 0.3), False),
 ]
 
 

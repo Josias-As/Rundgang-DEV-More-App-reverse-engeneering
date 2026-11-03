@@ -973,8 +973,8 @@ def paket16(st):
 # ---------------------------------------------------------------- Paket 14+15 (Abweichung zum letzten Rundgang, zwei Werte vergleichen)
 
 UDF_P14 = ('fnAbweichung(z: Number, l: Number, mx: Number, proz: Boolean, steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && '
-           '((steig && z < l) || (!IsBlank(mx) && Abs(z - l) > If(proz, Abs(l) * mx / 100, mx)));\n'
-           'fnVergleich(z: Number, w: Number, tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Abs(z - w) > Coalesce(tol, 0);')
+           '((steig && z < l) || (!IsBlank(mx) && Round(Abs(z - l), 6) > Round(If(proz, Abs(l) * mx / 100, mx), 6)));\n'
+           'fnVergleich(z: Number, w: Number, tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Round(Abs(z - w), 6) > Round(Coalesce(tol, 0), 6);')
 REKALK = ('ClearCollect(colVglTmp, ForAll(Filter(colAntworten As a0, !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a,\n'
           '    With({w: LookUp(colAntworten As o, o.PruefpunktID = a.VglID)},\n'
           '        {PP: a.PruefpunktID,\n'
@@ -990,7 +990,10 @@ LETZTE_LADEN = ('If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Fil
                 '    Set(varLetzteFuer, varDurchID);\n'
                 '    Set(varLetzteRg, varDurch.RundgangID);\n'
                 '    Set(varLetzteTest, varDurch.TestDatensatz);\n'
-                '    Set(varLetzteDurch, First(Sort(Filter(RG_Durchfuehrungen, RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest), ID, SortOrder.Descending)));\n'
+                '    Set(varLetzteTag, varDurch.TagText);\n'
+                '    Refresh(RG_Durchfuehrungen);\n'
+                '    ClearCollect(colLetzteKand, FirstN(Sort(Filter(RG_Durchfuehrungen, RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest), TagText, SortOrder.Descending), 20));\n'
+                '    Set(varLetzteDurch, First(Sort(Filter(colLetzteKand, DateValue(TagText) < DateValue(varLetzteTag)), TagText, SortOrder.Descending)));\n'
                 '    If(IsBlank(varLetzteDurch.ID),\n'
                 '        Clear(colLetzte),\n'
                 '        Set(varLetzteID, varLetzteDurch.ID);\n'
@@ -1037,6 +1040,9 @@ def paket14(st):
         t, "TextIO, TextNIO), JSONFormat.Compact)", "TextIO, TextNIO, Letzter, LetzterTag, AbwText), JSONFormat.Compact)"))
     aendern(st, p, "14.6", "txtKaZahl.OnChange", lambda t: rep(t, ");\nSet(varGeaendert, true)", ");\n" + REKALK + ";\nSet(varGeaendert, true)"))
     aendern(st, p, "14.6", "btnKaNM.OnSelect", lambda t: rep(t, ");\nSet(varGeaendert, true)", ");\n" + REKALK + ";\nSet(varGeaendert, true)"))
+    aendern(st, p, "14.6", "btnKaRueckNein.OnSelect", lambda t: rep(t, "Set(varRueckPP, 0);\nSet(varGeaendert, true)", "Set(varRueckPP, 0);\n" + REKALK + ";\nSet(varGeaendert, true)"))
+    aendern(st, p, "14.6", "btnKaKritVersehen.OnSelect", lambda t: rep(t, "Set(varKritPP, 0);\nSet(varGeaendert, true)", "Set(varKritPP, 0);\n" + REKALK + ";\nSet(varGeaendert, true)"))
+    aendern(st, p, "14.7", "lblKaZahlInfo.Height", lambda t: rep(t, "56", "If(btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> \"\", 64, 56)"))
     aendern(st, p, "14.7", "lblKaZahlInfo.Text", lambda t: t + ' & If(IsBlank(ThisItem.Letzter), "", "  ·  zuletzt " & Text(ThisItem.Letzter) & If(ThisItem.LetzterTag = "", "", " (" & ThisItem.LetzterTag & ")")) & '
             'If(ThisItem.AbwText = "", "", "  ·  " & ThisItem.AbwText & If(varNurLesen || Trim(ThisItem.Kommentar) <> "", ", begründet", ", bitte begründen"))')
     aendern(st, p, "14.7", "lblKaZahlInfo.Color", lambda t: rep(t, "), clrWarnung, clrTextGrau)", ") || ThisItem.AbwText <> \"\", clrWarnung, clrTextGrau)"))
@@ -1244,7 +1250,7 @@ Font FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOf
 Ungroup Date Number DateTime As in Compact Error Warning Success Information None Edit View Disabled White Semibold
 Days Seconds Minutes Monday Fill Fit Large Thumbnail LayoutDirection LayoutOverflow Vertical Scroll DropShadow Light
 Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full
-VerticalAlign Top Bottom Char Abs Months ShortDate DateTimeFormat Launch Overflow Scroll""".split())
+VerticalAlign Top Bottom Char Abs Round FirstN Months ShortDate DateTimeFormat Launch Overflow Scroll""".split())
 
 
 def addcolumns_namen(s):

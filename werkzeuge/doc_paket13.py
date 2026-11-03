@@ -34,7 +34,7 @@ ERKL_B = {
     "ddPFoto.Default": "Wie Items.",
     "lblVsRegeln.Text": "Vorschau nennt die Anleitung.",
     "galAkt.Items": "Änderung der Anleitung zählt als „geändert“.",
-    "galPr.Items": "Hinweis, wenn die Anleitung fehlt oder inaktiv ist.",
+    "galPr.Items": "Hinweis, wenn die Anleitung fehlt oder inaktiv ist. Dazu (Nachtrag aus der Prüfung von 14+15): Fehler bei negativem „erlaubter Unterschied“.",
     "tmrArbeit.OnTimerEnd": "Kopie/neue Fassung übernehmen die Anleitung. Beim Laden werden die aktiven Anleitungen für die Prüfung gelesen.",
     "btnGlNeuP.OnSelect": "Neuer Prüfpunkt ohne Anleitung.",
     "btnMehrAnlegen.OnSelect": "Wie btnGlNeuP.",
@@ -104,7 +104,7 @@ def main():
     zb, keys_b, nb = builder_teil()
     z = ["# Paket 13 – Anleitungen im ⓘ-Fenster (Rundgang-App + Builder)", "",
          "Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket13), `werkzeuge/builder.py` und `werkzeuge/doc_paket13.py`. "
-         "**Voraussetzung:** Rundgang-App bis Paket 17 eingefügt, Builder bis Paket 14+15.", "",
+         "**Voraussetzung:** Rundgang-App bis Paket 17 eingefügt, Builder bis Paket 14+15 (**Builder 14+15 vorher**, sonst überschreibt es Teile von Paket 13).", "",
          "## Kurzfassung", ""] + KURZ + [
          "- Umfang: 1 Liste, 1 Spalte. Rundgang-App %d Properties + 2 Blöcke. Builder 1 Bildschirm, 2 Blöcke, %d Properties. "
          "Generatoren 0 Fehler. **Nicht in Studio getestet. Nicht unabhängig geprüft.**" % (na, nb), ""] + za + zb + [

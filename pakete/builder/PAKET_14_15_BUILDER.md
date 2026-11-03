@@ -1,6 +1,6 @@
 # Paket 14+15 – Builder: Verlauf und Vergleich bei Zahlen
 
-Stand 03.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Builder-Pakete 8, 9, 12+16 eingefügt.**
+Stand 03.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Builder-Pakete 8, 9, 12+16 eingefügt. Unbedingt vor Paket 13 einfügen** (Paket 13 ersetzt einige dieser Formeln noch einmal mit seinen Ergänzungen).
 
 ## Kurzfassung
 
@@ -10,7 +10,7 @@ Stand 03.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket14_
 - Nach einer neuen Fassung findet die App den alten Wert über `QuelleID` (eine Fassung zurück). Lagen zwei Aktivierungen zwischen zwei Rundgängen, fehlt der Vergleich einmal.
 - Im Prüfpunkt-Editor bei Zahlen ein Knopf **„Verlauf/Vergleich ›“** neben „Wert außerhalb der Grenzen ergibt“. Er öffnet ein Fenster: höchste Abweichung (absolut/%), „Zählerstand: darf nicht kleiner werden“, Vergleichs-Prüfpunkt (nur Zahlen derselben Kategorie) und erlaubter Unterschied.
 - Kopie und neue Fassung schreiben den Vergleichs-Verweis auf die neue Frage um (wie bei Bedingungen). Entfernen/Verschieben löst ihn.
-- Umfang: 5 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, 11 geänderte Properties. Generator 0 Fehler, Mutation 13/13. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 5 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, 11 geänderte Properties. Generator 0 Fehler, Mutation 13/13. Unabhängig geprüft. **Nicht in Studio getestet.**
 
 ## Schritt 0 – SharePoint
 
@@ -1282,6 +1282,7 @@ Set(varIsLoading; false)
 2. Zweiten Zahl-Prüfpunkt derselben Kategorie als Vergleich wählen, Unterschied 0,2 → Vorschau nennt ihn.
 3. Neue Fassung anlegen → im Entwurf zeigt der Vergleich auf die **neue** Frage (Vorschau-Titel gleich, Prüfung ohne Fehler).
 4. Den Vergleichs-Partner entfernen → Vergleich ist weg, keine Fehlermeldung.
+5. Bekannt: Nach einem Typwechsel weg von „Zahl“ ist das Fenster nicht mehr erreichbar; die Prüfung meldet den Rest. Typ kurz zurück auf Zahl, Vergleich entfernen.
 
 ## Rückweg
 

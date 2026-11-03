@@ -26,11 +26,14 @@ KURZ = [
 ]
 ERKL_APP = {
     "App.Formulas": "Zwei neue Funktionen: `fnAbweichung` (zum letzten Mal, absolut/%, Zähler) und `fnVergleich` (zwei Werte, Toleranz).",
-    "scrKategorie.OnVisible": "Lädt einmal je Rundgang die Zahlen des letzten abgeschlossenen Laufs (nur wenn ein Prüfpunkt der Kategorie es braucht). "
+    "scrKategorie.OnVisible": "Lädt einmal je Rundgang die Zahlen des letzten abgeschlossenen Laufs **vor diesem Tag** (frisch gelesen, nach Tag sortiert, also auch bei Nachhol-Läufen richtig; nur wenn ein Prüfpunkt der Kategorie es braucht). "
                               "Neue Felder in allen drei Zweigen. Danach wird für alle Zahlen bestimmt, ob eine Begründung nötig ist.",
     "btnKaSpeichern.OnSelect": "Speichert „zuletzt“ und den Abweichungs-Text mit (Protokoll, Nur-Ansicht).",
     "txtKaZahl.OnChange": "Nach jeder Eingabe werden Abweichung und Vergleich neu bestimmt (auch beim Partner-Punkt).",
     "btnKaNM.OnSelect": "Wie txtKaZahl: „nicht messbar“ hebt eine Abweichung auf.",
+    "btnKaRueckNein.OnSelect": "„Nein, korrigieren“ leert den Wert – danach Abweichung/Vergleich neu bestimmen (auch beim Partner).",
+    "btnKaKritVersehen.OnSelect": "Wie btnKaRueckNein.",
+    "lblKaZahlInfo.Height": "Etwas höher, wenn zusätzlicher Text da ist (sonst wird „bitte begründen“ abgeschnitten).",
     "lblKaZahlInfo.Text": "Zeigt „zuletzt …“ und den Abweichungs-Text mit „bitte begründen“.",
     "lblKaZahlInfo.Color": "Orange bei Abweichung.",
     "lblKaZahlInfo.Size": "Kleiner, wenn zusätzlicher Text da ist.",
@@ -62,16 +65,16 @@ def app_doc():
     for n, i in BL["neue_controls"].items():
         eltern[n] = i["eltern"]
     gruppen = [("Formeln und Laden", ["App.Formulas", "scrKategorie.OnVisible"]),
-               ("Eingabe und Speichern", ["txtKaZahl.OnChange", "btnKaNM.OnSelect", "btnKaSpeichern.OnSelect"]),
-               ("Anzeige in der Karte", ["lblKaZahlInfo.Text", "lblKaZahlInfo.Color", "lblKaZahlInfo.Size"]),
+               ("Eingabe und Speichern", ["txtKaZahl.OnChange", "btnKaNM.OnSelect", "btnKaRueckNein.OnSelect", "btnKaKritVersehen.OnSelect", "btnKaSpeichern.OnSelect"]),
+               ("Anzeige in der Karte", ["lblKaZahlInfo.Text", "lblKaZahlInfo.Color", "lblKaZahlInfo.Size", "lblKaZahlInfo.Height"]),
                ("Protokoll", ["htmProtokoll.HtmlText"])]
     keys = [k for _, ks in gruppen for k in ks]
     assert sorted(keys) == sorted(end), set(keys) ^ set(end)
     z = ["# Paket 14+15 – Rundgang-App: Abweichung zum letzten Rundgang, zwei Werte vergleichen", "",
          "Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket14) und `werkzeuge/doc_paket14_15.py`. "
-         "**Voraussetzung: Paket N, 8–10 und 12+16 eingefügt.**", "", "## Kurzfassung", ""] + KURZ + [
+         "**Voraussetzung: Paket N, 8–10 und 12+16 eingefügt.** Danach folgen Paket 17 und 13 (die bauen auf diesem Stand auf).", "", "## Kurzfassung", ""] + KURZ + [
          "- Umfang: 5 Spalten, %d Properties (jede einmal), kein neues Steuerelement. Generator 0 Fehler, Mutation, Logik 103 Szenarien. "
-         "**Nicht in Studio getestet. Nicht unabhängig geprüft.**" % len(end), "",
+         "Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket14_15/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**" % len(end), "",
          "## Schritt 1 – SharePoint", "",
          "`RG_Pruefpunkte`: `AbwMax` (Zahl, leer), `AbwProzent` (Ja/Nein, Nein), `NurSteigend` (Ja/Nein, Nein), `VergleichPunkt` (Zahl, 0), `VergleichTol` (Zahl, 0). "
          "Danach in der Rundgang-App: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**. (`QuelleID` gibt es schon, vom Builder.)", ""]
@@ -81,12 +84,15 @@ def app_doc():
             z += block("%d.%d" % (gi, i), k, doc_app89.de(vorher[k]), doc_app89.de(end[k]), ERKL_APP[k], eltern)
     z += ["## Test (ZZ-Test-Rundgang, Zeitachse)", "",
           "| # | Schritt | erwartet |", "|---|---|---|",
-          "| T1 | Prüfpunkt Zahl: `AbwMax` = 0,5. Rundgang starten, Wert 7,6 eingeben, alles speichern, **abschließen** | erster Lauf: kein „zuletzt“ |",
-          "| T2 | Am nächsten Testtag (oder Rundgang zurücksetzen und neu starten) die Kategorie öffnen | Karte zeigt „zuletzt 7,6 (TT.MM.)“ |",
+          "| T0 | **Vorher alles in einer Fassung einstellen** (sonst liegen zwei Fassungen zwischen den Läufen und der Vorwert fehlt): Zahl A `AbwMax` = 0,5; Zähler Z `NurSteigend` = Ja; "
+          "Zahl B `VergleichPunkt` = ID von A, `VergleichTol` = 0,2 | – |",
+          "| T1 | **Tag N** (oder als Nachholtag): Rundgang starten, A = 7,6, Z = 5000, B = 7,6, alles speichern, **abschließen** | erster Lauf: kein „zuletzt“ |",
+          "| T2 | **Tag N+1:** Rundgang starten, Kategorie öffnen | Karte zeigt „zuletzt 7,6 (TT.MM.)“ |",
           "| T3 | 7,9 eingeben | nichts Besonderes |",
           "| T4 | 8,4 eingeben | orange „starke Abweichung zum letzten Mal, bitte begründen“, Kommentar Pflicht. Begründen, speichern, Protokoll nennt es |",
-          "| T5 | Zähler: `NurSteigend` = Ja, kleineren Wert als beim letzten Mal eingeben | „kleiner als beim letzten Mal“, Begründung Pflicht |",
-          "| T6 | Zwei Zahlen derselben Kategorie, bei B `VergleichPunkt` = ID von A, `VergleichTol` = 0,2. A = 7,6, B = 8,0 | B: „weicht von „A“ ab (7,6)“. A auf 7,9 ändern → Hinweis bei B verschwindet |",
+          "| T5 | Z = 4999 | „kleiner als beim letzten Mal“, Begründung Pflicht |",
+          "| T6 | A = 7,6, B = 8,0 | B: „weicht von „A“ ab (7,6)“. A auf 7,9 ändern → Hinweis bei B verschwindet |",
+          "| T6b | Bei A (mit Rückfrage) n.i.O.-Wert, dann „Nein, korrigieren“ | Hinweis bei B verschwindet (A leer) |",
           "| T7 | B „nicht messbar“ | Vergleich entfällt, nur Begründung für „nicht messbar“ |", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang einsetzen. Spalten dürfen bleiben.", "",
           "## Anhang – Vorher-Fassungen (Stand nach Paket 12+16)", ""]
@@ -115,13 +121,14 @@ def builder_doc():
         raise KeyError(name)
 
     z = ["# Paket 14+15 – Builder: Verlauf und Vergleich bei Zahlen", "",
-         "Stand 03.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Builder-Pakete 8, 9, 12+16 eingefügt.**", "",
+         "Stand 03.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Builder-Pakete 8, 9, 12+16 eingefügt. "
+         "Unbedingt vor Paket 13 einfügen** (Paket 13 ersetzt einige dieser Formeln noch einmal mit seinen Ergänzungen).", "",
          "## Kurzfassung", ""] + KURZ + [
          "- Im Prüfpunkt-Editor bei Zahlen ein Knopf **„Verlauf/Vergleich ›“** neben „Wert außerhalb der Grenzen ergibt“. Er öffnet ein Fenster: höchste Abweichung (absolut/%), "
          "„Zählerstand: darf nicht kleiner werden“, Vergleichs-Prüfpunkt (nur Zahlen derselben Kategorie) und erlaubter Unterschied.",
          "- Kopie und neue Fassung schreiben den Vergleichs-Verweis auf die neue Frage um (wie bei Bedingungen). Entfernen/Verschieben löst ihn.",
          "- Umfang: 5 Spalten (dieselben wie in der Rundgang-App), 2 neue Blöcke, %d geänderte Properties. Generator 0 Fehler, Mutation 13/13. "
-         "**Nicht in Studio getestet. Nicht unabhängig geprüft.**" % len(geaendert), "",
+         "Unabhängig geprüft. **Nicht in Studio getestet.**" % len(geaendert), "",
          "## Schritt 0 – SharePoint", "", "Die fünf Spalten aus `PAKET_14_15_APP.md`, Schritt 1 (nur einmal anlegen). Im Builder: **Daten** → `RG_Pruefpunkte` → ⋯ → **Aktualisieren**.", "",
          "## Schritt 1 – neue Steuerelemente", "",
          "### 1a · Knopf „Verlauf/Vergleich“", "", "**Wo hin:** **`conPZahl`** (`%s`) markieren → Strg+V." % pfad("conPZahl", eltern), "",
@@ -138,7 +145,8 @@ def builder_doc():
           "1. Zahl-Prüfpunkt → „Verlauf/Vergleich ›“ → höchstens 0,5, absolut → Vorschau „höchstens 0,5 Abweichung …“, Knopf „Verlauf/Vergleich: an“.",
           "2. Zweiten Zahl-Prüfpunkt derselben Kategorie als Vergleich wählen, Unterschied 0,2 → Vorschau nennt ihn.",
           "3. Neue Fassung anlegen → im Entwurf zeigt der Vergleich auf die **neue** Frage (Vorschau-Titel gleich, Prüfung ohne Fehler).",
-          "4. Den Vergleichs-Partner entfernen → Vergleich ist weg, keine Fehlermeldung.", "",
+          "4. Den Vergleichs-Partner entfernen → Vergleich ist weg, keine Fehlermeldung.",
+          "5. Bekannt: Nach einem Typwechsel weg von „Zahl“ ist das Fenster nicht mehr erreichbar; die Prüfung meldet den Rest. Typ kurz zurück auf Zahl, Vergleich entfernen.", "",
           "## Rückweg", "", "Vorher-Fassungen im Anhang einsetzen, dann `btnPZahlMehr` und `conZa` löschen.", "",
           "## Anhang – Vorher-Fassungen (Stand nach Paket 12+16)", ""]
     for k in keys:

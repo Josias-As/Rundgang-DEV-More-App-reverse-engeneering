@@ -557,12 +557,15 @@
   btnKaNM.Width                    ok
   btnKaNM.X                        ok
   btnKaNM.Y                        ok
-== Paket 14: 9 Properties, neue Steuerelemente: -
+== Paket 14: 12 Properties, neue Steuerelemente: -
   App.Formulas                     ok
   scrKategorie.OnVisible           ok
   btnKaSpeichern.OnSelect          ok
   txtKaZahl.OnChange               ok
   btnKaNM.OnSelect                 ok
+  btnKaRueckNein.OnSelect          ok
+  btnKaKritVersehen.OnSelect       ok
+  lblKaZahlInfo.Height             ok
   lblKaZahlInfo.Text               ok
   lblKaZahlInfo.Color              ok
   lblKaZahlInfo.Size               ok

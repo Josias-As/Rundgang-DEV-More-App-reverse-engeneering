@@ -1,6 +1,6 @@
 # Paket 14+15 – Rundgang-App: Abweichung zum letzten Rundgang, zwei Werte vergleichen
 
-Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket14) und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Paket N, 8–10 und 12+16 eingefügt.**
+Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket14) und `werkzeuge/doc_paket14_15.py`. **Voraussetzung: Paket N, 8–10 und 12+16 eingefügt.** Danach folgen Paket 17 und 13 (die bauen auf diesem Stand auf).
 
 ## Kurzfassung
 
@@ -8,7 +8,7 @@ Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket14) und `werkzeuge/
 - **Paket 15 – zwei Werte vergleichen:** Eine Zahl kann mit einer anderen Zahl derselben Kategorie verglichen werden (z. B. zwei gleiche Geräte) mit erlaubtem Unterschied (0 = gleich). Weichen sie stärker ab, ist ebenfalls eine Begründung Pflicht.
 - Protokoll: „(starke Abweichung zum letzten Mal, zuletzt 7,6, begründet)“ bzw. „(weicht von „…“ ab (7,2), begründet)“.
 - Nach einer neuen Fassung findet die App den alten Wert über `QuelleID` (eine Fassung zurück). Lagen zwei Aktivierungen zwischen zwei Rundgängen, fehlt der Vergleich einmal.
-- Umfang: 5 Spalten, 9 Properties (jede einmal), kein neues Steuerelement. Generator 0 Fehler, Mutation, Logik 103 Szenarien. **Nicht in Studio getestet. Nicht unabhängig geprüft.**
+- Umfang: 5 Spalten, 12 Properties (jede einmal), kein neues Steuerelement. Generator 0 Fehler, Mutation, Logik 103 Szenarien. Unabhängig geprüft (Befunde eingearbeitet, `arbeit/2026-11-03_Paket14_15/pruefung_unabhaengig.md`). **Nicht in Studio getestet.**
 
 ## Schritt 1 – SharePoint
 
@@ -143,16 +143,16 @@ fnBedGueltig(w: Text; typ: Text; auswahl: Text): Boolean = With({n: fnBedNorm(w)
 fnBedPasst(w: Text; bew: Text; wt: Text; wz: Number): Boolean = With({n: fnBedNorm(w)}; If(n = "*"; fnBeantwortet(bew; wt; wz); n = fnBedNorm(bew) || n = fnBedNorm(wt) || CountRows(Filter(Split(wt; ";") As s; fnBedNorm(s.Value) = n)) > 0));;
 fnSichtbar(bid: Number; w: Text; gef: Boolean; bBid: Number; bInaktiv: Boolean; bTyp: Text; bAuswahl: Text; bBew: Text; bWt: Text; bWz: Number): Boolean = bid = 0 || Trim(w) = "" || !gef || bInaktiv || bBid <> 0 || !fnBedGueltig(w; bTyp; bAuswahl) || fnBedPasst(w; bBew; bWt; bWz);;
 fnDatumText(d: Date; h: Text; m: Text; mitZeit: Boolean): Text = If(IsBlank(d); ""; Text(d; "dd.mm.yyyy") & If(mitZeit && h <> "" && m <> ""; " " & h & ":" & m; ""));;
-fnAbweichung(z: Number; l: Number; mx: Number; proz: Boolean; steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && ((steig && z < l) || (!IsBlank(mx) && Abs(z - l) > If(proz; Abs(l) * mx / 100; mx)));;
-fnVergleich(z: Number; w: Number; tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Abs(z - w) > Coalesce(tol; 0);;
+fnAbweichung(z: Number; l: Number; mx: Number; proz: Boolean; steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && ((steig && z < l) || (!IsBlank(mx) && Round(Abs(z - l); 6) > Round(If(proz; Abs(l) * mx / 100; mx); 6)));;
+fnVergleich(z: Number; w: Number; tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Round(Abs(z - w); 6) > Round(Coalesce(tol; 0); 6);;
 fnFehlt(typ: Text; pflicht: Boolean; bew: Text; wt: Text; wz: Number; kom: Text; foto: Text; fanz: Number; kpfl: Boolean; gmodus: Text; mi: Number; ma: Number; kritoffen: Boolean): Boolean = fnFehltGrund(typ; pflicht; bew; wt; wz; kom; foto; fanz; kpfl; gmodus; mi; ma; kritoffen) <> "";;
 fnDateiname(t: Text): Text = Trim(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(Substitute(t; "\"; "-"); "/"; "-"); ":"; "-"); "*"; ""); "?"; ""); """"; ""); "<"; ""); ">"; ""); "|"; "-"); "#"; ""); "%"; ""); "'"; ""));;
 fnArchivOrdner(tag: Text; test: Boolean): Text = If(test; "TEST/"; "") & Left(tag; 4) & "/" & Mid(tag; 6; 2);;fnSpUrl(bib: Text; pfad: Text): Text = "https://technoformgroup.sharepoint.com/sites/IMSKonzept/" & bib & "/" & Substitute(pfad; " "; "%20");;
 ```
 
 ```diff
-+fnAbweichung(z: Number; l: Number; mx: Number; proz: Boolean; steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && ((steig && z < l) || (!IsBlank(mx) && Abs(z - l) > If(proz; Abs(l) * mx / 100; mx)));;
-+fnVergleich(z: Number; w: Number; tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Abs(z - w) > Coalesce(tol; 0);;
++fnAbweichung(z: Number; l: Number; mx: Number; proz: Boolean; steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && ((steig && z < l) || (!IsBlank(mx) && Round(Abs(z - l); 6) > Round(If(proz; Abs(l) * mx / 100; mx); 6)));;
++fnVergleich(z: Number; w: Number; tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Round(Abs(z - w); 6) > Round(Coalesce(tol; 0); 6);;
 ```
 
 **Kurz erklärt:** Zwei neue Funktionen: `fnAbweichung` (zum letzten Mal, absolut/%, Zähler) und `fnVergleich` (zwei Werte, Toleranz).
@@ -186,7 +186,10 @@ If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP; !IsBla
     Set(varLetzteFuer; varDurchID);;
     Set(varLetzteRg; varDurch.RundgangID);;
     Set(varLetzteTest; varDurch.TestDatensatz);;
-    Set(varLetzteDurch; First(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); ID; SortOrder.Descending)));;
+    Set(varLetzteTag; varDurch.TagText);;
+    Refresh(RG_Durchfuehrungen);;
+    ClearCollect(colLetzteKand; FirstN(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); TagText; SortOrder.Descending); 20));;
+    Set(varLetzteDurch; First(Sort(Filter(colLetzteKand; DateValue(TagText) < DateValue(varLetzteTag)); TagText; SortOrder.Descending)));;
     If(IsBlank(varLetzteDurch.ID);
         Clear(colLetzte);
         Set(varLetzteID; varLetzteDurch.ID);;
@@ -284,7 +287,10 @@ Set(varIsLoading; false)
 +    Set(varLetzteFuer; varDurchID);;
 +    Set(varLetzteRg; varDurch.RundgangID);;
 +    Set(varLetzteTest; varDurch.TestDatensatz);;
-+    Set(varLetzteDurch; First(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); ID; SortOrder.Descending)));;
++    Set(varLetzteTag; varDurch.TagText);;
++    Refresh(RG_Durchfuehrungen);;
++    ClearCollect(colLetzteKand; FirstN(Sort(Filter(RG_Durchfuehrungen; RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest); TagText; SortOrder.Descending); 20));;
++    Set(varLetzteDurch; First(Sort(Filter(colLetzteKand; DateValue(TagText) < DateValue(varLetzteTag)); TagText; SortOrder.Descending)));;
 +    If(IsBlank(varLetzteDurch.ID);
 +        Clear(colLetzte);
 +        Set(varLetzteID; varLetzteDurch.ID);;
@@ -316,7 +322,7 @@ Set(varIsLoading; false)
 +    ForAll(colVglTmp As v; Patch(colAntworten; LookUp(colAntworten; PruefpunktID = v.PP); {KommentarPflicht: v.KPfl || v.Abw || v.Vgl; AbwText: v.Text})));;
 ```
 
-**Kurz erklärt:** Lädt einmal je Rundgang die Zahlen des letzten abgeschlossenen Laufs (nur wenn ein Prüfpunkt der Kategorie es braucht). Neue Felder in allen drei Zweigen. Danach wird für alle Zahlen bestimmt, ob eine Begründung nötig ist.
+**Kurz erklärt:** Lädt einmal je Rundgang die Zahlen des letzten abgeschlossenen Laufs **vor diesem Tag** (frisch gelesen, nach Tag sortiert, also auch bei Nachhol-Läufen richtig; nur wenn ein Prüfpunkt der Kategorie es braucht). Neue Felder in allen drei Zweigen. Danach wird für alle Zahlen bestimmt, ob eine Begründung nötig ist.
 
 **Nachprüfen:** endet auf `Set(varIsLoading; false)`
 
@@ -405,7 +411,81 @@ Set(varGeaendert; true)
 
 **Nachprüfen:** endet auf `Set(varGeaendert; true)`
 
-### 3.3 · `btnKaSpeichern.OnSelect`
+### 3.3 · `btnKaRueckNein.OnSelect`
+
+**Pfad:** `scrKategorie › conKaRueck › conKaRueckKarte › btnKaRueckNein` → OnSelect
+
+```
+Patch(colAntworten; LookUp(colAntworten; PruefpunktID = varRueckPP); {Bewertung: ""; WertZahl: Blank(); KritischOk: false; KritischZeit: ""});;
+Set(varRueckPP; 0);;
+ClearCollect(colVglTmp; ForAll(Filter(colAntworten As a0; !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a;
+    With({w: LookUp(colAntworten As o; o.PruefpunktID = a.VglID)};
+        {PP: a.PruefpunktID;
+         Abw: fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend);
+         Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol);
+         Text: If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); If(a.NurSteigend && a.WertZahl < a.Letzter; "kleiner als beim letzten Mal"; "starke Abweichung zum letzten Mal"); "") & If(a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol); If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); "; "; "") & "weicht von „" & w.Frage & "“ ab (" & Text(w.WertZahl) & ")"; "");
+         KPfl: a.KPflOrig}
+    )
+));;
+ForAll(colVglTmp As v; Patch(colAntworten; LookUp(colAntworten; PruefpunktID = v.PP); {KommentarPflicht: v.KPfl || v.Abw || v.Vgl; AbwText: v.Text}));;
+Set(varGeaendert; true)
+```
+
+```diff
++ClearCollect(colVglTmp; ForAll(Filter(colAntworten As a0; !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a;
++    With({w: LookUp(colAntworten As o; o.PruefpunktID = a.VglID)};
++        {PP: a.PruefpunktID;
++         Abw: fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend);
++         Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol);
++         Text: If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); If(a.NurSteigend && a.WertZahl < a.Letzter; "kleiner als beim letzten Mal"; "starke Abweichung zum letzten Mal"); "") & If(a.VglID <> 0 && fnV …
++         KPfl: a.KPflOrig}
++    )
++));;
++ForAll(colVglTmp As v; Patch(colAntworten; LookUp(colAntworten; PruefpunktID = v.PP); {KommentarPflicht: v.KPfl || v.Abw || v.Vgl; AbwText: v.Text}));;
+```
+
+**Kurz erklärt:** „Nein, korrigieren“ leert den Wert – danach Abweichung/Vergleich neu bestimmen (auch beim Partner).
+
+**Nachprüfen:** endet auf `Set(varGeaendert; true)`
+
+### 3.4 · `btnKaKritVersehen.OnSelect`
+
+**Pfad:** `scrKategorie › conKaKrit › conKaKritKarte › btnKaKritVersehen` → OnSelect
+
+```
+Patch(colAntworten; LookUp(colAntworten; PruefpunktID = varKritPP); {Bewertung: ""; WertZahl: Blank(); KritischOk: false; KritischZeit: ""});;
+Set(varKritPP; 0);;
+ClearCollect(colVglTmp; ForAll(Filter(colAntworten As a0; !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a;
+    With({w: LookUp(colAntworten As o; o.PruefpunktID = a.VglID)};
+        {PP: a.PruefpunktID;
+         Abw: fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend);
+         Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol);
+         Text: If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); If(a.NurSteigend && a.WertZahl < a.Letzter; "kleiner als beim letzten Mal"; "starke Abweichung zum letzten Mal"); "") & If(a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol); If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); "; "; "") & "weicht von „" & w.Frage & "“ ab (" & Text(w.WertZahl) & ")"; "");
+         KPfl: a.KPflOrig}
+    )
+));;
+ForAll(colVglTmp As v; Patch(colAntworten; LookUp(colAntworten; PruefpunktID = v.PP); {KommentarPflicht: v.KPfl || v.Abw || v.Vgl; AbwText: v.Text}));;
+Set(varGeaendert; true)
+```
+
+```diff
++ClearCollect(colVglTmp; ForAll(Filter(colAntworten As a0; !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a;
++    With({w: LookUp(colAntworten As o; o.PruefpunktID = a.VglID)};
++        {PP: a.PruefpunktID;
++         Abw: fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend);
++         Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl; w.WertZahl; a.VglTol);
++         Text: If(fnAbweichung(a.WertZahl; a.Letzter; a.AbwMax; a.AbwProzent; a.NurSteigend); If(a.NurSteigend && a.WertZahl < a.Letzter; "kleiner als beim letzten Mal"; "starke Abweichung zum letzten Mal"); "") & If(a.VglID <> 0 && fnV …
++         KPfl: a.KPflOrig}
++    )
++));;
++ForAll(colVglTmp As v; Patch(colAntworten; LookUp(colAntworten; PruefpunktID = v.PP); {KommentarPflicht: v.KPfl || v.Abw || v.Vgl; AbwText: v.Text}));;
+```
+
+**Kurz erklärt:** Wie btnKaRueckNein.
+
+**Nachprüfen:** endet auf `Set(varGeaendert; true)`
+
+### 3.5 · `btnKaSpeichern.OnSelect`
 
 **Pfad:** `scrKategorie › conKaFuss › btnKaSpeichern` → OnSelect
 
@@ -546,6 +626,23 @@ If(btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> ""; 12; 
 
 **Nachprüfen:** endet auf `btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> ""; 12; 14)`
 
+### 4.4 · `lblKaZahlInfo.Height`
+
+**Pfad:** `scrKategorie › galKaPruefpunkte › conKaKarte › lblKaZahlInfo` → Height
+
+```
+If(btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> ""; 64; 56)
+```
+
+```diff
+-56
++If(btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> ""; 64; 56)
+```
+
+**Kurz erklärt:** Etwas höher, wenn zusätzlicher Text da ist (sonst wird „bitte begründen“ abgeschnitten).
+
+**Nachprüfen:** endet auf `btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> ""; 64; 56)`
+
 ## Schritt 5 – Protokoll
 
 ### 5.1 · `htmProtokoll.HtmlText`
@@ -596,12 +693,14 @@ With({d: varDurch};
 
 | # | Schritt | erwartet |
 |---|---|---|
-| T1 | Prüfpunkt Zahl: `AbwMax` = 0,5. Rundgang starten, Wert 7,6 eingeben, alles speichern, **abschließen** | erster Lauf: kein „zuletzt“ |
-| T2 | Am nächsten Testtag (oder Rundgang zurücksetzen und neu starten) die Kategorie öffnen | Karte zeigt „zuletzt 7,6 (TT.MM.)“ |
+| T0 | **Vorher alles in einer Fassung einstellen** (sonst liegen zwei Fassungen zwischen den Läufen und der Vorwert fehlt): Zahl A `AbwMax` = 0,5; Zähler Z `NurSteigend` = Ja; Zahl B `VergleichPunkt` = ID von A, `VergleichTol` = 0,2 | – |
+| T1 | **Tag N** (oder als Nachholtag): Rundgang starten, A = 7,6, Z = 5000, B = 7,6, alles speichern, **abschließen** | erster Lauf: kein „zuletzt“ |
+| T2 | **Tag N+1:** Rundgang starten, Kategorie öffnen | Karte zeigt „zuletzt 7,6 (TT.MM.)“ |
 | T3 | 7,9 eingeben | nichts Besonderes |
 | T4 | 8,4 eingeben | orange „starke Abweichung zum letzten Mal, bitte begründen“, Kommentar Pflicht. Begründen, speichern, Protokoll nennt es |
-| T5 | Zähler: `NurSteigend` = Ja, kleineren Wert als beim letzten Mal eingeben | „kleiner als beim letzten Mal“, Begründung Pflicht |
-| T6 | Zwei Zahlen derselben Kategorie, bei B `VergleichPunkt` = ID von A, `VergleichTol` = 0,2. A = 7,6, B = 8,0 | B: „weicht von „A“ ab (7,6)“. A auf 7,9 ändern → Hinweis bei B verschwindet |
+| T5 | Z = 4999 | „kleiner als beim letzten Mal“, Begründung Pflicht |
+| T6 | A = 7,6, B = 8,0 | B: „weicht von „A“ ab (7,6)“. A auf 7,9 ändern → Hinweis bei B verschwindet |
+| T6b | Bei A (mit Rückfrage) n.i.O.-Wert, dann „Nein, korrigieren“ | Hinweis bei B verschwindet (A leer) |
 | T7 | B „nicht messbar“ | Vergleich entfällt, nur Begründung für „nicht messbar“ |
 
 ## Rückweg
@@ -853,6 +952,22 @@ If(ThisItem.WertText = "nicht messbar";
 Set(varGeaendert; true)
 ```
 
+**`btnKaRueckNein.OnSelect` vorher**
+
+```
+Patch(colAntworten; LookUp(colAntworten; PruefpunktID = varRueckPP); {Bewertung: ""; WertZahl: Blank(); KritischOk: false; KritischZeit: ""});;
+Set(varRueckPP; 0);;
+Set(varGeaendert; true)
+```
+
+**`btnKaKritVersehen.OnSelect` vorher**
+
+```
+Patch(colAntworten; LookUp(colAntworten; PruefpunktID = varKritPP); {Bewertung: ""; WertZahl: Blank(); KritischOk: false; KritischZeit: ""});;
+Set(varKritPP; 0);;
+Set(varGeaendert; true)
+```
+
 **`btnKaSpeichern.OnSelect` vorher**
 
 ```
@@ -946,6 +1061,12 @@ If(ThisItem.Bewertung = "NIO" || (!varNurLesen && ThisItem.Grenzmodus = "Sperren
 
 ```
 If(btnKaNM.Visible; 12; 14)
+```
+
+**`lblKaZahlInfo.Height` vorher**
+
+```
+56
 ```
 
 **`htmProtokoll.HtmlText` vorher**

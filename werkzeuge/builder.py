@@ -500,6 +500,7 @@ REGELN = [
     'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false))) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“: Verlauf/Vergleich wirkt nur bei Zahlen."') + ')',
     'ForAll(Filter(colP As p, !IsBlank(p.AbwMax) && p.AbwMax < 0) As p, ' + P_REGEL("Fehler", '"„" & p.Title & "“: höchste Abweichung darf nicht negativ sein."') + ')',
+    'ForAll(Filter(colP As p, !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p, ' + P_REGEL("Fehler", '"„" & p.Title & "“: erlaubter Unterschied darf nicht negativ sein."') + ')',
     'ForAll(Filter(colP As p, Coalesce(p.AnleitungID, 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0, n0.ID = p.AnleitungID))) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“: Die gewählte Anleitung gibt es nicht mehr oder sie ist inaktiv."') + ')',
     'ForAll(Filter(colP As p, p.Title = "Neue Frage") As p, ' + P_REGEL("Hinweis", '"Eine Frage heißt noch „Neue Frage“."') + ')',
