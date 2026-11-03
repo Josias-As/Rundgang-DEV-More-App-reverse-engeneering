@@ -1,0 +1,420 @@
+- conZa:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varZaOffen
+      Width: =Parent.Width
+    Children:
+      - btnZaSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conZaKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =560
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =620
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblZaTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Verlauf und Vergleich"
+                  Width: =572
+                  X: =24
+                  Y: =16
+            - lblZaFrage:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =28
+                  Size: =14
+                  Text: =LookUp(colP, ID = varAuswahlID).Title
+                  Width: =572
+                  X: =24
+                  Y: =56
+            - lblZaAbw:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =24
+                  Size: =13
+                  Text: ="Abweichung zum letzten Rundgang"
+                  Width: =572
+                  X: =24
+                  Y: =92
+            - lblZaAbwMax:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="höchstens (leer = aus)"
+                  Width: =200
+                  X: =24
+                  Y: =120
+            - txtZaAbwMax:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Höchste Abweichung zum letzten Rundgang"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =If(IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax), "", Text(LookUp(colP, ID = varAuswahlID).AbwMax))
+                  DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Format: =TextFormat.Number
+                  Height: =36
+                  HintText: ="z. B. 0,5"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: |-
+                    =With({v: If(Trim(Self.Text) = "", Blank(), IfError(Value(Self.Text), Blank()))},
+                        If(Trim(Self.Text) <> "" && IsBlank(v),
+                            Notify("Bitte eine Zahl eingeben.", NotificationType.Warning);
+                            Reset(txtZaAbwMax),
+                            Text(v) <> Text(LookUp(colP, ID = varAuswahlID).AbwMax),
+                            If(varSchreibbar && varAuswahlEbene = 3,
+                                Refresh(RG_Rundgaenge);
+                                Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                If(varEntwurfOk,
+                                    Set(varPatchFehler, false);
+                                    IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {AbwMax: v}), Set(varPatchFehler, true));
+                                    If(varPatchFehler,
+                                        Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                        Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                        Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =160
+                  X: =24
+                  Y: =140
+            - galZaArt:
+                Control: Gallery@2.15.0
+                Variant: Vertical
+                Properties:
+                  AccessibleLabel: ="Abweichung absolut oder in Prozent"
+                  Height: =36
+                  Items: |-
+                    =Table({W: "abs", N: "absolut"}, {W: "proz", N: "in %"})
+                  ShowScrollbar: =false
+                  TemplatePadding: =0
+                  TemplateSize: =36
+                  Width: =240
+                  WrapCount: =2
+                  X: =196
+                  Y: =140
+                Children:
+                  - btnZaArt:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), clrPrimaer, clrRahmen)
+                        BorderThickness: =1
+                        Color: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), Color.White, clrText)
+                        DisabledBorderColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), clrPrimaer, clrRahmen)
+                        DisabledColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), clrPrimaer, clrTextGrau)
+                        DisabledFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), clrPrimaerHell, clrKarte)
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
+                        Fill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), clrPrimaer, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =32
+                        HoverColor: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), Color.White, clrText)
+                        HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false), "proz", "abs"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
+                        OnSelect: |-
+                          =If((ThisItem.W = "proz") <> Coalesce(LookUp(colP, ID = varAuswahlID).AbwProzent, false),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {AbwProzent: ThisItem.W = "proz"}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: =ThisItem.N
+                        Width: =Parent.TemplateWidth - 6
+                        X: =0
+                        Y: =0
+            - btnZaSteigend:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Align: =Align.Left
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =36
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(varSchreibbar && varAuswahlEbene = 3 && !varIsLoading && Now() >= varSperreBis,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        If(varSchreibbar && varAuswahlEbene = 3,
+                            Refresh(RG_Rundgaenge);
+                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                            If(varEntwurfOk,
+                                Set(varPatchFehler, false);
+                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {NurSteigend: !Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false)}), Set(varPatchFehler, true));
+                                If(varPatchFehler,
+                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                )
+                            )
+                        )
+                    )
+                  PaddingLeft: =12
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =13
+                  Text: |-
+                    =If(Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false), "✓ ", "○ ") & "Zählerstand: darf nicht kleiner werden"
+                  Width: =420
+                  X: =24
+                  Y: =188
+            - lblZaVgl:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =24
+                  Size: =13
+                  Text: ="Mit anderem Prüfpunkt vergleichen (gleiche Kategorie)"
+                  Width: =572
+                  X: =24
+                  Y: =244
+            - ddZaVgl:
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  AccessibleLabel: ="Vergleichs-Prüfpunkt"
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  ChevronBackground: =clrPrimaer
+                  ChevronFill: =Color.White
+                  ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                  ChevronHoverFill: =Color.White
+                  Color: =clrText
+                  Default: |-
+                    =If(Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) = 0, "— kein Vergleich —", With({a: LookUp(colP, ID = LookUp(colP, ID = varAuswahlID).VergleichPunkt)}, a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")))
+                  DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =36
+                  HoverFill: =clrPrimaerHell
+                  Items: |-
+                    =Ungroup(Table({T: Table({ID: 0, N: "— kein Vergleich —"})}, {T: ForAll(Sort(Filter(colP As a, a.KategorieID = LookUp(colP, ID = varAuswahlID).KategorieID && a.ID <> varAuswahlID && a.Eingabetyp.Value = "ZAHL"), RgReihenfolge * 1000000 + ID) As a, {ID: a.ID, N: a.Title & If(CountRows(Filter(colP As x, x.KategorieID = a.KategorieID && x.Title = a.Title)) > 1, " (#" & a.ID & ")", "")})}), T)
+                  Items.Value: =N
+                  OnChange: |-
+                    =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0),
+                        If(varSchreibbar && varAuswahlEbene = 3,
+                            Refresh(RG_Rundgaenge);
+                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                            If(varEntwurfOk,
+                                Set(varPatchFehler, false);
+                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {VergleichPunkt: Self.Selected.ID}), Set(varPatchFehler, true));
+                                If(varPatchFehler,
+                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                )
+                            )
+                        )
+                    )
+                  PaddingLeft: =10
+                  PressedColor: =Color.White
+                  PressedFill: =clrPrimaer
+                  SelectionColor: =Color.White
+                  SelectionFill: =clrPrimaer
+                  Size: =14
+                  Width: =572
+                  X: =24
+                  Y: =272
+            - lblZaTol:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="erlaubter Unterschied (0 = gleich)"
+                  Width: =300
+                  X: =24
+                  Y: =316
+            - txtZaTol:
+                Control: Classic/TextInput@2.3.2
+                Properties:
+                  AccessibleLabel: ="Erlaubter Unterschied"
+                  BorderColor: =clrRahmen
+                  Color: =clrText
+                  Default: =If(IsBlank(LookUp(colP, ID = varAuswahlID).VergleichTol), "", Text(LookUp(colP, ID = varAuswahlID).VergleichTol))
+                  DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                  Fill: =clrKarte
+                  FocusedBorderColor: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Format: =TextFormat.Number
+                  Height: =36
+                  HintText: ="z. B. 0,2"
+                  HoverBorderColor: =clrPrimaer
+                  OnChange: |-
+                    =With({v: If(Trim(Self.Text) = "", Blank(), IfError(Value(Self.Text), Blank()))},
+                        If(Trim(Self.Text) <> "" && IsBlank(v),
+                            Notify("Bitte eine Zahl eingeben.", NotificationType.Warning);
+                            Reset(txtZaTol),
+                            Text(v) <> Text(LookUp(colP, ID = varAuswahlID).VergleichTol),
+                            If(varSchreibbar && varAuswahlEbene = 3,
+                                Refresh(RG_Rundgaenge);
+                                Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                If(varEntwurfOk,
+                                    Set(varPatchFehler, false);
+                                    IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {VergleichTol: v}), Set(varPatchFehler, true));
+                                    If(varPatchFehler,
+                                        Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                        Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                        Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                  Size: =14
+                  Width: =160
+                  X: =24
+                  Y: =336
+            - lblZaHinweis:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =88
+                  Size: =12
+                  Text: ="Weicht ein Wert ab, muss der Prüfer begründen (Kommentar). Es entsteht kein Mangel. Der Vergleich mit dem letzten Rundgang beginnt ab dem zweiten Rundgang."
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =572
+                  X: =24
+                  Y: =396
+            - btnZaFertig:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =44
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: =Set(varZaOffen, false)
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Fertig"
+                  Width: =160
+                  X: =436
+                  Y: =496
+            - btnZaZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varZaOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =560
+                  Y: =16

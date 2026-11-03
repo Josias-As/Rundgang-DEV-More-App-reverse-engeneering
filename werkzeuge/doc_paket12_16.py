@@ -13,7 +13,7 @@ import rg  # noqa: E402
 
 BL = json.load(open(doc_app89.BLOECKE, encoding="utf-8"))
 BV = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p9.json"), encoding="utf-8"))
-BN = json.load(open(os.path.join(builder.AUS_ARB, "bloecke.json"), encoding="utf-8"))
+BN = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p12_16.json"), encoding="utf-8"))  # eingefroren nach 12+16
 
 KURZ = [
     "- **Paket 12 – eigene Antwortwörter:** Bei i.O./n.i.O.-Fragen lassen sich die Knöpfe umbenennen, z. B. „durchgeführt“ / „nicht durchgeführt“ (Legionellen). "
@@ -111,7 +111,7 @@ def app_doc():
             if k.startswith("#"):
                 z += ["### %d.%d · neuer Knopf `%s`" % (gi, i, k[1:]), "",
                       "**Wo hin:** in der Strukturansicht `txtKaZahl` (in `conKaKarte`) markieren → Strg+V (landet in derselben Karte).", "",
-                      "```yaml"] + doc_app89.yaml_block(k[1:], BL["neue_controls"]) + ["```", "",
+                      "```yaml"] + doc_app89.yaml_block(k[1:], doc_app89.neue_bis(BL, 16)) + ["```", "",
                       "**Nachprüfen (E-05):** `btnKaNM.Y` muss die Formel `54 + If(ThisItem.Hinweis <> \"\"; 24; 0)` sein, keine Zahl.", ""]
                 continue
             z += block("%d.%d" % (gi, i), k, doc_app89.de(vorher[k]), doc_app89.de(end[k]), ERKL_APP[k], eltern, k in std)

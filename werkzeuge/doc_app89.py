@@ -67,6 +67,20 @@ def yaml_block(name, alle, tiefe=0):
     return z
 
 
+def neue_bis(d, nr_max):
+    """neue_controls im Stand nach Paket nr_max (Reihenfolge der Kette, nicht der Nummer): Properties, die spätere Pakete ändern, auf deren Vorher-Fassung zurücksetzen."""
+    alle = json.loads(json.dumps(d["neue_controls"]))
+    erledigt = set()
+    nrs = [p["nr"] for p in d["pakete"]]
+    for p in d["pakete"][nrs.index(nr_max) + 1:]:
+        for c in p["props"]:
+            ctl, prop = c["key"].split(".", 1)
+            if ctl in alle and c["key"] not in erledigt:
+                alle[ctl]["props"][prop] = c["vorher"]
+                erledigt.add(c["key"])
+    return alle
+
+
 def pfad(name, eltern):
     t = [name]
     while t[-1] in eltern and eltern[t[-1]]:
@@ -214,7 +228,7 @@ def paket89(d, soll):
     eltern = {k: v for k, v in rg.App(EXPORT).eltern.items()}
     for n, i in d["neue_controls"].items():
         eltern[n] = i["eltern"]
-    neu = d["neue_controls"]
+    neu = neue_bis(d, 10)
     z = ["# Paket 8–10 – Rundgang-App: Abschnitte, Bereich ausblenden, Rückfrage, kritischer Mangel, Kategorien ohne Reihenfolge-Sperre", "",
          "Stand 02.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (Paket 8 und 9 als Zustandskette mit exakten Ankern) und `werkzeuge/doc_app89.py`. "
          "Voraussetzung: **Paket N** (`pakete/PAKET_N_Nachholen.md`) ist eingefügt. Dann ist dein Stand zeichengleich mit dem Stand, auf dem dieses Paket aufbaut (maschinell geprüft).", "",

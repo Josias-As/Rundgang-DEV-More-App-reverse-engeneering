@@ -91,5 +91,17 @@ P16  ok    nicht messbar mit Begründung                                        
 P16  ok    Zahl leer, Pflicht -> Wert fehlt (unverändert)                         erwartet 'Wert'       ist 'Wert'
 P16  ok    Zahl 5 innerhalb, kein Kommentar nötig (unverändert)                   erwartet ''           ist ''
 P16  ok    fnKommentarNoetig: nicht messbar -> ja                                 erwartet True         ist True
+P14  ok    Abweichung: 7,6 -> 7,9 bei max 0,5 absolut                             erwartet False        ist False
+P14  ok    Abweichung: 7,6 -> 8,2 bei max 0,5 absolut                             erwartet True         ist True
+P14  ok    Abweichung: 100 -> 109 bei max 10 %                                    erwartet False        ist False
+P14  ok    Abweichung: 100 -> 111 bei max 10 %                                    erwartet True         ist True
+P14  ok    Zähler: 5000 -> 4999 (nur steigend, ohne Max)                          erwartet True         ist True
+P14  ok    Zähler: 5000 -> 5600 (nur steigend, ohne Max)                          erwartet False        ist False
+P14  ok    kein letzter Wert (erster Lauf)                                        erwartet False        ist False
+P14  ok    kein Wert eingegeben                                                   erwartet False        ist False
+P14  ok    Vergleich: 7,6 und 7,7 bei Toleranz 0,2                                erwartet False        ist False
+P14  ok    Vergleich: 7,6 und 8,0 bei Toleranz 0,2                                erwartet True         ist True
+P14  ok    Vergleich: Toleranz 0 = exakt gleich                                   erwartet False        ist False
+P14  ok    Vergleich: anderer Wert fehlt noch                                     erwartet False        ist False
 
-Szenarien: 91, Fehler: 0
+Szenarien: 103, Fehler: 0

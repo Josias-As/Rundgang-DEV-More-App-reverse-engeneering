@@ -10,6 +10,7 @@ If(varSchreibbar && varAuswahlEbene > 0; If(!varIsLoading && Now() >= varSperreB
     Set(varIsLoading; true);;
     If(varAuswahlEbene = 3;
         ForAll(Filter(colP; BedingungPunkt = varAuswahlID) As d; Patch(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = d.ID && RundgangID = varRgID && Fassung = varFassung); {BedingungPunkt: 0; BedingungWert: ""}));;
+        ForAll(Filter(colP; VergleichPunkt = varAuswahlID) As d2; Patch(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = d2.ID && RundgangID = varRgID && Fassung = varFassung); {VergleichPunkt: 0}));;
         Remove(RG_Pruefpunkte; LookUp(RG_Pruefpunkte; ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));
         varAuswahlEbene = 2;
         Remove(RG_Pruefpunkte; Filter(RG_Pruefpunkte; KategorieID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung));;

@@ -84,6 +84,18 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
     return ""
 
 
+def fnAbweichung(z, l, mx, proz, steig):
+    if z is None or l is None:
+        return False
+    if steig and z < l:
+        return True
+    return mx is not None and abs(z - l) > (abs(l) * mx / 100 if proz else mx)
+
+
+def fnVergleich(z, w, tol):
+    return z is not None and w is not None and abs(z - w) > (tol or 0)
+
+
 def fnFehlt(paket, *args):
     return fnFehltGrund(paket, *args) != ""
 
@@ -253,6 +265,18 @@ SZENARIEN = [
     (16, "Zahl leer, Pflicht -> Wert fehlt (unverändert)", "grund", ("ZAHL", True, "", "", None, "", "Aus", 0, False, "Mangel", 0, 10), "Wert"),
     (16, "Zahl 5 innerhalb, kein Kommentar nötig (unverändert)", "grund", ("ZAHL", True, "IO", "", 5, "", "Aus", 0, False, "Mangel", 0, 10), ""),
     (16, "fnKommentarNoetig: nicht messbar -> ja", "komm", ("ZAHL", "", "nicht messbar", None, False, "Mangel", 0, 10), True),
+    (14, "Abweichung: 7,6 -> 7,9 bei max 0,5 absolut", "abw", (7.9, 7.6, 0.5, False, False), False),
+    (14, "Abweichung: 7,6 -> 8,2 bei max 0,5 absolut", "abw", (8.2, 7.6, 0.5, False, False), True),
+    (14, "Abweichung: 100 -> 109 bei max 10 %", "abw", (109, 100, 10, True, False), False),
+    (14, "Abweichung: 100 -> 111 bei max 10 %", "abw", (111, 100, 10, True, False), True),
+    (14, "Zähler: 5000 -> 4999 (nur steigend, ohne Max)", "abw", (4999, 5000, None, False, True), True),
+    (14, "Zähler: 5000 -> 5600 (nur steigend, ohne Max)", "abw", (5600, 5000, None, False, True), False),
+    (14, "kein letzter Wert (erster Lauf)", "abw", (8.2, None, 0.5, False, True), False),
+    (14, "kein Wert eingegeben", "abw", (None, 7.6, 0.5, False, False), False),
+    (14, "Vergleich: 7,6 und 7,7 bei Toleranz 0,2", "vgl", (7.6, 7.7, 0.2), False),
+    (14, "Vergleich: 7,6 und 8,0 bei Toleranz 0,2", "vgl", (7.6, 8.0, 0.2), True),
+    (14, "Vergleich: Toleranz 0 = exakt gleich", "vgl", (5, 5, 0), False),
+    (14, "Vergleich: anderer Wert fehlt noch", "vgl", (5, None, 0), False),
 ]
 
 
@@ -276,6 +300,10 @@ def fuehre(paket, art, args):
         return fnDatumText(*args)
     if art == "neu":
         return fnFotoNeuErlaubt(*args)
+    if art == "abw":
+        return fnAbweichung(*args)
+    if art == "vgl":
+        return fnVergleich(*args)
     raise ValueError(art)
 
 
@@ -291,7 +319,7 @@ def main():
         zeilen.append("P%d  %-4s  %-70s erwartet %-12r ist %r" % (paket, "ok" if ok else "FEHLER", text, erwartet, ist))
     # spätere Pakete dürfen frühere Szenarien nicht brechen
     for paket, text, art, args, erwartet in SZENARIEN:
-        for spaeter in sorted({paket, 7, 9, 16} - set(range(0, paket))):
+        for spaeter in sorted({paket, 7, 9, 14, 16} - set(range(0, paket))):
             if fuehre(spaeter, art, args) != erwartet:
                 fehler += 1
                 zeilen.append("FEHLER: Szenario P%d '%s' ändert sich in Paket %d" % (paket, text, spaeter))

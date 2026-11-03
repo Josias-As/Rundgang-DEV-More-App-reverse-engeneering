@@ -5,7 +5,7 @@ Stand: 30.10.2026 · erzeugt mit `werkzeuge/builder.py` (Formeln und Bildschirme
 ## Kurzfassung
 
 - **Neue Canvas-App „Rundgang Builder“** (Tablet-Format quer, 1366 × 768, für den PC gedacht) mit drei Bildschirmen: **Übersicht** (alle Rundgänge), **Editor** (Gliederung · Bearbeiten · Vorschau und Prüfung) und **Plan**.
-- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 287 Steuerelemente, 4014 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
+- Einfügen in 6 Schritten: SharePoint-Spalten → App anlegen → App.Formulas → App.OnStart → drei Bildschirme als YAML → App-Prüfung. 313 Steuerelemente, 4394 Properties, alles maschinell erzeugt und geprüft (Fehler gesamt: 0).
 - **Die Rundgang-App wird nicht geändert** (außer Paket 7, das vorher eingefügt sein muss). Der Builder schreibt nur Daten, die die Rundgang-App schon richtig liest.
 - **Fassungen:** Ein aktiver Rundgang wird nie direkt geändert. „Bearbeiten“ legt einen Entwurf (neue Fassung) an. „Aktivieren“ schaltet die Bereiche der alten Fassung aus und die der neuen an. Rundgang-Nummer, Plan und Auswertung bleiben gleich. Laufende Rundgänge von heute werden mit der alten Fassung beendet.
 - **Vorlagen** sind ein eigener Rundgang „Vorlagen (Builder)“ mit 10 Startvorlagen; „Aus Vorlage holen“ kopiert Prüfpunkte, Kategorien oder ganze Bereiche – auch aus anderen Rundgängen.
@@ -60,6 +60,14 @@ Nur Spalten hinzufügen, nichts umbenennen. Name **genau so** (intern = Anzeigen
 | RG_Pruefpunkte | Ansprechpartner | Eine Textzeile |
 | RG_Pruefpunkte | Rueckfrage | Ja/Nein, Standard Nein |
 | RG_Pruefpunkte | RueckfrageText | Eine Textzeile |
+| RG_Pruefpunkte | TextIO | Eine Textzeile |
+| RG_Pruefpunkte | TextNIO | Eine Textzeile |
+| RG_Pruefpunkte | NichtMessbar | Ja/Nein, Standard Nein |
+| RG_Pruefpunkte | AbwMax | Zahl, 0 Dezimalstellen |
+| RG_Pruefpunkte | AbwProzent | Ja/Nein, Standard Nein |
+| RG_Pruefpunkte | NurSteigend | Ja/Nein, Standard Nein |
+| RG_Pruefpunkte | VergleichPunkt | Zahl, 0 Dezimalstellen |
+| RG_Pruefpunkte | VergleichTol | Zahl, 0 Dezimalstellen |
 | RG_Ansprechpartner | Title | Eine Textzeile |
 | RG_Ansprechpartner | Kontakt | Eine Textzeile |
 | RG_Ansprechpartner | Telefon | Eine Textzeile |
@@ -169,7 +177,8 @@ Set(varEntwurfOk; true);;
 Set(varAktivRest; false);;
 Set(varVorlageNeu; Defaults(RG_Rundgaenge));;
 Set(varNioOffen; false);;
-Set(varKoID; 0)
+Set(varKoID; 0);;
+Set(varZaOffen; false)
 ```
 
 Rot erwartet: Nichts. Die Listen müssen schon als Daten hinzugefügt sein (sonst sind `RG_…` rot).
@@ -190,7 +199,7 @@ Falls Strg+V keinen Bildschirm anlegt (UNSICHER, U1): Bildschirm von Hand anlege
 | Datei | Bildschirm | Steuerelemente (Container oben) |
 |---|---|---|
 | `pakete/builder/scrListe.yaml` | scrListe | conLiKopf, btnLiNeu, btnLiVorlagen, btnLiNeuLaden, btnLiKontakte, btnLiAlle, galLi, lblLiLeer, conNeu, conLiLaden |
-| `pakete/builder/scrEditor.yaml` | scrEditor | conEdKopf, conEdGl, conEdMitte, conEdRechts, tmrArbeit, conAkt, conHolen, conMehr, conBild, conNio, conEdLaden |
+| `pakete/builder/scrEditor.yaml` | scrEditor | conEdKopf, conEdGl, conEdMitte, conEdRechts, tmrArbeit, conAkt, conHolen, conMehr, conBild, conNio, conZa, conEdLaden |
 | `pakete/builder/scrPlan.yaml` | scrPlan | conPlKopf, lblPlHinweis, lblPlKopf1, lblPlKopf2, lblPlKopf3, lblPlKopf4, lblPlKopf5, galPl, lblPlLeer, btnPlNeu, conPlTermine, conPlLaden |
 | `pakete/builder/scrKontakte.yaml` | scrKontakte | conKoKopf, lblKoHilfe, btnKoNeu, galKo, lblKoLeer, conKoForm, conKoLaden |
 

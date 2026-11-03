@@ -970,7 +970,84 @@ def paket16(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16]
+# ---------------------------------------------------------------- Paket 14+15 (Abweichung zum letzten Rundgang, zwei Werte vergleichen)
+
+UDF_P14 = ('fnAbweichung(z: Number, l: Number, mx: Number, proz: Boolean, steig: Boolean): Boolean = !IsBlank(z) && !IsBlank(l) && '
+           '((steig && z < l) || (!IsBlank(mx) && Abs(z - l) > If(proz, Abs(l) * mx / 100, mx)));\n'
+           'fnVergleich(z: Number, w: Number, tol: Number): Boolean = !IsBlank(z) && !IsBlank(w) && Abs(z - w) > Coalesce(tol, 0);')
+REKALK = ('ClearCollect(colVglTmp, ForAll(Filter(colAntworten As a0, !a0.Inaktiv && a0.Typ = "ZAHL" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a,\n'
+          '    With({w: LookUp(colAntworten As o, o.PruefpunktID = a.VglID)},\n'
+          '        {PP: a.PruefpunktID,\n'
+          '         Abw: fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend),\n'
+          '         Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol),\n'
+          '         Text: If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), If(a.NurSteigend && a.WertZahl < a.Letzter, "kleiner als beim letzten Mal", "starke Abweichung zum letzten Mal"), "") & '
+          'If(a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol), If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), "; ", "") & "weicht von „" & w.Frage & "“ ab (" & Text(w.WertZahl) & ")", ""),\n'
+          '         KPfl: a.KPflOrig}\n'
+          '    )\n'
+          '));\n'
+          'ForAll(colVglTmp As v, Patch(colAntworten, LookUp(colAntworten, PruefpunktID = v.PP), {KommentarPflicht: v.KPfl || v.Abw || v.Vgl, AbwText: v.Text}))')
+LETZTE_LADEN = ('If(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP, !IsBlank(AbwMax) || Coalesce(NurSteigend, false))) > 0,\n'
+                '    Set(varLetzteFuer, varDurchID);\n'
+                '    Set(varLetzteRg, varDurch.RundgangID);\n'
+                '    Set(varLetzteTest, varDurch.TestDatensatz);\n'
+                '    Set(varLetzteDurch, First(Sort(Filter(RG_Durchfuehrungen, RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest), ID, SortOrder.Descending)));\n'
+                '    If(IsBlank(varLetzteDurch.ID),\n'
+                '        Clear(colLetzte),\n'
+                '        Set(varLetzteID, varLetzteDurch.ID);\n'
+                '        ClearCollect(colLetzte, Filter(Ungroup(ForAll(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varLetzteID) As e, '
+                '{T: ForAll(Table(ParseJSON(e.Antworten)) As j, {PP: Value(j.Value.PruefpunktID), Z: Value(j.Value.WertZahl)})}), T), !IsBlank(Z)))\n'
+                '    )\n'
+                ');\n')
+LETZTER_P = ('If(p.Eingabetyp.Value = "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false)), '
+             'Coalesce(LookUp(colLetzte, PP = p.ID).Z, LookUp(colLetzte, PP = Coalesce(p.QuelleID, -1)).Z))')
+
+
+def paket14(st):
+    p = {"nr": 14, "props": [], "neu": []}
+    for name, typ in (("AbwMax", "Zahl"), ("AbwProzent", "Ja/Nein"), ("NurSteigend", "Ja/Nein"), ("VergleichPunkt", "Zahl"), ("VergleichTol", "Zahl")):
+        st.sp.append(("RG_Pruefpunkte", name, typ))
+    st.sp.append(("RG_Pruefpunkte", "QuelleID (vorhanden, vom Builder)", "Zahl"))
+    aendern(st, p, "14.3", "App.Formulas", lambda t: rep(
+        t, "fnFehlt(typ: Text,", UDF_P14 + "\nfnFehlt(typ: Text,"))
+
+    def onvisible(t):
+        t = rep(t, ");\nSet(varGespeichertBeimOeffnen, varErgebnis.GespeichertAm);\n",
+                ");\n" + LETZTE_LADEN + "Set(varGespeichertBeimOeffnen, varErgebnis.GespeichertAm);\n")
+        t = rep(t, 'NMErlaubt: false, Inaktiv: false}',
+                'NMErlaubt: false, KPflOrig: false, Letzter: Value(a.Letzter), LetzterTag: Coalesce(Text(a.LetzterTag), ""), AbwMax: Blank(), AbwProzent: false, '
+                'NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(a.AbwText), ""), Inaktiv: false}')
+        t = rep(t, "                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n",
+                "                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n"
+                "                     KPflOrig: Coalesce(p.KommentarPflicht, false),\n"
+                "                     Letzter: " + LETZTER_P + ",\n"
+                "                     LetzterTag: If(IsBlank(varLetzteDurch.TagText), \"\", Text(DateValue(varLetzteDurch.TagText), \"dd.mm.\")),\n"
+                "                     AbwMax: p.AbwMax,\n"
+                "                     AbwProzent: Coalesce(p.AbwProzent, false),\n"
+                "                     NurSteigend: Coalesce(p.NurSteigend, false),\n"
+                "                     VglID: Coalesce(p.VergleichPunkt, 0),\n"
+                "                     VglTol: Coalesce(p.VergleichTol, 0),\n"
+                "                     AbwText: \"\",\n")
+        t = rep(t, 'NMErlaubt: false, Inaktiv: true}',
+                'NMErlaubt: false, KPflOrig: false, Letzter: Value(o.Value.Letzter), LetzterTag: Coalesce(Text(o.Value.LetzterTag), ""), AbwMax: Blank(), AbwProzent: false, '
+                'NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(o.Value.AbwText), ""), Inaktiv: true}')
+        t = rep(t, "ClearCollect(colAbsTmp,", "If(!varNurLesen, " + REKALK.replace("\n", "\n    ") + ");\nClearCollect(colAbsTmp,")
+        return t
+    aendern(st, p, "14.4", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "14.5", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "TextIO, TextNIO), JSONFormat.Compact)", "TextIO, TextNIO, Letzter, LetzterTag, AbwText), JSONFormat.Compact)"))
+    aendern(st, p, "14.6", "txtKaZahl.OnChange", lambda t: rep(t, ");\nSet(varGeaendert, true)", ");\n" + REKALK + ";\nSet(varGeaendert, true)"))
+    aendern(st, p, "14.6", "btnKaNM.OnSelect", lambda t: rep(t, ");\nSet(varGeaendert, true)", ");\n" + REKALK + ";\nSet(varGeaendert, true)"))
+    aendern(st, p, "14.7", "lblKaZahlInfo.Text", lambda t: t + ' & If(IsBlank(ThisItem.Letzter), "", "  ·  zuletzt " & Text(ThisItem.Letzter) & If(ThisItem.LetzterTag = "", "", " (" & ThisItem.LetzterTag & ")")) & '
+            'If(ThisItem.AbwText = "", "", "  ·  " & ThisItem.AbwText & If(varNurLesen || Trim(ThisItem.Kommentar) <> "", ", begründet", ", bitte begründen"))')
+    aendern(st, p, "14.7", "lblKaZahlInfo.Color", lambda t: rep(t, "), clrWarnung, clrTextGrau)", ") || ThisItem.AbwText <> \"\", clrWarnung, clrTextGrau)"))
+    aendern(st, p, "14.7", "lblKaZahlInfo.Size", lambda t: rep(t, "If(btnKaNM.Visible, 12, 14)", "If(btnKaNM.Visible || !IsBlank(ThisItem.Letzter) || ThisItem.AbwText <> \"\", 12, 14)"))
+    aendern(st, p, "14.8", "htmProtokoll.HtmlText", lambda t: rep(
+        t, """If(w, " <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>", "") &""",
+        """If(w, " <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>", "") & If(Coalesce(Text(a.Value.AbwText), "") = "", "", " <span style='color:#9A5B00'>(" & fnHtml(Text(a.Value.AbwText)) & If(IsBlank(a.Value.Letzter), "", ", zuletzt " & Text(Value(a.Value.Letzter))) & ", begründet)</span>") &"""))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -984,7 +1061,7 @@ Font FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOf
 Ungroup Date Number DateTime As in Compact Error Warning Success Information None Edit View Disabled White Semibold
 Days Seconds Minutes Monday Fill Fit Large Thumbnail LayoutDirection LayoutOverflow Vertical Scroll DropShadow Light
 Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full
-VerticalAlign Top Bottom Char""".split())
+VerticalAlign Top Bottom Char Abs""".split())
 
 
 def addcolumns_namen(s):
@@ -1171,9 +1248,10 @@ def pruefe_schema(stand, pakete):
                 fehler += 1
                 zeilen.append("  FEHLER Paket %d: Spalte %s nicht in RG_Pruefpunkte" % (p["nr"], m.group(0)))
         pruefen = [(c["key"], c["nachher"]) for c in p["props"]]
+        spaeter = {c["key"] for q in pakete[pakete.index(p) + 1:] for c in q["props"]}
         for name in p["neu"]:
             if stand.neue_controls[name][0] == "conKaKarte":
-                pruefen += [(k, v) for k, v in stand.props.items() if k.startswith(name + ".")]
+                pruefen += [(k, v) for k, v in stand.props.items() if k.startswith(name + ".") and k not in spaeter]
         for key, f in pruefen:
             ctl = key.split(".")[0]
             if not (key.startswith(ANTWORT_KEYS) or stand.app.eltern.get(ctl) == "conKaKarte"

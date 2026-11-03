@@ -1084,9 +1084,43 @@
                         Height: =20
                         Size: =12
                         Text: ="Wert außerhalb der Grenzen ergibt"
-                        Width: =528
+                        Width: =300
                         X: =0
                         Y: =62
+                  - btnPZahlMehr:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =26
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!varIsLoading,
+                              Reset(txtZaAbwMax);
+                              Reset(txtZaTol);
+                              Reset(ddZaVgl);
+                              Set(varZaOffen, true)
+                          )
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =12
+                        Text: |-
+                          =If(!IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax) || Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false) || Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) <> 0, "Verlauf/Vergleich: an  ›", "Verlauf/Vergleich  ›")
+                        Width: =212
+                        X: =316
+                        Y: =56
                   - galPGrenz:
                       Control: Gallery@2.15.0
                       Variant: Vertical
@@ -1556,7 +1590,8 @@
                               With({ziel: Self.Selected.ID, abh: CountRows(Filter(colP, BedingungPunkt = varAuswahlID))},
                                   Set(varPatchFehler, false);
                                   ForAll(Filter(colP, BedingungPunkt = varAuswahlID) As d, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d.ID && RundgangID = varRgID && Fassung = varFassung), {BedingungPunkt: 0, BedingungWert: ""}));
-                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: ""}), Set(varPatchFehler, true));
+                                  ForAll(Filter(colP, VergleichPunkt = varAuswahlID) As d2, Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = d2.ID && RundgangID = varRgID && Fassung = varFassung), {VergleichPunkt: 0}));
+                                  IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {KategorieID: ziel, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = ziel), RgReihenfolge), 0) + 10, BedingungPunkt: 0, BedingungWert: "", VergleichPunkt: 0}), Set(varPatchFehler, true));
                                   ClearCollect(colP, Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung));
                                   If(varPatchFehler,
                                       Notify("Verschieben hat nicht geklappt.", NotificationType.Error),
