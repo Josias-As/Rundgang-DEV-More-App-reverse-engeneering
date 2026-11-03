@@ -1243,7 +1243,43 @@ def paket13(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17, paket13]
+# ---------------------------------------------------------------- Paket 19 (Fix: Eingaben anderer Typen überschreiben WertText)
+# Befund 03.11. (Studio-Test nach N + 8-10): Datum springt zurück. Ursache (geschlussfolgert): Ändert sich ThisItem.WertText,
+# setzen die unsichtbaren cboKaMehrfach/ddKaAuswahl ihre Auswahl neu und ihr OnChange schreibt "" zurück.
+# Abhilfe: jede Schreibstelle schreibt nur beim eigenen Typ und nur bei echter Änderung.
+
+def _nur_typ(t, bedingung):
+    t = t.rstrip()
+    zeilen = t.split("\n")
+    return "If(" + bedingung + ",\n" + "\n".join("    " + z for z in zeilen) + "\n)"
+
+
+def paket19(st):
+    p = {"nr": 19, "props": [], "neu": []}
+    mehr_neu = ('Concat(Filter(ForAll(Split(ThisItem.Auswahl, ";") As s, {Value: Trim(s.Value)}) As i, '
+                'i.Value <> "" && i.Value in Self.SelectedItems.Value), Value, "; ")')
+    alt_cbo = ("Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: " + mehr_neu + "});\n"
+               "Set(varGeaendert, true)")
+    if rg.ohne_kommentare(st.props["cboKaMehrfach.OnChange"]).strip() != alt_cbo:
+        raise Abbruch("Anker cboKaMehrfach.OnChange weicht ab")
+    ganz(st, p, "19.1", "cboKaMehrfach.OnChange",
+         "With({neu: " + mehr_neu + "},\n"
+         "    If(ThisItem.Typ = \"MEHRFACH\" && !varNurLesen && neu <> ThisItem.WertText,\n"
+         "        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: neu});\n"
+         "        Set(varGeaendert, true)\n"
+         "    )\n"
+         ")")
+    aendern(st, p, "19.2", "ddKaAuswahl.OnChange", lambda t: _nur_typ(
+        t, 'ThisItem.Typ = "AUSWAHL" && !varNurLesen && Coalesce(Self.Selected.Value, "") <> ThisItem.WertText'))
+    dat = '(ThisItem.Typ = "DATUM" || ThisItem.Typ = "DATUMZEIT") && !varNurLesen'
+    for i, k in enumerate(["dpKaDatum.OnChange", "ddKaStunde.OnChange", "ddKaMinute.OnChange"], 3):
+        aendern(st, p, "19.%d" % i, k, lambda t: _nur_typ(t, dat))
+    aendern(st, p, "19.6", "txtKaText.OnChange", lambda t: _nur_typ(
+        t, 'ThisItem.Typ = "TEXT" && !varNurLesen && Self.Text <> ThisItem.WertText'))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17, paket13, paket19]
 
 
 # ---------------------------------------------------------------- Prüfungen

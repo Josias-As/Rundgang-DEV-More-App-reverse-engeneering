@@ -1035,6 +1035,48 @@
     "imgKaInfo",
     "btnKaInfoSchliessen"
    ]
+  },
+  {
+   "nr": 19,
+   "props": [
+    {
+     "key": "cboKaMehrfach.OnChange",
+     "schritt": "19.1",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Concat(Filter(ForAll(Split(ThisItem.Auswahl, \";\") As s, {Value: Trim(s.Value)}) As i, i.Value <> \"\" && i.Value in Self.SelectedItems.Value), Value, \"; \")});\nSet(varGeaendert, true)",
+     "nachher": "With({neu: Concat(Filter(ForAll(Split(ThisItem.Auswahl, \";\") As s, {Value: Trim(s.Value)}) As i, i.Value <> \"\" && i.Value in Self.SelectedItems.Value), Value, \"; \")},\n    If(ThisItem.Typ = \"MEHRFACH\" && !varNurLesen && neu <> ThisItem.WertText,\n        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: neu});\n        Set(varGeaendert, true)\n    )\n)"
+    },
+    {
+     "key": "ddKaAuswahl.OnChange",
+     "schritt": "19.2",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Coalesce(Self.Selected.Value, \"\")});\nSet(varGeaendert, true)",
+     "nachher": "If(ThisItem.Typ = \"AUSWAHL\" && !varNurLesen && Coalesce(Self.Selected.Value, \"\") <> ThisItem.WertText,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Coalesce(Self.Selected.Value, \"\")});\n    Set(varGeaendert, true)\n)"
+    },
+    {
+     "key": "dpKaDatum.OnChange",
+     "schritt": "19.3",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(Self.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+     "nachher": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(Self.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)"
+    },
+    {
+     "key": "ddKaStunde.OnChange",
+     "schritt": "19.4",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(Self.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+     "nachher": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(Self.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)"
+    },
+    {
+     "key": "ddKaMinute.OnChange",
+     "schritt": "19.5",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(Self.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+     "nachher": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(Self.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)"
+    },
+    {
+     "key": "txtKaText.OnChange",
+     "schritt": "19.6",
+     "vorher": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Self.Text});\nSet(varGeaendert, true)",
+     "nachher": "If(ThisItem.Typ = \"TEXT\" && !varNurLesen && Self.Text <> ThisItem.WertText,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Self.Text});\n    Set(varGeaendert, true)\n)"
+    }
+   ],
+   "neu": []
   }
  ],
  "neue_controls": {
@@ -1048,7 +1090,7 @@
     "SelectMultiple": "true",
     "IsSearchable": "false",
     "DefaultSelectedItems": "Filter(ForAll(Split(ThisItem.WertText, \";\") As s, {Value: Trim(s.Value)}), ThisRecord.Value <> \"\")",
-    "OnChange": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: Concat(Filter(ForAll(Split(ThisItem.Auswahl, \";\") As s, {Value: Trim(s.Value)}) As i, i.Value <> \"\" && i.Value in Self.SelectedItems.Value), Value, \"; \")});\nSet(varGeaendert, true)",
+    "OnChange": "With({neu: Concat(Filter(ForAll(Split(ThisItem.Auswahl, \";\") As s, {Value: Trim(s.Value)}) As i, i.Value <> \"\" && i.Value in Self.SelectedItems.Value), Value, \"; \")},\n    If(ThisItem.Typ = \"MEHRFACH\" && !varNurLesen && neu <> ThisItem.WertText,\n        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: neu});\n        Set(varGeaendert, true)\n    )\n)",
     "InputTextPlaceholder": "\"Auswählen (mehrere möglich)\"",
     "AccessibleLabel": "\"Mehrfachauswahl: \" & ThisItem.Frage",
     "DisplayMode": "If(varNurLesen, DisplayMode.View, DisplayMode.Edit)",
@@ -1080,7 +1122,7 @@
     "IconBackground": "clrPrimaer",
     "IconFill": "Color.White",
     "InputTextPlaceholder": "\"Datum wählen\"",
-    "OnChange": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(Self.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+    "OnChange": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(Self.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)",
     "Size": "16",
     "StartOfWeek": "StartOfWeek.Monday",
     "Visible": "ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\"",
@@ -1109,7 +1151,7 @@
     "HoverFill": "clrPrimaerHell",
     "Items": "ForAll(Sequence(24, 0) As s, {Value: Text(s.Value, \"00\")})",
     "Items.Value": "Value",
-    "OnChange": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(Self.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+    "OnChange": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(Self.Selected.Value, \"\"), Coalesce(ddKaMinute.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)",
     "PaddingLeft": "12",
     "PressedColor": "Color.White",
     "PressedFill": "clrPrimaer",
@@ -1142,7 +1184,7 @@
     "HoverFill": "clrPrimaerHell",
     "Items": "ForAll(Sequence(60, 0) As s, {Value: Text(s.Value, \"00\")})",
     "Items.Value": "Value",
-    "OnChange": "Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(Self.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\nSet(varGeaendert, true)",
+    "OnChange": "If((ThisItem.Typ = \"DATUM\" || ThisItem.Typ = \"DATUMZEIT\") && !varNurLesen,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = ThisItem.PruefpunktID), {WertText: fnDatumText(dpKaDatum.SelectedDate, Coalesce(ddKaStunde.Selected.Value, \"\"), Coalesce(Self.Selected.Value, \"\"), ThisItem.Typ = \"DATUMZEIT\")});\n    Set(varGeaendert, true)\n)",
     "PaddingLeft": "12",
     "PressedColor": "Color.White",
     "PressedFill": "clrPrimaer",
