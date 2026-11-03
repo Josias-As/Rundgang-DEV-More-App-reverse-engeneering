@@ -1,0 +1,231 @@
+                                       Infrastrukturrundgang
+
+
+
+
+                                                                       Matthäus-Merian-
+Kunde:              Technoform Glass Insulation GmbH      Adresse:     Straße 6
+                                                                       34253 Lohfelden
+
+
+Ausführender
+                    Peter Götl                            Datum:       2026-10-26
+Haustechniker:
+
+
+Kalenderwoche:      38                                    Wochentag:   Montag
+
+
+Batterieraum:
+
+Kontrolle ob Störungsfrei:                                in Ordnung
+Infrastrukturraum:
+
+Sichtprüfung Heizungsanlage:                                        in Ordnung
+
+Zählerstand Wasseruhr:                                              2764 m³
+
+Druckmanometer Heizung (schwarz, 1,5 bis 2,0 bar):                  1.8 bar
+
+                                                   Kompressor 3
+
+Betriebsdruck:                                                      7.5 bar
+
+Betriebsstunden:                                                    11411 Stunde(n)
+
+Temperatur:                                                         19 °C
+
+Kontrolle Druckluftfilter (Störungsfrei):                           in Ordnung
+
+                                                   Kompressor 2
+
+Betriebsdruck:                                                      7.7 bar
+
+Betriebsstunden:                                                    63997 Stunde(n)
+
+Temperatur:                                                         31 °C
+
+Kontrolle Druckluftfilter (Störungsfrei):                           in Ordnung
+
+                                                   Kompressor 1
+
+Betriebsdruck:                                                      7.6 bar
+
+Betriebsstunden:                                                    9439 Stunde(n)
+
+Temperatur:                                                         92 °C
+
+Kontrolle Druckluftfilter (Störungsfrei):                           in Ordnung
+
+                                                  Kältetrockner 1
+
+Sichtprüfung Betriebszustand (im Grünen Bereich):                   in Ordnung
+
+                                                  Kältetrockner 2
+
+Sichtprüfung Betriebszustand (im Grünen Bereich):                   in Ordnung
+
+                                            Wasseraufbereitung (Jansen)
+
+Kontrolle Vorrat Biozid:                                            in Ordnung
+
+Kontrolle Vorrat Korrosionsschutz:                                  in Ordnung
+
+Kontrolle Wasseraufbereitung (Störungsfrei):                        in Ordnung
+
+                                                     Öwamat
+
+Kontrolle Wasserqualität Öwamat (mit Teststreifen):                 in Ordnung
+
+                                                  ONI Kühlanlage
+
+Kontrolle Ordnung und Sauberkeit:                                   in Ordnung
+
+Druck Heizungspumpe (WR6) PCC71 (min. 2,0 bar):                     2.5 bar
+Kontrolle Siebkorbfilter 1 (ab 0,5 bar Reinigung):               in Ordnung
+
+Kontrolle Siebkorbfilter 2 (ab 0,5 bar Reinigung):               in Ordnung
+
+Kontrolle Verschmutzung Pumpen (Lüfterräder):                    in Ordnung
+
+Kontrolle Schrägsitzfilter:                                      in Ordnung
+
+Kontrolle Luftfilter Schaltschrank:                              in Ordnung
+
+Zählerstand Wasseruhr über Tank:                                 3239 m³
+
+                          Kältemschine 1 (Außenbereich/ Display im Infrastrukturraum)
+
+Kontrolle Kühlamellen:                                           in Ordnung
+
+Wassertemperatur (Ausgang):                                      9.3 °C
+
+Betriebsstunden C1:                                              20842 Stunde(n)
+
+Betriebsstunden C2:                                              19661 Stunde(n)
+
+Kontrolle Störungsanzeige:                                       in Ordnung
+
+                                        Kältemschine 2 (Außenbereich)
+
+Kontrolle Kühllamellen:                                          in Ordnung
+
+Wassertemperatur (Ausgang):                                      15.4 °C
+
+Betriebsstunden A1:                                              20235 Stunde(n)
+
+Betriebsstunden B1/ C1:                                          20234 Stunde(n)
+
+Kontrolle Störungsanzeige:                                       in Ordnung
+
+                          Kältemschine 3 (Außenbereich/ Display im Infrastrukturraum)
+
+Kontrolle Kühllamellen:                                          in Ordnung
+
+Wassertemperatur (Ausgang):                                      10 °C
+
+Betriebsstunden A1:                                              8368 Stunde(n)
+
+Betriebsstunden B1/ C1:                                          8406 Stunde(n)
+
+Kontrolle Störungsanzeige:                                       in Ordnung
+Produktionshalle:
+
+Sichtprüfung Tor 1 (Funktion, Piktogramm):                       in Ordnung
+
+                                                       WZB
+
+Sichtprüfung Aktivkohlefilter / Gefahrstoffschränke:             in Ordnung
+
+                                               Regalanlagen
+
+Sichtprüfung Regalanlagen:                                       in Ordnung
+
+                                               Haftungskabine
+
+Temperatur Klimaanlage (Sollzustand 21,0 °C - 25,0 °C):          0 °C
+
+                                                Analysebüro
+
+Sichtprüfung Stickstoffflasche:                                  in Ordnung
+
+Füllung Stickstoffflasche:                                       60 bar
+
+Temperatur Klimaanlage:                                          23 °C
+
+                                                 Messraum
+
+Temperatur Klimaanlage (Sollzustand 19,0 °C - 24,0 °C):          24 °C
+
+                                             Wareneingangsbüro
+
+Temperatur Klimaanlage:                                          0 °C
+
+                                                 Allgemein
+
+Zählerstand Gaszähler S1:                                        438421 m³
+
+Zählerstand Gaszähler S2:                                        0 m³
+
+Zählerstand Gaszähler S3:                                        1503230 m³
+
+Zählerstand Gaszähler S4:                                        2247594 m³
+
+Zählerstand Gaszähler S5:                                        1558056 m³
+
+Zählerstand Gaszähler S6:                                        1619930 m³
+
+Zählerstand Gaszähler S7:                                        1851753 m³
+
+Zählerstand Gaszähler S8:                                        0 m³
+
+Sichtprüfung Tor 2 (Funktion, Piktogramm):                       in Ordnung
+
+Sichtprüfung Tor 3 (Funktion, Piktogramm):                       in Ordnung
+
+Sichtprüfung Tor 4 (Funktion, Piktogramm):                       in Ordnung
+
+Sichtprüfung Tor 5 (Funktion, Piktogramm):                       in Ordnung
+
+                                             Warenausgangsbüro
+
+Temperatur Klimaanlage:                                          0 °C
+
+                                                 Allgemein
+Sichtprüfung Tor 6 (Funktion, Piktogramm):                    in Ordnung
+
+cos φ Wert Kompensationsanlage (Normalbereich cos φ >
+                                                              0.99 cos φ
+0,90):
+
+Sichtprüfung Filtervlies Kompensationsanlage (Reinigung nur
+                                                              in Ordnung
+durch eingewiesenes Fachpersonal):
+
+Zählerstand Hauptverteilung 1:                                8941097 kWh
+
+Zählerstand Hauptverteilung 2:                                5807139 kWh
+
+Zählerstand Hauptverteilung 3:                                1390991kWh
+
+Zählerstand Hauptverteilung 4:                                5631885 kWh
+
+Sichtprüfung Elektronische Dachfenstersteuerung/
+                                                              in Ordnung
+Lichtschalter:
+
+Mangelbeschreibung:
+
+,
+
+
+Büro 1. OG:
+
+Temperatur Serverraum (Sollzustand 18,0 °C - 21,0 °C):        21 °C
+
+
+
+
+    Unterschrift des ausführenden Haustechnikers
+                     Peter Götl
+

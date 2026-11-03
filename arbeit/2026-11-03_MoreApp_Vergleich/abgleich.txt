@@ -1,0 +1,80 @@
+Abgleich über den Fragetext (Antworten zählen: siehe VERGLEICH, von Hand gezählt).
+
+== Infrastrukturraum (IS)
+  [] IO   Sichtprüfung Heizungsanlage                             -> Infrastrukturrundgang
+  [] ZAHL Zählerstand Wasseruhr                                   -> Infrastrukturrundgang
+  [] ZAHL Druckmanometer Heizung (schwarz, 1,5 bis 2,0 bar)       -> Infrastrukturrundgang
+  [Kompressor 3] ZAHL Betriebsdruck                                           -> Infrastrukturrundgang
+  [Kompressor 3] ZAHL Betriebsstunden                                         -> Infrastrukturrundgang
+  [Kompressor 3] ZAHL Temperatur                                              -> Infrastrukturrundgang, Haustechnikrundgang
+  [Kompressor 3] IO   Kontrolle Druckluftfilter (Störungsfrei)                -> Infrastrukturrundgang
+  [Kompressor 2] ZAHL Betriebsdruck                                           -> Infrastrukturrundgang
+  [Kompressor 2] ZAHL Betriebsstunden                                         -> Infrastrukturrundgang
+  [Kompressor 2] ZAHL Temperatur                                              -> Infrastrukturrundgang, Haustechnikrundgang
+  [Kompressor 2] IO   Kontrolle Druckluftfilter (Störungsfrei)                -> Infrastrukturrundgang
+  [Kompressor 1] ZAHL Betriebsdruck                                           -> Infrastrukturrundgang
+  [Kompressor 1] ZAHL Betriebsstunden                                         -> Infrastrukturrundgang
+  [Kompressor 1] ZAHL Temperatur                                              -> Infrastrukturrundgang, Haustechnikrundgang
+  [Kompressor 1] IO   Kontrolle Druckluftfilter (Störungsfrei)                -> Infrastrukturrundgang
+  [Kältetrockner 1] IO   Sichtprüfung Betriebszustand (im Grünen Bereich)        -> Infrastrukturrundgang
+  [Kältetrockner 2] IO   Sichtprüfung Betriebszustand (im Grünen Bereich)        -> Infrastrukturrundgang
+  [Wasseraufbereitung (Jansen)] IO   Kontrolle Vorrat Biozid                                 -> Infrastrukturrundgang
+  [Wasseraufbereitung (Jansen)] IO   Kontrolle Vorrat Korrosionsschutz                       -> Infrastrukturrundgang
+  [Wasseraufbereitung (Jansen)] IO   Kontrolle Wasseraufbereitung (Störungsfrei)             -> Infrastrukturrundgang
+  [Öwamat] IO   Kontrolle Wasserqualität Öwamat (mit Teststreifen)      -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Ordnung und Sauberkeit                        -> Infrastrukturrundgang, Haustechnikrundgang
+  [ONI Kühlanlage] ZAHL Druck Heizungspumpe (WR6) PCC71 (min. 2,0 bar)          -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Siebkorbfilter 1 (ab 0,5 bar Reinigung)       -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Siebkorbfilter 2 (ab 0,5 bar Reinigung)       -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Verschmutzung Pumpen (Lüfterräder)            -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Schrägsitzfilter                              -> Infrastrukturrundgang
+  [ONI Kühlanlage] IO   Kontrolle Luftfilter Schaltschrank                      -> Infrastrukturrundgang
+  [ONI Kühlanlage] ZAHL Zählerstand Wasseruhr über Tank                         -> Infrastrukturrundgang
+  [Kältemschine 1 (Außenbereich] IO   Kontrolle Kühlamellen                                   -> Infrastrukturrundgang
+  [Kältemschine 1 (Außenbereich] ZAHL Wassertemperatur (Ausgang)                              -> Infrastrukturrundgang
+  [Kältemschine 1 (Außenbereich] ZAHL Betriebsstunden C1                                      -> Infrastrukturrundgang
+  [Kältemschine 1 (Außenbereich] ZAHL Betriebsstunden C2                                      -> Infrastrukturrundgang
+  [Kältemschine 1 (Außenbereich] IO   Kontrolle Störungsanzeige                               -> Infrastrukturrundgang
+  [Kältemaschine 2 (Außenbereic] IO   Kontrolle Kühllamellen                                  -> Infrastrukturrundgang
+  [Kältemaschine 2 (Außenbereic] ZAHL Wassertemperatur (Ausgang)                              -> Infrastrukturrundgang
+  [Kältemaschine 2 (Außenbereic] ZAHL Betriebsstunden A1                                      -> Infrastrukturrundgang
+  [Kältemaschine 2 (Außenbereic] ZAHL Betriebsstunden B1/ C1                                  -> Infrastrukturrundgang
+  [Kältemaschine 2 (Außenbereic] IO   Kontrolle Störungsanzeige                               -> Infrastrukturrundgang
+  [Kältemaschine 3 (Außenbereic] IO   Kontrolle Kühllamellen                                  -> Infrastrukturrundgang
+  [Kältemaschine 3 (Außenbereic] ZAHL Wassertemperatur (Ausgang)                              -> Infrastrukturrundgang
+  [Kältemaschine 3 (Außenbereic] ZAHL Betriebsstunden A1                                      -> Infrastrukturrundgang
+  [Kältemaschine 3 (Außenbereic] ZAHL Betriebsstunden B1/ C1                                  -> Infrastrukturrundgang
+  [Kältemaschine 3 (Außenbereic] IO   Kontrolle Störungsanzeige                               -> Infrastrukturrundgang
+  Summe: 44 Fragen in den Bildern, 44 davon (Fragetext) in einem PDF
+
+== Produktionshalle (Bilder 10-16)
+  [Sanitärräume (Herren WC)] IO   Kontrolle Ordnung und Sauberkeit Herren WC              -> Haustechnikrundgang
+  [Sanitärräume (Herren WC)] IO   Kontrolle Füllstand Seifenspender Herren WC (ggf. nachf -> Haustechnikrundgang
+  [Sanitärräume (Herren WC)] IO   Kontrolle Füllstand Handtuchpapierspender Herren WC (gg -> Haustechnikrundgang
+  [Sanitärräume (Damen WC)] IO   Kontrolle Ordnung und Sauberkeit Damen WC               -> Haustechnikrundgang
+  [Sanitärräume (Damen WC)] IO   Kontrolle Füllstand Seifenspender Damen WC (ggf. nachfü -> Haustechnikrundgang
+  [Sanitärräume (Damen WC)] IO   Kontrolle Füllstand Handtuchpapierspender Damen WC (ggf -> Haustechnikrundgang
+  [Sanitärräume (Damen WC)] IO   Kontrolle Temperatur aller Durchlauferhitzer (mind. 60  -> Haustechnikrundgang
+  [Außenbereich] IO   Kontrolle Ordnung und Sauberkeit (Wareneingang)         -> IN KEINEM PDF
+  [Außenbereich] IO   Kontrolle Aschenbecher/ Beleuchtung (Wareneingang)      -> IN KEINEM PDF
+  [Außenbereich] IO   Kontrolle der Wartungsaufkleber an allen Abfallcontaine -> IN KEINEM PDF
+  [Außenbereich] IO   Kontrolle der Sicherung gegen Einschalten der Selbstpre -> IN KEINEM PDF
+  [WZB] IO   Kontrolle Ordnung und Sauberkeit                        -> Infrastrukturrundgang, Haustechnikrundgang
+  [Analysebüro] IO   Kontrolle Ordnung und Sauberkeit                        -> Infrastrukturrundgang, Haustechnikrundgang
+  [Allgemein] IO   Sichtprüfung Regal-Liftsystem                           -> IN KEINEM PDF
+  [Allgemein] IO   Sichtprüfung Hochregale                                 -> IN KEINEM PDF
+  [Allgemein] IO   Kontrolle destilliertes Wasser (Staplerstation)         -> IN KEINEM PDF
+  [Allgemein] IO   Kontrolle allgemeine Deckenbeleuchtung                  -> IN KEINEM PDF
+  [Allgemein] IO   Kontrolle Erste-Hilfe-Kästen / Pflasterboxen            -> IN KEINEM PDF
+  [Allgemein] IO   Kontrolle Gehörschutzboxen                              -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Aschenbecher/ Beleuchtung (Tor 2)             -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Ordnung und Sauberkeit (Containerbereich)     -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Beleuchtung (Tor 3)                           -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Beleuchtung (Tor 4)                           -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Aschenbecher/ Beleuchtung (Tor 5)             -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Beleuchtung (Tor 6)                           -> IN KEINEM PDF
+  [Außenbereich (2)] IO   Kontrolle Ordnung und Sauberkeit (Warenausgang)         -> IN KEINEM PDF
+  [Konfektion] IO   Kontrolle Ordnung und Sauberkeit                        -> Infrastrukturrundgang, Haustechnikrundgang
+  [Messstation] IO   Kontrolle Funktion Staubsauger                          -> IN KEINEM PDF
+  [Küchenbereich] IO   Kontrolle Ordnung und Sauberkeit                        -> Infrastrukturrundgang, Haustechnikrundgang
+  Summe: 29 Fragen in den Bildern, 11 davon (Fragetext) in einem PDF
