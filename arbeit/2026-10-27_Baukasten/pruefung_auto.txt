@@ -901,6 +901,105 @@
   lblArLaden.Width                 ok
   lblArLaden.X                     ok
   lblArLaden.Y                     ok
+== Paket 13: 2 Properties, neue Steuerelemente: btnKaInfo, conKaInfo, btnKaInfoSperre, conKaInfoKarte, lblKaInfoTitel, lblKaInfoFrage, lblKaInfoText, imgKaInfo, btnKaInfoSchliessen
+  scrKategorie.OnVisible           ok
+  lblKaFrage.Width                 ok
+  btnKaInfo.BorderColor            ok
+  btnKaInfo.BorderThickness        ok
+  btnKaInfo.Color                  ok
+  btnKaInfo.Fill                   ok
+  btnKaInfo.Font                   ok
+  btnKaInfo.FontWeight             ok
+  btnKaInfo.Height                 ok
+  btnKaInfo.HoverColor             ok
+  btnKaInfo.HoverFill              ok
+  btnKaInfo.PressedColor           ok
+  btnKaInfo.PressedFill            ok
+  btnKaInfo.OnSelect               ok
+  btnKaInfo.RadiusBottomLeft       ok
+  btnKaInfo.RadiusBottomRight      ok
+  btnKaInfo.RadiusTopLeft          ok
+  btnKaInfo.RadiusTopRight         ok
+  btnKaInfo.Size                   ok
+  btnKaInfo.Text                   ok
+  btnKaInfo.Visible                ok
+  btnKaInfo.Width                  ok
+  btnKaInfo.X                      ok
+  btnKaInfo.Y                      ok
+  conKaInfo.Fill                   ok
+  conKaInfo.Height                 ok
+  conKaInfo.Visible                ok
+  conKaInfo.Width                  ok
+  btnKaInfoSperre.BorderThickness  ok
+  btnKaInfoSperre.Fill             ok
+  btnKaInfoSperre.Height           ok
+  btnKaInfoSperre.HoverFill        ok
+  btnKaInfoSperre.PressedFill      ok
+  btnKaInfoSperre.Text             ok
+  btnKaInfoSperre.Width            ok
+  conKaInfoKarte.Fill              ok
+  conKaInfoKarte.Height            ok
+  conKaInfoKarte.RadiusBottomLeft  ok
+  conKaInfoKarte.RadiusBottomRight ok
+  conKaInfoKarte.RadiusTopLeft     ok
+  conKaInfoKarte.RadiusTopRight    ok
+  conKaInfoKarte.Width             ok
+  conKaInfoKarte.X                 ok
+  conKaInfoKarte.Y                 ok
+  lblKaInfoTitel.Color             ok
+  lblKaInfoTitel.Font              ok
+  lblKaInfoTitel.FontWeight        ok
+  lblKaInfoTitel.Height            ok
+  lblKaInfoTitel.Size              ok
+  lblKaInfoTitel.Text              ok
+  lblKaInfoTitel.Width             ok
+  lblKaInfoTitel.Wrap              ok
+  lblKaInfoTitel.X                 ok
+  lblKaInfoTitel.Y                 ok
+  lblKaInfoFrage.Color             ok
+  lblKaInfoFrage.Font              ok
+  lblKaInfoFrage.Height            ok
+  lblKaInfoFrage.Size              ok
+  lblKaInfoFrage.Text              ok
+  lblKaInfoFrage.Width             ok
+  lblKaInfoFrage.Wrap              ok
+  lblKaInfoFrage.X                 ok
+  lblKaInfoFrage.Y                 ok
+  lblKaInfoText.Color              ok
+  lblKaInfoText.Font               ok
+  lblKaInfoText.Height             ok
+  lblKaInfoText.Overflow           ok
+  lblKaInfoText.Size               ok
+  lblKaInfoText.Text               ok
+  lblKaInfoText.VerticalAlign      ok
+  lblKaInfoText.Width              ok
+  lblKaInfoText.X                  ok
+  lblKaInfoText.Y                  ok
+  imgKaInfo.AccessibleLabel        ok
+  imgKaInfo.Height                 ok
+  imgKaInfo.Image                  ok
+  imgKaInfo.ImagePosition          ok
+  imgKaInfo.Visible                ok
+  imgKaInfo.Width                  ok
+  imgKaInfo.X                      ok
+  imgKaInfo.Y                      ok
+  btnKaInfoSchliessen.BorderThickness ok
+  btnKaInfoSchliessen.Color        ok
+  btnKaInfoSchliessen.Fill         ok
+  btnKaInfoSchliessen.Font         ok
+  btnKaInfoSchliessen.Height       ok
+  btnKaInfoSchliessen.HoverFill    ok
+  btnKaInfoSchliessen.OnSelect     ok
+  btnKaInfoSchliessen.PressedFill  ok
+  btnKaInfoSchliessen.RadiusBottomLeft ok
+  btnKaInfoSchliessen.RadiusBottomRight ok
+  btnKaInfoSchliessen.RadiusTopLeft ok
+  btnKaInfoSchliessen.RadiusTopRight ok
+  btnKaInfoSchliessen.Size         ok
+  btnKaInfoSchliessen.Text         ok
+  btnKaInfoSchliessen.Width        ok
+  btnKaInfoSchliessen.X            ok
+  btnKaInfoSchliessen.Y            ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -915,6 +1014,7 @@
   Paket 16: colAntworten hat in allen drei Zweigen dieselben 37 Felder
   Paket 14: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 17: colAntworten hat in allen drei Zweigen dieselben 46 Felder
+  Paket 13: colAntworten hat in allen drei Zweigen dieselben 47 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'

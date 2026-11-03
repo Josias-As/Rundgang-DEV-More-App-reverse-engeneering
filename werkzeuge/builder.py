@@ -40,11 +40,13 @@ NEU_SPALTEN = {
                        "BedingungPunkt": "Zahl", "BedingungWert": "Text", "HinweisBildID": "Zahl", "Abschnitt": "Text",
                        "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text",
                        "TextIO": "Text", "TextNIO": "Text", "NichtMessbar": "Ja/Nein",
-                       "AbwMax": "Zahl", "AbwProzent": "Ja/Nein", "NurSteigend": "Ja/Nein", "VergleichPunkt": "Zahl", "VergleichTol": "Zahl"},
+                       "AbwMax": "Zahl", "AbwProzent": "Ja/Nein", "NurSteigend": "Ja/Nein", "VergleichPunkt": "Zahl", "VergleichTol": "Zahl",
+                       "AnleitungID": "Zahl"},
+    "RG_Anleitungen": {"Title": "Text", "Anleitung": "Text", "Aktiv": "Ja/Nein"},
     "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
-QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner"]
+QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen"]
 
 # ---------------------------------------------------------------- App.Formulas und App.OnStart
 
@@ -95,7 +97,7 @@ ONSTART_VARS = [
     ("varKopieZusatz", '""'), ("varKopieFehler", "0"), ("varQuelleR", "0"), ("varQuelleF", "0"),
     ("varQuelleNurAktiv", "false"), ("varHeuteLaeuft", "false"), ("varPlanRgID", "0"),
     ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varEntwurfOk", "true"), ("varAktivRest", "false"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
-    ("varNioOffen", "false"), ("varKoID", "0"), ("varZaOffen", "false"),
+    ("varNioOffen", "false"), ("varKoID", "0"), ("varZaOffen", "false"), ("varAnID", "0"),
 ]
 ONSTART = ";\n".join("Set(%s, %s)" % kv for kv in ONSTART_VARS)
 
@@ -145,7 +147,7 @@ ORD = "RgReihenfolge * 1000000 + ID"
 
 NEUER_PUNKT = ('Aktiv: true, QuelleID: 0, Eingabetyp: {{Value: {typ}}}, Pflicht: {pfl}, Auswahlwerte: "", Einheit: "", Hinweis: "", '
                'FotoMoeglich: false, Foto: {{Value: "Aus"}}, KommentarPflicht: false, Grenzmodus: {{Value: "Mangel"}}, '
-               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}, TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0')
+               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}, TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0')
 
 
 def quelle_laden(s):
@@ -312,7 +314,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), VglAlt: Coalesce(q.VergleichPunkt, 0), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, ""), TextIO: Coalesce(q.TextIO, ""), TextNIO: Coalesce(q.TextNIO, ""), NichtMessbar: Coalesce(q.NichtMessbar, false), AbwMax: q.AbwMax, AbwProzent: Coalesce(q.AbwProzent, false), NurSteigend: Coalesce(q.NurSteigend, false), VergleichPunkt: 0, VergleichTol: q.VergleichTol}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, ""), TextIO: Coalesce(q.TextIO, ""), TextNIO: Coalesce(q.TextNIO, ""), NichtMessbar: Coalesce(q.NichtMessbar, false), AbwMax: q.AbwMax, AbwProzent: Coalesce(q.AbwProzent, false), NurSteigend: Coalesce(q.NurSteigend, false), VergleichPunkt: 0, VergleichTol: q.VergleichTol, AnleitungID: Coalesce(q.AnleitungID, 0)}).ID, 0))}
                     )
                 )
             )
@@ -364,6 +366,7 @@ STUFE_LADEN = '''If(varJob = "laden",
     Set(varIstVorlage, fnStatus(varRg.Status, varRg.Aktiv) = "Vorlage");
     ''' + laden_baum().replace("\n", "\n    ") + ''';
     ClearCollect(colPlanR, Filter(RG_Plan, RundgangID = varRgID));
+    ClearCollect(colAnlAktiv, ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID));
     Set(varAktivRest, false);
     If(varSchreibbar && !varIstVorlage && Coalesce(varRg.EntwurfFassung, 0) <> varFassung,
         Set(varSchreibbar, false);
@@ -497,6 +500,8 @@ REGELN = [
     'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false))) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“: Verlauf/Vergleich wirkt nur bei Zahlen."') + ')',
     'ForAll(Filter(colP As p, !IsBlank(p.AbwMax) && p.AbwMax < 0) As p, ' + P_REGEL("Fehler", '"„" & p.Title & "“: höchste Abweichung darf nicht negativ sein."') + ')',
+    'ForAll(Filter(colP As p, Coalesce(p.AnleitungID, 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0, n0.ID = p.AnleitungID))) As p, '
+    + P_REGEL("Hinweis", '"„" & p.Title & "“: Die gewählte Anleitung gibt es nicht mehr oder sie ist inaktiv."') + ')',
     'ForAll(Filter(colP As p, p.Title = "Neue Frage") As p, ' + P_REGEL("Hinweis", '"Eine Frage heißt noch „Neue Frage“."') + ')',
     'ForAll(Filter(colK As k, CountRows(Filter(colP As p, p.KategorieID = k.ID)) > 30) As k, '
     + regel("Hinweis", 2, "k.ID", "k.ID", "k.BereichID", '"Kategorie „" & k.Title & "“ hat über 30 Prüfpunkte (lange Seite für den Prüfer)."') + ')',
@@ -523,7 +528,7 @@ P_GEAENDERT = ('p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coales
                'Coalesce(p.TextIO, "") <> Coalesce(a.TextIO, "") || Coalesce(p.TextNIO, "") <> Coalesce(a.TextNIO, "") || Coalesce(p.NichtMessbar, false) <> Coalesce(a.NichtMessbar, false) || '
                'Coalesce(p.AbwMax, -999999) <> Coalesce(a.AbwMax, -999999) || Coalesce(p.AbwProzent, false) <> Coalesce(a.AbwProzent, false) || '
                'Coalesce(p.NurSteigend, false) <> Coalesce(a.NurSteigend, false) || Coalesce(p.VergleichTol, 0) <> Coalesce(a.VergleichTol, 0) || '
-               'Coalesce(LookUp(colP As v0, v0.ID = p.VergleichPunkt).QuelleID, 0) <> Coalesce(a.VergleichPunkt, 0)')
+               'Coalesce(LookUp(colP As v0, v0.ID = p.VergleichPunkt).QuelleID, 0) <> Coalesce(a.VergleichPunkt, 0) || Coalesce(p.AnleitungID, 0) <> Coalesce(a.AnleitungID, 0)')
 AKT_ITEMS = ('Ungroup(\n    Table(\n'
              '        {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},\n'
              '        {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (' + P_GEAENDERT + '))) As p, {Art: "geändert", Text: p.Title})},\n'
@@ -884,6 +889,8 @@ scr_liste = C("scrListe", "Screen", {
         "If(" + FREI + ",\n    Set(varFrage, \"\");\n    Set(varNeuLeer, true);\n    Reset(txtNeuName);\n    Set(varNeuOffen, true)\n)"),
     btn("btnLiVorlagen", '"Vorlagen bearbeiten"', "256", "84", "220", "44", LI_VORLAGEN, art="sekundaer"),
     btn("btnLiNeuLaden", '"↻ Neu laden"', "488", "84", "150", "44", LI_NEU_LADEN, art="sekundaer"),
+    btn("btnLiAnleitungen", '"Anleitungen"', "862", "84", "180", "44",
+        "If(" + FREI + ",\n    Set(varFrage, \"\");\n    Navigate(scrAnleitungen, ScreenTransition.None)\n)", art="sekundaer"),
     btn("btnLiKontakte", '"Ansprechpartner"', "650", "84", "200", "44",
         "If(" + FREI + ",\n    Set(varFrage, \"\");\n    Navigate(scrKontakte, ScreenTransition.None)\n)", art="sekundaer"),
     btn("btnLiAlle", 'If(varAlleZeigen, "✓ Archivierte zeigen", "Archivierte zeigen")', "Parent.Width - 264", "84", "240", "44",
@@ -1059,8 +1066,8 @@ PP = lambda f: patch_feld("RG_Pruefpunkte", "colP", f)  # noqa: E731
 
 TYP_ITEMS = ('Table({W: "IONIO", N: "✓ i.O./n.i.O."}, {W: "ZAHL", N: "123 Zahl"}, {W: "AUSWAHL", N: "☰ Auswahl"}, {W: "MEHRFACH", N: "☑ Mehrfach"}, '
              '{W: "TEXT", N: "Aa Text"}, {W: "DATUM", N: "📅 Datum"}, {W: "DATUMZEIT", N: "📅 + Uhrzeit"})')
-FOTO_ITEMS = ('Table({W: "Aus", N: "kein Foto (bei n.i.O. möglich)"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, '
-              '{W: "Bei Mangel Pflicht", N: "Foto Pflicht bei Mangel (n.i.O.)"})')
+FOTO_ITEMS = ('Table({W: "Aus", N: "kein Foto"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, '
+              '{W: "Bei Mangel Pflicht", N: "Foto bei Mangel"})')
 FOTO_IST = 'fnFotoWert(%s.Foto.Value, Coalesce(%s.FotoMoeglich, false))' % (CUR, CUR)
 A_N = lambda a: '%(a)s.Title & If(CountRows(Filter(colP As x, x.KategorieID = %(a)s.KategorieID && x.Title = %(a)s.Title)) > 1, " (#" & %(a)s.ID & ")", "")' % {"a": a}  # noqa: E731
 BED_A_BASIS = ('ForAll(Sort(Filter(colP As a, a.KategorieID = ' + CUR + '.KategorieID && a.ID <> varAuswahlID && '
@@ -1254,10 +1261,15 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         "0", REST_Y + " + 256", "528", "32", NIO_OEFFNEN, art="sekundaer", size=13, DisplayMode=BTN_DM,
         Color='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR, BorderColor='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR),
     con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "250", "Fill": "clrHintergrund"}, [
-        lbl("lblPFoto", '"Foto"', "0", "0", "528", "20", size=12, color="clrTextGrau"),
+        lbl("lblPFoto", '"Foto"', "0", "0", "256", "20", size=12, color="clrTextGrau"),
+        lbl("lblPAnl", '"Anleitung (ⓘ beim Prüfer)"', "272", "0", "256", "20", size=12, color="clrTextGrau"),
+        dd("ddPAnl", 'Ungroup(Table({T: Table({ID: 0, Title: "— keine —"})}, {T: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)', "Title",
+           'If(Coalesce(%s.AnleitungID, 0) = 0, "— keine —", Coalesce(LookUp(RG_Anleitungen, ID = %s.AnleitungID).Title, "(fehlt)"))' % (CUR, CUR),
+           'If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(%s.AnleitungID, 0),\n    %s\n)' % (CUR, ind(PP('{AnleitungID: Self.Selected.ID}'), 4)),
+           "272", "20", "256", "36", '"Anleitung"'),
         dd("ddPFoto", FOTO_ITEMS, "N", 'LookUp(%s, W = %s).N' % (FOTO_ITEMS, FOTO_IST),
            'If(!IsBlank(Self.Selected) && Self.Selected.W <> %s,\n    %s\n)' % (FOTO_IST, ind(PP('{Foto: {Value: Self.Selected.W}}'), 4)),
-           "0", "20", "528", "36", '"Foto-Regel"'),
+           "0", "20", "256", "36", '"Foto-Regel"'),
         lbl("lblPBed", 'If(%s, "Keine Bedingung möglich: Andere Fragen hängen von dieser ab.", "Nur zeigen, wenn …")' % BED_GESPERRT,
             "0", "62", "528", "20", size=12, color="clrTextGrau"),
         dd("ddPBedA", BED_A_ITEMS, "N",
@@ -1350,7 +1362,8 @@ VS_REGELN = ('"• " & If(Coalesce(%(c)s.Pflicht, false), "Pflichtfrage", "freiw
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.NichtMessbar, false), Char(10) & "• „nicht messbar“ erlaubt (dann Begründung Pflicht)", "") & '
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && !IsBlank(%(c)s.AbwMax), Char(10) & "• höchstens " & Text(%(c)s.AbwMax) & If(Coalesce(%(c)s.AbwProzent, false), " %%", "") & " Abweichung zum letzten Rundgang", "") & '
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.NurSteigend, false), Char(10) & "• Zählerstand: darf nicht kleiner werden", "") & '
-             'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.VergleichPunkt, 0) <> 0, Char(10) & "• Vergleich mit „" & LookUp(colP, ID = %(c)s.VergleichPunkt).Title & "“ (± " & Text(Coalesce(%(c)s.VergleichTol, 0)) & ")", "")') % {"c": CUR, "f": FOTO_IST}
+             'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.VergleichPunkt, 0) <> 0, Char(10) & "• Vergleich mit „" & LookUp(colP, ID = %(c)s.VergleichPunkt).Title & "“ (± " & Text(Coalesce(%(c)s.VergleichTol, 0)) & ")", "") & '
+             'If(Coalesce(%(c)s.AnleitungID, 0) > 0, Char(10) & "• ⓘ Anleitung „" & Coalesce(LookUp(RG_Anleitungen, ID = %(c)s.AnleitungID).Title, "?") & "“", "")') % {"c": CUR, "f": FOTO_IST}
 
 vs_karte = con("conVsKarte", dict({"X": "16", "Y": "40", "Width": "Parent.Width - 32", "Height": "300", "Fill": "clrKarte", "BorderColor": "clrRahmen",
                                    "BorderThickness": "1", "Visible": "varAuswahlEbene = 3"}, **radius(8)), [
@@ -1772,7 +1785,71 @@ scr_kontakte = C("scrKontakte", "Screen", {
     laden_overlay("conKoLaden"),
 ])
 
-SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte]
+# ---------------------------------------------------------------- Bildschirm Anleitungen (Paket 13)
+AN_CUR = "LookUp(colAnAlle, ID = varAnID)"
+AN_RESET = "Reset(txtAnTitel);\nReset(txtAnText)"
+
+
+def an_patch(felder):
+    return ("If(varAnID > 0 && !varIsLoading,\n"
+            "    Set(varPatchFehler, false);\n"
+            "    IfError(Patch(RG_Anleitungen, LookUp(RG_Anleitungen, ID = varAnID), " + felder + "), Set(varPatchFehler, true));\n"
+            "    If(varPatchFehler,\n"
+            "        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+            "        Patch(colAnAlle, LookUp(colAnAlle, ID = varAnID), LookUp(RG_Anleitungen, ID = varAnID))\n"
+            "    )\n"
+            ")")
+
+
+AN_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
+          "    Set(varNeuID, IfError(Patch(RG_Anleitungen, Defaults(RG_Anleitungen), {Title: \"Neue Anleitung\", Anleitung: \"\", Aktiv: true}).ID, 0));\n"
+          "    If(varNeuID = 0,\n"
+          "        Notify(\"Anlegen fehlgeschlagen. Bitte erneut versuchen.\", NotificationType.Error),\n"
+          "        Collect(colAnAlle, LookUp(RG_Anleitungen, ID = varNeuID));\n"
+          "        Set(varAnID, varNeuID);\n"
+          "        " + ind(AN_RESET, 8) + ";\n"
+          "        SetFocus(txtAnTitel)\n"
+          "    )\n"
+          ")")
+scr_anleitungen = C("scrAnleitungen", "Screen", {
+    "Fill": "clrHintergrund",
+    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Anleitungen);\nClearCollect(colAnAlle, RG_Anleitungen);\n"
+                 "Set(varAnID, Coalesce(First(Sort(colAnAlle, Title)).ID, 0));\n" + AN_RESET + ";\nSet(varIsLoading, false)",
+}, [
+    con("conAnKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
+        btn("btnAnZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
+        lbl("lblAnTitelKopf", '"Anleitungen"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
+    ]),
+    lbl("lblAnHilfe", '"Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. '
+        'Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
+    btn("btnAnNeu", '"+ Anleitung"', "24", "124", "220", "44", AN_NEU),
+    gal("galAn", 'Sort(colAnAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "180", "420", "Parent.Height - 196", 56, [
+        lbl("lblAnHinter", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4",
+            Fill="If(ThisItem.ID = varAnID, clrPrimaerHell, Color.White)"),
+        lbl("lblAnZeile", 'ThisItem.Title & If(Coalesce(ThisItem.Aktiv, false), "", "  · inaktiv")', "12", "0", "Parent.TemplateWidth - 24", "Parent.TemplateHeight - 4",
+            size=14, Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
+        btn("btnAnZeile", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4", "Set(varAnID, ThisItem.ID);\n" + AN_RESET, art="kopf",
+            Fill="RGBA(0, 0, 0, 0)", HoverFill="RGBA(23, 20, 150, 0.06)", PressedFill="RGBA(23, 20, 150, 0.12)", DisabledFill="RGBA(0, 0, 0, 0)", **radius(0)),
+    ], '"Anleitungen"'),
+    lbl("lblAnLeer", '"Noch keine Anleitungen. „+ Anleitung“ legt eine an."', "24", "190", "420", "48", size=13, color="clrTextGrau",
+        Visible="IsEmpty(colAnAlle) && !varIsLoading"),
+    con("conAnForm", {"X": "468", "Y": "124", "Width": "Parent.Width - 492", "Height": "Parent.Height - 140", "Fill": "clrHintergrund", "Visible": "varAnID > 0"}, [
+        lbl("lblAnTitelT", '"Titel"', "0", "0", "400", "20", size=12, color="clrTextGrau"),
+        txt("txtAnTitel", 'Coalesce(%s.Title, "")' % AN_CUR,
+            'If(Trim(Self.Text) <> "" && Trim(Self.Text) <> Trim(Coalesce(%s.Title, "")),\n    %s\n)' % (AN_CUR, ind(an_patch("{Title: Left(Trim(Self.Text), 255)}"), 4)),
+            "0", "20", "Parent.Width", "40", '"z. B. Kompressor ablesen"', '"Titel der Anleitung"', DisplayMode=BTN_DM),
+        lbl("lblAnTextT", '"Text (beliebig lang, Absätze mit Enter)"', "0", "72", "400", "20", size=12, color="clrTextGrau"),
+        txt("txtAnText", 'Coalesce(%s.Anleitung, "")' % AN_CUR,
+            'If(Self.Text <> Coalesce(%s.Anleitung, ""),\n    %s\n)' % (AN_CUR, ind(an_patch("{Anleitung: Self.Text}"), 4)),
+            "0", "92", "Parent.Width", "Parent.Height - 160", '"Schritt für Schritt …"', '"Text der Anleitung"', multi=True, DisplayMode=BTN_DM),
+        optionen("galAnAktiv", 'Table({W: "ja", N: "aktiv"}, {W: "nein", N: "inaktiv"})', 'If(Coalesce(%s.Aktiv, false), "ja", "nein")' % AN_CUR,
+                 'If((ThisItem.W = "ja") <> Coalesce(%s.Aktiv, false),\n    %s\n)' % (AN_CUR, ind(an_patch('{Aktiv: ThisItem.W = "ja"}'), 4)),
+                 "0", "Parent.Height - 56", "300", 2, '"Status"', h=40, size=13, aktiv=BTN_DM),
+    ]),
+    laden_overlay("conAnLaden"),
+])
+
+SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen]
 
 
 def maske(f):
@@ -1919,7 +1996,7 @@ TimeUnit Switch Max Min RoundDown Mod Defaults User GUID Substitute StartsWith C
 FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOfWeek Weekday Ungroup Date Number DateTime As in Error
 Warning Success Information None Edit View Disabled White Semibold Normal Days Seconds Monday Fit Fill Small Thumbnail FirstN Char
 SortOrder Descending Ascending Center Right VerticalAlign Top Overflow Scroll TextMode MultiLine TextFormat DateTimeFormat ShortDate
-Text FullName Email Value ImagePosition""".split())
+Text FullName Email Value ImagePosition ShowColumns""".split())
 MEMBER_OK = set("""Value ID Title Text Selected SelectedDate AllItems Thumbnail Small Large Error Warning Success Information None
 Edit View Disabled White Semibold Normal Days Seconds Monday Fit Fill Descending Ascending Center Right Top Scroll MultiLine Number
 ShortDate FullName Email TemplateWidth TemplateHeight Width Height Data Black Transparent Middle Left""".split())
@@ -2011,7 +2088,7 @@ def pruefen(app_ref):
     p_spalten = ["Title", "Eingabetyp", "Pflicht", "Auswahlwerte", "Einheit", "MinWert", "MaxWert", "Hinweis", "FotoMoeglich", "Foto",
                  "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID", "Abschnitt",
                  "Kritisch", "KritischText", "Ansprechpartner", "Rueckfrage", "RueckfrageText", "TextIO", "TextNIO", "NichtMessbar",
-                 "AbwMax", "AbwProzent", "NurSteigend", "VergleichPunkt", "VergleichTol"]
+                 "AbwMax", "AbwProzent", "NurSteigend", "VergleichPunkt", "VergleichTol", "AnleitungID"]
     kopie = props.get("tmrArbeit.OnTimerEnd", "")
     m_p = re.search(r"Patch\(RG_Pruefpunkte, Defaults\(RG_Pruefpunkte\), \{(.*?)\}\)\.ID", kopie, re.S)
     m_b = re.search(r"Patch\(RG_Bereiche, Defaults\(RG_Bereiche\), \{(.*?)\}\)\.ID", kopie, re.S)
@@ -2160,7 +2237,8 @@ TEXTE = [
     ("galPTyp", "✓ i.O./n.i.O.", 12, 132 - 6, 16, 1), ("galPTyp", "📅 + Uhrzeit", 12, 132 - 6, 16, 1), ("galPTyp", "☑ Mehrfach", 12, 132 - 6, 16, 1),
     ("galPGrenz", "nicht speicherbar", 12, 176 - 6, 16, 1), ("galPGrenz", "Hinweis + Grund", 12, 176 - 6, 16, 1),
     ("galPKomm", "bei Mangel", 13, 128 - 6, 16, 1), ("galPPflicht", "freiwillig", 13, 128 - 6, 16, 1),
-    ("ddPFoto", "Foto Pflicht bei Mangel (n.i.O.)", 14, 528, 60, 1), ("ddPFoto", "kein Foto (bei n.i.O. möglich)", 14, 528, 60, 1),
+    ("ddPFoto", "Foto immer Pflicht", 14, 256, 60, 1), ("ddPFoto", "Foto bei Mangel", 14, 256, 60, 1),
+    ("ddPAnl", "Kompressor ablesen", 14, 256, 60, 1),
     ("lblPBed", "Keine Bedingung möglich: Andere Fragen hängen von dieser ab.", 12, 528, 0, 1),
     ("lblPGrenz", "Wert außerhalb der Grenzen ergibt", 12, 528, 0, 1), ("lblPWerte", "Antwortmöglichkeiten – eine pro Zeile", 12, 528, 0, 1),
     ("btnPBild", "Bild ändern", 13, 124, 16, 1),

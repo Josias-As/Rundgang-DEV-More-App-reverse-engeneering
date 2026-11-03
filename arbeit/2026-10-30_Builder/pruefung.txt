@@ -1,9 +1,10 @@
-Rundgang-Builder: 4 Bildschirme, 313 Steuerelemente, 4394 Properties, 52 Variablen, 17 Funktionen
-Patch-Felder geprüft: 300
-YAML scrListe: 589 Properties zeichengleich zurückgelesen
-YAML scrEditor: 3068 Properties zeichengleich zurückgelesen
+Rundgang-Builder: 5 Bildschirme, 336 Steuerelemente, 4708 Properties, 53 Variablen, 17 Funktionen
+Patch-Felder geprüft: 310
+YAML scrListe: 613 Properties zeichengleich zurückgelesen
+YAML scrEditor: 3102 Properties zeichengleich zurückgelesen
 YAML scrPlan: 371 Properties zeichengleich zurückgelesen
 YAML scrKontakte: 364 Properties zeichengleich zurückgelesen
+YAML scrAnleitungen: 256 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnLiNeu                166 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '+ Neuer Rundgang'
@@ -43,8 +44,9 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   galPGrenz               126 px (+10 %) /  154 px, 1 Zeile(n), erlaubt 1  ok  'Hinweis + Grund'
   galPKomm                 91 px (+10 %) /  106 px, 1 Zeile(n), erlaubt 1  ok  'bei Mangel'
   galPPflicht              69 px (+10 %) /  106 px, 1 Zeile(n), erlaubt 1  ok  'freiwillig'
-  ddPFoto                 271 px (+10 %) /  468 px, 1 Zeile(n), erlaubt 1  ok  'Foto Pflicht bei Mangel (n.i.O.)'
-  ddPFoto                 255 px (+10 %) /  468 px, 1 Zeile(n), erlaubt 1  ok  'kein Foto (bei n.i.O. möglich)'
+  ddPFoto                 168 px (+10 %) /  196 px, 1 Zeile(n), erlaubt 1  ok  'Foto immer Pflicht'
+  ddPFoto                 146 px (+10 %) /  196 px, 1 Zeile(n), erlaubt 1  ok  'Foto bei Mangel'
+  ddPAnl                  186 px (+10 %) /  196 px, 1 Zeile(n), erlaubt 1  ok  'Kompressor ablesen'
   lblPBed                 491 px (+10 %) /  528 px, 1 Zeile(n), erlaubt 1  ok  'Keine Bedingung möglich: Andere Fragen hängen von dieser ab.'
   lblPGrenz               266 px (+10 %) /  528 px, 1 Zeile(n), erlaubt 1  ok  'Wert außerhalb der Grenzen ergibt'
   lblPWerte               291 px (+10 %) /  528 px, 1 Zeile(n), erlaubt 1  ok  'Antwortmöglichkeiten – eine pro Zeile'
@@ -171,6 +173,11 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler,
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   btnPNio.OnSelect               Filter(RG_Ansprechpartner, Aktiv = true))
+  ddPAnl.Items                   Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)
+  ddPAnl.Default                 LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "(fehlt)"))
+  ddPAnl.OnChange                LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
+  ddPAnl.OnChange                LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {AnleitungID: Self.Selected.ID}), Set(var
+  ddPAnl.OnChange                LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   ddPFoto.OnChange               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Foto: {Value: Self.Selected.W}}), Set(va
   ddPFoto.OnChange               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
@@ -192,6 +199,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPAbschnitt.OnChange         LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   txtPAbschnitt.OnChange         LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Abschnitt: Left(Trim(Self.Text), 255)}),
   txtPAbschnitt.OnChange         LookUp(RG_Pruefpunkte, ID = varAuswahlID))
+  lblVsRegeln.Text               LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "?") & "“", "")
   tmrArbeit.OnTimerEnd           LookUp(RG_Rundgaenge, ID = varRgID))
   tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varRgID))
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, BereichID = b.ID)))
@@ -222,6 +230,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung)),
   tmrArbeit.OnTimerEnd           Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
   tmrArbeit.OnTimerEnd           Filter(RG_Plan, RundgangID = varRgID))
+  tmrArbeit.OnTimerEnd           Filter(RG_Anleitungen, Aktiv = true), ID))
   tmrArbeit.OnTimerEnd           Filter(RG_Bereiche, RundgangID = varRgID && Fassung = varFassung)),
   tmrArbeit.OnTimerEnd           Filter(RG_Kategorien, RundgangID = varRgID && Fassung = varFassung)),
   tmrArbeit.OnTimerEnd           Filter(RG_Pruefpunkte, RundgangID = varRgID && Fassung = varFassung))
@@ -304,5 +313,12 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnKoAllg.OnSelect             LookUp(RG_Ansprechpartner, ID = varKoID))
   btnKoAktiv.OnSelect            LookUp(RG_Ansprechpartner, ID = varKoID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
   btnKoAktiv.OnSelect            LookUp(RG_Ansprechpartner, ID = varKoID))
+  btnAnNeu.OnSelect              LookUp(RG_Anleitungen, ID = varNeuID))
+  txtAnTitel.OnChange            LookUp(RG_Anleitungen, ID = varAnID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtAnTitel.OnChange            LookUp(RG_Anleitungen, ID = varAnID))
+  txtAnText.OnChange             LookUp(RG_Anleitungen, ID = varAnID), {Anleitung: Self.Text}), Set(varPatchFehler, true))
+  txtAnText.OnChange             LookUp(RG_Anleitungen, ID = varAnID))
+  btnAnAktiv.OnSelect            LookUp(RG_Anleitungen, ID = varAnID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
+  btnAnAktiv.OnSelect            LookUp(RG_Anleitungen, ID = varAnID))
 
 Fehler gesamt: 0

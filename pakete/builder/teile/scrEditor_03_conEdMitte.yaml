@@ -1294,9 +1294,66 @@
                         Height: =20
                         Size: =12
                         Text: ="Foto"
-                        Width: =528
+                        Width: =256
                         X: =0
                         Y: =0
+                  - lblPAnl:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =20
+                        Size: =12
+                        Text: ="Anleitung (ⓘ beim Prüfer)"
+                        Width: =256
+                        X: =272
+                        Y: =0
+                  - ddPAnl:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: ="Anleitung"
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: =If(Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0) = 0, "— keine —", Coalesce(LookUp(RG_Anleitungen, ID = LookUp(colP, ID = varAuswahlID).AnleitungID).Title, "(fehlt)"))
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =36
+                        HoverFill: =clrPrimaerHell
+                        Items: |-
+                          =Ungroup(Table({T: Table({ID: 0, Title: "— keine —"})}, {T: Sort(ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title)}), T)
+                        Items.Value: =Title
+                        OnChange: |-
+                          =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {AnleitungID: Self.Selected.ID}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        PaddingLeft: =10
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =14
+                        Width: =256
+                        X: =272
+                        Y: =20
                   - ddPFoto:
                       Control: Classic/DropDown@2.3.1
                       Properties:
@@ -1309,14 +1366,14 @@
                         ChevronHoverFill: =Color.White
                         Color: =clrText
                         Default: |-
-                          =LookUp(Table({W: "Aus", N: "kein Foto (bei n.i.O. möglich)"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, {W: "Bei Mangel Pflicht", N: "Foto Pflicht bei Mangel (n.i.O.)"}), W = fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))).N
+                          =LookUp(Table({W: "Aus", N: "kein Foto"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, {W: "Bei Mangel Pflicht", N: "Foto bei Mangel"}), W = fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false))).N
                         DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                         Fill: =clrKarte
                         Font: =Font.'Segoe UI'
                         Height: =36
                         HoverFill: =clrPrimaerHell
                         Items: |-
-                          =Table({W: "Aus", N: "kein Foto (bei n.i.O. möglich)"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, {W: "Bei Mangel Pflicht", N: "Foto Pflicht bei Mangel (n.i.O.)"})
+                          =Table({W: "Aus", N: "kein Foto"}, {W: "Optional", N: "Foto freiwillig"}, {W: "Pflicht", N: "Foto immer Pflicht"}, {W: "Bei Mangel Pflicht", N: "Foto bei Mangel"})
                         Items.Value: =N
                         OnChange: |-
                           =If(!IsBlank(Self.Selected) && Self.Selected.W <> fnFotoWert(LookUp(colP, ID = varAuswahlID).Foto.Value, Coalesce(LookUp(colP, ID = varAuswahlID).FotoMoeglich, false)),
@@ -1341,7 +1398,7 @@
                         SelectionColor: =Color.White
                         SelectionFill: =clrPrimaer
                         Size: =14
-                        Width: =528
+                        Width: =256
                         X: =0
                         Y: =20
                   - lblPBed:

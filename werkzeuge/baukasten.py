@@ -1174,7 +1174,63 @@ def paket17(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17]
+# ---------------------------------------------------------------- Paket 13 (Anleitung im ⓘ-Fenster)
+
+def paket13(st):
+    p = {"nr": 13, "props": [], "neu": []}
+    st.sp.append(("RG_Anleitungen", "(neue Liste: Title, Anleitung, Aktiv)", "Liste"))
+    st.sp.append(("RG_Anleitungen", "Anleitung", "Spalte"))
+    st.sp.append(("RG_Pruefpunkte", "AnleitungID", "Zahl"))
+    st.neue_quellen.add("RG_Anleitungen")
+
+    def onvisible(t):
+        t = rep(t, "Set(varBildID, 0);\n", "Set(varBildID, 0);\nSet(varInfoID, 0);\n")
+        t = rep(t, 'AbwText: Coalesce(Text(a.AbwText), ""), Inaktiv: false}', 'AbwText: Coalesce(Text(a.AbwText), ""), AnlID: Coalesce(pp.AnleitungID, 0), Inaktiv: false}')
+        t = rep(t, "                     AbwText: \"\",\n", "                     AbwText: \"\",\n                     AnlID: Coalesce(p.AnleitungID, 0),\n")
+        t = rep(t, 'AbwText: Coalesce(Text(o.Value.AbwText), ""), Inaktiv: true}', 'AbwText: Coalesce(Text(o.Value.AbwText), ""), AnlID: 0, Inaktiv: true}')
+        return t
+    aendern(st, p, "13.3", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "13.4", "lblKaFrage.Width", lambda t: rep(t, "If(ThisItem.BildID > 0, 80, 0)", "If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 64, 0)"))
+    neues_control(st, p, "btnKaInfo", "conKaKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold",
+        "Height": "34", "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
+        "OnSelect": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, LookUp(RG_Anleitungen, ID = ThisItem.AnlID));\n"
+                    "If(IsBlank(varInfo.ID), Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning), Set(varInfoID, ThisItem.AnlID))",
+        "RadiusBottomLeft": "17", "RadiusBottomRight": "17", "RadiusTopLeft": "17", "RadiusTopRight": "17", "Size": "16", "Text": '"ⓘ"',
+        "Visible": "ThisItem.AnlID > 0", "Width": "48", "X": "Parent.Width - 68 - If(ThisItem.BildID > 0, 80, 0)", "Y": "10"})
+    neues_control(st, p, "conKaInfo", "scrKategorie", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(0, 0, 0, 0.45)", "Height": "Parent.Height", "Visible": "varInfoID > 0", "Width": "Parent.Width"})
+    neues_control(st, p, "btnKaInfoSperre", "conKaInfo", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Fill": "RGBA(0, 0, 0, 0)", "Height": "Parent.Height", "HoverFill": "RGBA(0, 0, 0, 0)",
+        "PressedFill": "RGBA(0, 0, 0, 0)", "Text": '""', "Width": "Parent.Width"})
+    neues_control(st, p, "conKaInfoKarte", "conKaInfo", "GroupContainer@1.5.0", {
+        "Fill": "clrKarte", "Height": "Min(Parent.Height - 32, 1000)",
+        "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
+        "Width": "Parent.Width - 48", "X": "24", "Y": "(Parent.Height - Self.Height) / 2"})
+    neues_control(st, p, "lblKaInfoTitel", "conKaInfoKarte", "Label@2.5.1", {
+        "Color": "clrPrimaer", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "40", "Size": "19",
+        "Text": '"ⓘ " & varInfo.Title', "Width": "Parent.Width - 40", "Wrap": "false", "X": "20", "Y": "14"})
+    neues_control(st, p, "lblKaInfoFrage", "conKaInfoKarte", "Label@2.5.1", {
+        "Color": "clrTextGrau", "Font": "Font.'Segoe UI'", "Height": "28", "Size": "13", "Text": '"zu: " & varInfoFrage',
+        "Width": "Parent.Width - 40", "Wrap": "false", "X": "20", "Y": "54"})
+    neues_control(st, p, "lblKaInfoText", "conKaInfoKarte", "Label@2.5.1", {
+        "Color": "clrText", "Font": "Font.'Segoe UI'", "Height": "If(varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)",
+        "Overflow": "Overflow.Scroll", "Size": "16", "Text": 'Coalesce(varInfo.Anleitung, "")', "VerticalAlign": "VerticalAlign.Top",
+        "Width": "Parent.Width - 40", "X": "20", "Y": "88"})
+    neues_control(st, p, "imgKaInfo", "conKaInfoKarte", "Image@2.2.3", {
+        "AccessibleLabel": '"Beispielbild zu " & varInfoFrage',
+        "Height": "(Parent.Height - 180) * 0.45 - 8", "Image": "If(varInfoID > 0 && varInfoBild > 0, LookUp(RG_Hinweisbilder, ID = varInfoBild).Thumbnail.Large)",
+        "ImagePosition": "ImagePosition.Fit", "Visible": "varInfoBild > 0", "Width": "Parent.Width - 40", "X": "20",
+        "Y": "96 + (Parent.Height - 180) * 0.55"})
+    neues_control(st, p, "btnKaInfoSchliessen", "conKaInfoKarte", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Color": "Color.White", "Fill": "clrPrimaer", "Font": "Font.'Segoe UI'", "Height": "56",
+        "HoverFill": "ColorFade(clrPrimaer, -20%)", "OnSelect": "Set(varInfoID, 0)", "PressedFill": "ColorFade(clrPrimaer, -35%)",
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10",
+        "Size": "17", "Text": '"Schließen"', "Width": "200", "X": "Parent.Width - 220", "Y": "Parent.Height - 76"})
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17, paket13]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1188,7 +1244,7 @@ Font FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOf
 Ungroup Date Number DateTime As in Compact Error Warning Success Information None Edit View Disabled White Semibold
 Days Seconds Minutes Monday Fill Fit Large Thumbnail LayoutDirection LayoutOverflow Vertical Scroll DropShadow Light
 Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full
-VerticalAlign Top Bottom Char Abs Months ShortDate DateTimeFormat Launch""".split())
+VerticalAlign Top Bottom Char Abs Months ShortDate DateTimeFormat Launch Overflow Scroll""".split())
 
 
 def addcolumns_namen(s):

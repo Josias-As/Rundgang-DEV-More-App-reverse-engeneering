@@ -13,7 +13,7 @@ from doc_paket12_16 import block, pfad  # noqa: E402
 
 BL = json.load(open(doc_app89.BLOECKE, encoding="utf-8"))
 BV = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p12_16.json"), encoding="utf-8"))
-BN = json.load(open(os.path.join(builder.AUS_ARB, "bloecke.json"), encoding="utf-8"))
+BN = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p14_15.json"), encoding="utf-8"))  # eingefroren nach 14+15
 
 KURZ = [
     "- **Paket 14 – Abweichung zum letzten Rundgang:** Bei einer Zahl lässt sich im Builder einstellen, wie stark sie vom letzten abgeschlossenen Rundgang abweichen darf "

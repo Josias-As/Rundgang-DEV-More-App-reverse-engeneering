@@ -300,7 +300,7 @@
                             ClearCollect(colMehrErg,
                                 With({basis: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0)},
                                     ForAll(Sequence(CountRows(colMehr)) As i,
-                                        {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: Left(Trim(txtMehrAbschnitt.Text), 255), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0}).ID, 0)}
+                                        {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: Left(Trim(txtMehrAbschnitt.Text), 255), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0}).ID, 0)}
                                     )
                                 )
                             );
