@@ -134,7 +134,28 @@ def main21():
     print("geschrieben: pakete/PAKET_21_FIX_UHRZEIT_2.md (%d Properties)" % len(p["props"]))
 
 
+def main22():
+    p = [q for q in BL["pakete"] if q["nr"] == 22][0]
+    eltern = dict(rg.App(doc_app89.EXPORT).eltern)
+    c = p["props"][0]
+    z = ["# Paket 22 – Hinweis „(mehrere möglich)“ an Mehrfach-Fragen", "",
+         "Stand 03.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket22) und `werkzeuge/doc_paket19.py`. Setzt auf den Stand nach N + 8–10 + 19–21 auf. "
+         "Paket 13 ändert nur `lblKaFrage.Width`, nicht `Text` → passt danach unverändert (Kette 21 → 22 → 12 … 13, geprüft).", "",
+         "## Kurzfassung", "",
+         "- Bei Typ MEHRFACH steht hinter der Frage (und hinter dem Pflicht-Stern) `  (mehrere möglich)`, z. B. „ZZ Test Mängelarten  *  (mehrere möglich)“.",
+         "- Textbreite geprüft: Beispiel 470 px bei Größe 17, Platz im ungünstigsten Fall (Bild + ⓘ) 530 px → passt in eine Zeile. Sehr lange Fragen werden wie bisher abgeschnitten (Höhe 32 ist fest, nicht neu).",
+         "- Das Auswahlfeld zeigt schon „Auswählen (mehrere möglich)“, solange nichts gewählt ist. Der Hinweis an der Frage bleibt auch nach der Auswahl sichtbar.",
+         "- 1 Property. Generator 0 Fehler. **Nicht in Studio getestet.**", "", "## Schritt", ""]
+    z += block("22.1", c["key"], doc_app89.de(c["vorher"]), doc_app89.de(c["nachher"]),
+               "Hängt bei Mehrfachauswahl den Hinweis an. Alle anderen Typen unverändert.", eltern)
+    z += ["## Test", "", "1. Mehrfach-Frage (Pflicht): „… *  (mehrere möglich)“. 2. Mehrfach ohne Pflicht: „…  (mehrere möglich)“. 3. Andere Typen: unverändert.", "",
+          "## Rückweg", "", "```", doc_app89.de(c["vorher"]), "```", ""]
+    open(os.path.join(doc_app89.AUS, "PAKET_22_MEHRFACH_HINWEIS.md"), "w", encoding="utf-8").write("\n".join(z) + "\n")
+    print("geschrieben: pakete/PAKET_22_MEHRFACH_HINWEIS.md")
+
+
 if __name__ == "__main__":
     main()
     main20()
     main21()
+    main22()

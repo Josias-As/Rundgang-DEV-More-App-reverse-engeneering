@@ -528,6 +528,8 @@
   dpKaDatum.OnChange               ok
   ddKaStunde.OnChange              ok
   ddKaMinute.OnChange              ok
+== Paket 22: 1 Properties, neue Steuerelemente: -
+  lblKaFrage.Text                  ok
 == Paket 12: 12 Properties, neue Steuerelemente: -
   scrKategorie.OnVisible           ok
   btnKaSpeichern.OnSelect          ok
@@ -1033,6 +1035,7 @@
   Paket 19: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 20: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 21: colAntworten hat in allen drei Zweigen dieselben 34 Felder
+  Paket 22: colAntworten hat in allen drei Zweigen dieselben 34 Felder
   Paket 12: colAntworten hat in allen drei Zweigen dieselben 36 Felder
   Paket 16: colAntworten hat in allen drei Zweigen dieselben 37 Felder
   Paket 14: colAntworten hat in allen drei Zweigen dieselben 46 Felder
@@ -1040,6 +1043,7 @@
   Paket 13: colAntworten hat in allen drei Zweigen dieselben 47 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
+  lblKaFrage                    470 px (+10 %) / 530 px, 1 Zeile(n) nötig, erlaubt 1  ok  'ZZ Test Mängelarten  *  (mehrere möglich)'
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
   btnKaFoto                      93 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto *'
   lblKaFotoHinweis              536 px (+10 %) / 670 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.'

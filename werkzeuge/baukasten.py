@@ -1330,7 +1330,17 @@ def paket21(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket12, paket16, paket14, paket17, paket13]
+# ---------------------------------------------------------------- Paket 22 (Hinweis „mehrere möglich“ an der Frage)
+
+def paket22(st):
+    p = {"nr": 22, "props": [], "neu": []}
+    aendern(st, p, "22.1", "lblKaFrage.Text", lambda t: rep(
+        t, 'ThisItem.Frage & If(ThisItem.Pflicht, "  *", "")',
+        'ThisItem.Frage & If(ThisItem.Pflicht, "  *", "") & If(ThisItem.Typ = "MEHRFACH", "  (mehrere möglich)", "")'))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1573,6 +1583,7 @@ def textbreite(text, size):
 # (Steuerelement, Text, Schriftgröße, verfügbare Breite in px, erlaubte Zeilen, Innenabstand links+rechts)
 # Breiten bei Tablet-Hochformat 768: Karte = 768 - 48 = 720, Fotofenster-Karte = 720
 TEXTE = [
+    ("lblKaFrage", "ZZ Test Mängelarten  *  (mehrere möglich)", 17, 540, 1, 10),
     ("btnKaFoto", "📷 Foto (10)", 15, 144, 1, 20),
     ("btnKaFoto", "📷 Foto *", 15, 144, 1, 20),
     ("lblKaFotoHinweis", "Foto Pflicht: mindestens ein Foto. Keine Personen fotografieren.", 13, 680, 1, 10),

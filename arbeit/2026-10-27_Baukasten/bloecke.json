@@ -842,6 +842,18 @@
    "neu": []
   },
   {
+   "nr": 22,
+   "props": [
+    {
+     "key": "lblKaFrage.Text",
+     "schritt": "22.1",
+     "vorher": "ThisItem.Frage & If(ThisItem.Pflicht, \"  *\", \"\")",
+     "nachher": "ThisItem.Frage & If(ThisItem.Pflicht, \"  *\", \"\") & If(ThisItem.Typ = \"MEHRFACH\", \"  (mehrere möglich)\", \"\")"
+    }
+   ],
+   "neu": []
+  },
+  {
    "nr": 12,
    "props": [
     {
