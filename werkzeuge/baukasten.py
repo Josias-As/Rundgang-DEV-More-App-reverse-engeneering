@@ -1047,7 +1047,134 @@ def paket14(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14]
+# ---------------------------------------------------------------- Paket 17 (Archiv vergangener Rundgänge)
+
+def _knopf(art, **kw):
+    if art == "primaer":
+        p = {"BorderThickness": "0", "Color": "Color.White", "Fill": "clrPrimaer", "HoverFill": "ColorFade(clrPrimaer, -20%)",
+             "PressedFill": "ColorFade(clrPrimaer, -35%)", "HoverColor": "Color.White", "PressedColor": "Color.White"}
+    else:
+        p = {"BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "HoverFill": "clrPrimaerHell",
+             "PressedFill": "clrPrimaerHell", "HoverColor": "clrPrimaer", "PressedColor": "clrPrimaer"}
+    p.update({"Font": "Font.'Segoe UI'", "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
+              "DisabledFill": "clrGesperrtHell", "DisabledColor": "clrGesperrt", "DisabledBorderColor": "clrGesperrtHell"})
+    p.update(kw)
+    return p
+
+
+def _label(**kw):
+    p = {"Font": "Font.'Segoe UI'", "Color": "clrText", "Size": "14"}
+    p.update(kw)
+    return p
+
+
+AR_LISTE = ('Filter(colArchiv As d, (varArTest || !Coalesce(d.TestDatensatz, false)) && (varArOffen || d.Status = stAbgeschlossen) && '
+            '(!varArNurNio || Coalesce(d.AnzahlNIO, 0) > 0))')
+AR_SUCHEN = ('If(!varIsLoading,\n'
+             '    Set(varIsLoading, true);\n'
+             '    Set(varArVon, Coalesce(dpArVon.SelectedDate, DateAdd(Today(), -3, TimeUnit.Months)));\n'
+             '    Set(varArBis, DateAdd(Coalesce(dpArBis.SelectedDate, Today()), 1, TimeUnit.Days));\n'
+             '    Set(varArRg, Coalesce(ddArRg.Selected.ID, 0));\n'
+             '    Refresh(RG_Durchfuehrungen);\n'
+             '    If(varArRg = 0,\n'
+             '        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis), StartZeit, SortOrder.Descending)),\n'
+             '        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis && RundgangID = varArRg), StartZeit, SortOrder.Descending))\n'
+             '    );\n'
+             '    If(CountRows(colArchiv) >= 500, Notify("Sehr viele Rundgänge im Zeitraum – es werden höchstens 500 angezeigt. Bitte den Zeitraum verkleinern.", NotificationType.Warning));\n'
+             '    Set(varIsLoading, false)\n'
+             ')')
+
+
+def paket17(st):
+    p = {"nr": 17, "props": [], "neu": []}
+    aendern(st, p, "17.2", "btnRuZurueck.OnSelect", lambda t: rep(
+        t, "Navigate(scrStart, ScreenTransition.None)", "If(varAusArchiv, Navigate(scrArchiv, ScreenTransition.None), Navigate(scrStart, ScreenTransition.None))"))
+    aendern(st, p, "17.2", "scrStart.OnVisible", lambda t: rep(t, "Set(varIsLoading, true);\n", "Set(varIsLoading, true);\nSet(varAusArchiv, false);\n"))
+    ganz(st, p, "17.2", "lblStartListeTitel.Width", "Parent.Width - 232")
+    neues_control(st, p, "btnStartArchiv", "scrStart", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Height="40", Size="15", Text='"🗂 Archiv"', Width="184", X="Parent.Width - 208", Y="216",
+        DisplayMode="If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+        OnSelect="If(!varIsLoading, Navigate(scrArchiv, ScreenTransition.None))"))
+    neues_control(st, p, "scrArchiv", None, "Screen", {
+        "Fill": "clrHintergrund",
+        "OnVisible": ("Set(varArTest, Coalesce(varArTest, false));\nSet(varArOffen, Coalesce(varArOffen, false));\nSet(varArNurNio, Coalesce(varArNurNio, false));\n"
+                      "If(IsEmpty(colArRg), ClearCollect(colArRg, Sort(ShowColumns(RG_Rundgaenge, ID, Title), Title)));\n"
+                      "If(IsEmpty(colArchiv), Select(btnArSuchen))")})
+    neues_control(st, p, "conArKopf", "scrArchiv", "GroupContainer@1.5.0", {"Fill": "clrPrimaer", "Height": "96", "Width": "Parent.Width"})
+    neues_control(st, p, "btnArZurueck", "conArKopf", "Classic/Button@2.2.0", _knopf(
+        "primaer", Fill="RGBA(255, 255, 255, 0.14)", HoverFill="RGBA(255, 255, 255, 0.26)", PressedFill="RGBA(255, 255, 255, 0.34)",
+        Height="52", Size="16", Text='"← Start"', Width="140", X="24", Y="22",
+        OnSelect="If(!varIsLoading,\n    Set(varAusArchiv, false);\n    Navigate(scrStart, ScreenTransition.None)\n)"))
+    neues_control(st, p, "lblArTitel", "conArKopf", "Label@2.5.1", _label(
+        Color="Color.White", FontWeight="FontWeight.Semibold", Height="96", Size="24", Text='"Archiv"', Width="Parent.Width - 200", X="180", Y="0"))
+    neues_control(st, p, "lblArVon", "scrArchiv", "Label@2.5.1", _label(Color="clrTextGrau", Height="24", Size="13", Text='"von"', Width="220", X="24", Y="108"))
+    neues_control(st, p, "dpArVon", "scrArchiv", "Classic/DatePicker@2.6.0", {
+        "AccessibleLabel": '"Zeitraum von"', "BorderColor": "clrRahmen", "Color": "clrText", "DefaultDate": "DateAdd(Today(), -3, TimeUnit.Months)",
+        "Font": "Font.'Segoe UI'", "Format": "DateTimeFormat.ShortDate", "Height": "52", "IconBackground": "clrPrimaer", "IconFill": "Color.White",
+        "Size": "15", "StartOfWeek": "StartOfWeek.Monday", "Width": "220", "X": "24", "Y": "132"})
+    neues_control(st, p, "lblArBis", "scrArchiv", "Label@2.5.1", _label(Color="clrTextGrau", Height="24", Size="13", Text='"bis"', Width="220", X="260", Y="108"))
+    neues_control(st, p, "dpArBis", "scrArchiv", "Classic/DatePicker@2.6.0", {
+        "AccessibleLabel": '"Zeitraum bis"', "BorderColor": "clrRahmen", "Color": "clrText", "DefaultDate": "Today()",
+        "Font": "Font.'Segoe UI'", "Format": "DateTimeFormat.ShortDate", "Height": "52", "IconBackground": "clrPrimaer", "IconFill": "Color.White",
+        "Size": "15", "StartOfWeek": "StartOfWeek.Monday", "Width": "220", "X": "260", "Y": "132"})
+    neues_control(st, p, "btnArSuchen", "scrArchiv", "Classic/Button@2.2.0", _knopf(
+        "primaer", Height="52", Size="16", Text='"Suchen"', Width="Parent.Width - 520", X="496", Y="132",
+        DisplayMode="If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)", OnSelect=AR_SUCHEN))
+    neues_control(st, p, "ddArRg", "scrArchiv", "Classic/DropDown@2.3.1", {
+        "AccessibleLabel": '"Rundgang"', "BorderColor": "clrRahmen", "BorderThickness": "1", "ChevronBackground": "clrPrimaer", "ChevronFill": "Color.White",
+        "Color": "clrText", "Default": '"Alle Rundgänge"', "Fill": "clrKarte", "Font": "Font.'Segoe UI'", "Height": "52",
+        "Items": 'Ungroup(Table({T: Table({ID: 0, Title: "Alle Rundgänge"})}, {T: colArRg}), T)', "Items.Value": "Title",
+        "PaddingLeft": "12", "Size": "15", "Width": "Parent.Width - 48", "X": "24", "Y": "196"})
+    for i, (name, var, text) in enumerate((("btnArNurNio", "varArNurNio", "nur mit Mängeln"), ("btnArOffen", "varArOffen", "auch offene"),
+                                           ("btnArTest", "varArTest", "Testläufe"))):
+        neues_control(st, p, name, "scrArchiv", "Classic/Button@2.2.0", _knopf(
+            "sekundaer", Height="44", Size="14", Text='If(%s, "✓ ", "○ ") & "%s"' % (var, text),
+            Fill="If(%s, clrPrimaerHell, clrKarte)" % var, Width="(Parent.Width - 64) / 3", X="24 + %d * ((Parent.Width - 64) / 3 + 8)" % i, Y="260",
+            OnSelect="Set(%s, !%s)" % (var, var)))
+    neues_control(st, p, "lblArAnzahl", "scrArchiv", "Label@2.5.1", _label(
+        Color="clrTextGrau", Height="28", Size="13", Width="Parent.Width - 48", X="24", Y="312",
+        Text='CountRows(' + AR_LISTE + ') & " Rundgänge · " & Text(varArVon, "dd.mm.yyyy") & " bis " & Text(DateAdd(varArBis, -1, TimeUnit.Days), "dd.mm.yyyy")'))
+    neues_control(st, p, "galArListe", "scrArchiv", "Gallery@2.15.0", {
+        "AccessibleLabel": '"Vergangene Rundgänge"', "Height": "Parent.Height - 344", "Items": AR_LISTE, "ShowScrollbar": "true",
+        "TemplatePadding": "0", "TemplateSize": "104", "Width": "Parent.Width", "X": "0", "Y": "344"})
+    neues_control(st, p, "conArKarte", "galArListe", "GroupContainer@1.5.0", {
+        "BorderColor": 'If(ThisItem.Status = stAbgeschlossen, clrRahmen, clrWarnung)', "BorderThickness": "1", "Fill": "clrKarte",
+        "Height": "Parent.TemplateHeight - 12", "RadiusBottomLeft": "12", "RadiusBottomRight": "12", "RadiusTopLeft": "12", "RadiusTopRight": "12",
+        "Width": "Parent.TemplateWidth - 48", "X": "24", "Y": "6"})
+    neues_control(st, p, "lblArName", "conArKarte", "Label@2.5.1", _label(
+        FontWeight="FontWeight.Semibold", Height="32", Size="16", Text='ThisItem.RundgangName & If(Coalesce(ThisItem.TestDatensatz, false), "  · Test", "")',
+        Width="Parent.Width - 236", X="20", Y="10", Wrap="false"))
+    neues_control(st, p, "lblArInfo", "conArKarte", "Label@2.5.1", _label(
+        Color='If(Coalesce(ThisItem.AnzahlNIO, 0) > 0, clrFehler, clrTextGrau)', Height="44", Size="13", VerticalAlign="VerticalAlign.Top",
+        Text=('fnTagAnzeige(DateValue(ThisItem.TagText)) & Char(10) & Coalesce(ThisItem.PrueferName, "") & "  ·  " & '
+              'If(ThisItem.Status = stAbgeschlossen, Coalesce(ThisItem.AnzahlNIO, 0) & " n.i.O.", "nicht abgeschlossen")'),
+        Width="Parent.Width - 236", X="20", Y="42"))
+    neues_control(st, p, "btnArPdf", "conArKarte", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Height="40", Size="14", Text='"PDF"', Width="80", X="Parent.Width - 196", Y="(Parent.Height - 40) / 2",
+        Visible='!IsBlank(ThisItem.ProtokollUrl)', OnSelect="Launch(ThisItem.ProtokollUrl)"))
+    neues_control(st, p, "btnArOeffnen", "conArKarte", "Classic/Button@2.2.0", _knopf(
+        "primaer", Height="40", Size="14", Text='"Ansehen"', Width="100", X="Parent.Width - 108", Y="(Parent.Height - 40) / 2",
+        DisplayMode="If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+        OnSelect=('If(ThisItem.Status <> stAbgeschlossen,\n'
+                  '    Notify("Nicht abgeschlossene Rundgänge setzt du auf der Startseite am jeweiligen Tag fort.", NotificationType.Information),\n'
+                  '    Set(varRgID, ThisItem.RundgangID);\n'
+                  '    Set(varDurchID, ThisItem.ID);\n'
+                  '    Set(varWeiter, false);\n'
+                  '    Set(varAusArchiv, true);\n'
+                  '    Navigate(scrRundgang, ScreenTransition.None)\n'
+                  ')')))
+    neues_control(st, p, "lblArLeer", "scrArchiv", "Label@2.5.1", _label(
+        Color="clrTextGrau", Height="60", Size="15", Text='"Keine Rundgänge im gewählten Zeitraum."', Width="Parent.Width - 48", X="24", Y="360",
+        Visible="IsEmpty(galArListe.AllItems) && !varIsLoading"))
+    neues_control(st, p, "conArLaden", "scrArchiv", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(244, 245, 249, 0.75)", "Height": "Parent.Height", "Visible": "varIsLoading", "Width": "Parent.Width"})
+    neues_control(st, p, "lblArLaden", "conArLaden", "Label@2.5.1", _label(
+        Align="Align.Center", Color="clrPrimaer", FontWeight="FontWeight.Semibold", Height="40", Size="18", Text='"Bitte warten …"',
+        Width="Parent.Width", X="0", Y="(Parent.Height - 40) / 2"))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket12, paket16, paket14, paket17]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1061,7 +1188,7 @@ Font FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOf
 Ungroup Date Number DateTime As in Compact Error Warning Success Information None Edit View Disabled White Semibold
 Days Seconds Minutes Monday Fill Fit Large Thumbnail LayoutDirection LayoutOverflow Vertical Scroll DropShadow Light
 Ascending Descending SortOrder Transparent Black Normal Bold Center Right Left Data LoadingSpinner Medium Small Full
-VerticalAlign Top Bottom Char Abs""".split())
+VerticalAlign Top Bottom Char Abs Months ShortDate DateTimeFormat Launch""".split())
 
 
 def addcolumns_namen(s):

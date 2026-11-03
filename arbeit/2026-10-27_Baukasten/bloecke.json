@@ -913,6 +913,55 @@
     }
    ],
    "neu": []
+  },
+  {
+   "nr": 17,
+   "props": [
+    {
+     "key": "btnRuZurueck.OnSelect",
+     "schritt": "17.2",
+     "vorher": "Navigate(scrStart, ScreenTransition.None)",
+     "nachher": "If(varAusArchiv, Navigate(scrArchiv, ScreenTransition.None), Navigate(scrStart, ScreenTransition.None))"
+    },
+    {
+     "key": "scrStart.OnVisible",
+     "schritt": "17.2",
+     "vorher": "Set(varIsLoading, true);\nIf(IsBlank(varHeute) || varHeute <> Today(), Set(varHeute, Today()); Set(varTag, Today()));\nSet(varTagText, Text(varTag, \"yyyy-mm-dd\"));\nConcurrent(\n    ClearCollect(colRundgaenge, Filter(RG_Rundgaenge, Aktiv = true)),\n    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true))\n);\nSelect(btnStartTagLaden)",
+     "nachher": "Set(varIsLoading, true);\nSet(varAusArchiv, false);\nIf(IsBlank(varHeute) || varHeute <> Today(), Set(varHeute, Today()); Set(varTag, Today()));\nSet(varTagText, Text(varTag, \"yyyy-mm-dd\"));\nConcurrent(\n    ClearCollect(colRundgaenge, Filter(RG_Rundgaenge, Aktiv = true)),\n    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true))\n);\nSelect(btnStartTagLaden)"
+    },
+    {
+     "key": "lblStartListeTitel.Width",
+     "schritt": "17.2",
+     "vorher": "Parent.Width - 48",
+     "nachher": "Parent.Width - 232"
+    }
+   ],
+   "neu": [
+    "btnStartArchiv",
+    "scrArchiv",
+    "conArKopf",
+    "btnArZurueck",
+    "lblArTitel",
+    "lblArVon",
+    "dpArVon",
+    "lblArBis",
+    "dpArBis",
+    "btnArSuchen",
+    "ddArRg",
+    "btnArNurNio",
+    "btnArOffen",
+    "btnArTest",
+    "lblArAnzahl",
+    "galArListe",
+    "conArKarte",
+    "lblArName",
+    "lblArInfo",
+    "btnArPdf",
+    "btnArOeffnen",
+    "lblArLeer",
+    "conArLaden",
+    "lblArLaden"
+   ]
   }
  ],
  "neue_controls": {
@@ -1579,6 +1628,480 @@
     "Width": "120",
     "X": "Parent.Width - 140",
     "Y": "54 + If(ThisItem.Hinweis <> \"\", 24, 0)"
+   }
+  },
+  "btnStartArchiv": {
+   "eltern": "scrStart",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "40",
+    "Size": "15",
+    "Text": "\"🗂 Archiv\"",
+    "Width": "184",
+    "X": "Parent.Width - 208",
+    "Y": "216",
+    "DisplayMode": "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+    "OnSelect": "If(!varIsLoading, Navigate(scrArchiv, ScreenTransition.None))"
+   }
+  },
+  "scrArchiv": {
+   "eltern": null,
+   "typ": "Screen",
+   "props": {
+    "Fill": "clrHintergrund",
+    "OnVisible": "Set(varArTest, Coalesce(varArTest, false));\nSet(varArOffen, Coalesce(varArOffen, false));\nSet(varArNurNio, Coalesce(varArNurNio, false));\nIf(IsEmpty(colArRg), ClearCollect(colArRg, Sort(ShowColumns(RG_Rundgaenge, ID, Title), Title)));\nIf(IsEmpty(colArchiv), Select(btnArSuchen))"
+   }
+  },
+  "conArKopf": {
+   "eltern": "scrArchiv",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "clrPrimaer",
+    "Height": "96",
+    "Width": "Parent.Width"
+   }
+  },
+  "btnArZurueck": {
+   "eltern": "conArKopf",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Color": "Color.White",
+    "Fill": "RGBA(255, 255, 255, 0.14)",
+    "HoverFill": "RGBA(255, 255, 255, 0.26)",
+    "PressedFill": "RGBA(255, 255, 255, 0.34)",
+    "HoverColor": "Color.White",
+    "PressedColor": "Color.White",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "52",
+    "Size": "16",
+    "Text": "\"← Start\"",
+    "Width": "140",
+    "X": "24",
+    "Y": "22",
+    "OnSelect": "If(!varIsLoading,\n    Set(varAusArchiv, false);\n    Navigate(scrStart, ScreenTransition.None)\n)"
+   }
+  },
+  "lblArTitel": {
+   "eltern": "conArKopf",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "Color.White",
+    "Size": "24",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "96",
+    "Text": "\"Archiv\"",
+    "Width": "Parent.Width - 200",
+    "X": "180",
+    "Y": "0"
+   }
+  },
+  "lblArVon": {
+   "eltern": "scrArchiv",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "13",
+    "Height": "24",
+    "Text": "\"von\"",
+    "Width": "220",
+    "X": "24",
+    "Y": "108"
+   }
+  },
+  "dpArVon": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/DatePicker@2.6.0",
+   "props": {
+    "AccessibleLabel": "\"Zeitraum von\"",
+    "BorderColor": "clrRahmen",
+    "Color": "clrText",
+    "DefaultDate": "DateAdd(Today(), -3, TimeUnit.Months)",
+    "Font": "Font.'Segoe UI'",
+    "Format": "DateTimeFormat.ShortDate",
+    "Height": "52",
+    "IconBackground": "clrPrimaer",
+    "IconFill": "Color.White",
+    "Size": "15",
+    "StartOfWeek": "StartOfWeek.Monday",
+    "Width": "220",
+    "X": "24",
+    "Y": "132"
+   }
+  },
+  "lblArBis": {
+   "eltern": "scrArchiv",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "13",
+    "Height": "24",
+    "Text": "\"bis\"",
+    "Width": "220",
+    "X": "260",
+    "Y": "108"
+   }
+  },
+  "dpArBis": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/DatePicker@2.6.0",
+   "props": {
+    "AccessibleLabel": "\"Zeitraum bis\"",
+    "BorderColor": "clrRahmen",
+    "Color": "clrText",
+    "DefaultDate": "Today()",
+    "Font": "Font.'Segoe UI'",
+    "Format": "DateTimeFormat.ShortDate",
+    "Height": "52",
+    "IconBackground": "clrPrimaer",
+    "IconFill": "Color.White",
+    "Size": "15",
+    "StartOfWeek": "StartOfWeek.Monday",
+    "Width": "220",
+    "X": "260",
+    "Y": "132"
+   }
+  },
+  "btnArSuchen": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Color": "Color.White",
+    "Fill": "clrPrimaer",
+    "HoverFill": "ColorFade(clrPrimaer, -20%)",
+    "PressedFill": "ColorFade(clrPrimaer, -35%)",
+    "HoverColor": "Color.White",
+    "PressedColor": "Color.White",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "52",
+    "Size": "16",
+    "Text": "\"Suchen\"",
+    "Width": "Parent.Width - 520",
+    "X": "496",
+    "Y": "132",
+    "DisplayMode": "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+    "OnSelect": "If(!varIsLoading,\n    Set(varIsLoading, true);\n    Set(varArVon, Coalesce(dpArVon.SelectedDate, DateAdd(Today(), -3, TimeUnit.Months)));\n    Set(varArBis, DateAdd(Coalesce(dpArBis.SelectedDate, Today()), 1, TimeUnit.Days));\n    Set(varArRg, Coalesce(ddArRg.Selected.ID, 0));\n    Refresh(RG_Durchfuehrungen);\n    If(varArRg = 0,\n        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis), StartZeit, SortOrder.Descending)),\n        ClearCollect(colArchiv, Sort(Filter(RG_Durchfuehrungen, StartZeit >= varArVon && StartZeit < varArBis && RundgangID = varArRg), StartZeit, SortOrder.Descending))\n    );\n    If(CountRows(colArchiv) >= 500, Notify(\"Sehr viele Rundgänge im Zeitraum – es werden höchstens 500 angezeigt. Bitte den Zeitraum verkleinern.\", NotificationType.Warning));\n    Set(varIsLoading, false)\n)"
+   }
+  },
+  "ddArRg": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/DropDown@2.3.1",
+   "props": {
+    "AccessibleLabel": "\"Rundgang\"",
+    "BorderColor": "clrRahmen",
+    "BorderThickness": "1",
+    "ChevronBackground": "clrPrimaer",
+    "ChevronFill": "Color.White",
+    "Color": "clrText",
+    "Default": "\"Alle Rundgänge\"",
+    "Fill": "clrKarte",
+    "Font": "Font.'Segoe UI'",
+    "Height": "52",
+    "Items": "Ungroup(Table({T: Table({ID: 0, Title: \"Alle Rundgänge\"})}, {T: colArRg}), T)",
+    "Items.Value": "Title",
+    "PaddingLeft": "12",
+    "Size": "15",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "196"
+   }
+  },
+  "btnArNurNio": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "If(varArNurNio, clrPrimaerHell, clrKarte)",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "44",
+    "Size": "14",
+    "Text": "If(varArNurNio, \"✓ \", \"○ \") & \"nur mit Mängeln\"",
+    "Width": "(Parent.Width - 64) / 3",
+    "X": "24 + 0 * ((Parent.Width - 64) / 3 + 8)",
+    "Y": "260",
+    "OnSelect": "Set(varArNurNio, !varArNurNio)"
+   }
+  },
+  "btnArOffen": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "If(varArOffen, clrPrimaerHell, clrKarte)",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "44",
+    "Size": "14",
+    "Text": "If(varArOffen, \"✓ \", \"○ \") & \"auch offene\"",
+    "Width": "(Parent.Width - 64) / 3",
+    "X": "24 + 1 * ((Parent.Width - 64) / 3 + 8)",
+    "Y": "260",
+    "OnSelect": "Set(varArOffen, !varArOffen)"
+   }
+  },
+  "btnArTest": {
+   "eltern": "scrArchiv",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "If(varArTest, clrPrimaerHell, clrKarte)",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "44",
+    "Size": "14",
+    "Text": "If(varArTest, \"✓ \", \"○ \") & \"Testläufe\"",
+    "Width": "(Parent.Width - 64) / 3",
+    "X": "24 + 2 * ((Parent.Width - 64) / 3 + 8)",
+    "Y": "260",
+    "OnSelect": "Set(varArTest, !varArTest)"
+   }
+  },
+  "lblArAnzahl": {
+   "eltern": "scrArchiv",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "13",
+    "Height": "28",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "312",
+    "Text": "CountRows(Filter(colArchiv As d, (varArTest || !Coalesce(d.TestDatensatz, false)) && (varArOffen || d.Status = stAbgeschlossen) && (!varArNurNio || Coalesce(d.AnzahlNIO, 0) > 0))) & \" Rundgänge · \" & Text(varArVon, \"dd.mm.yyyy\") & \" bis \" & Text(DateAdd(varArBis, -1, TimeUnit.Days), \"dd.mm.yyyy\")"
+   }
+  },
+  "galArListe": {
+   "eltern": "scrArchiv",
+   "typ": "Gallery@2.15.0",
+   "props": {
+    "AccessibleLabel": "\"Vergangene Rundgänge\"",
+    "Height": "Parent.Height - 344",
+    "Items": "Filter(colArchiv As d, (varArTest || !Coalesce(d.TestDatensatz, false)) && (varArOffen || d.Status = stAbgeschlossen) && (!varArNurNio || Coalesce(d.AnzahlNIO, 0) > 0))",
+    "ShowScrollbar": "true",
+    "TemplatePadding": "0",
+    "TemplateSize": "104",
+    "Width": "Parent.Width",
+    "X": "0",
+    "Y": "344"
+   }
+  },
+  "conArKarte": {
+   "eltern": "galArListe",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "BorderColor": "If(ThisItem.Status = stAbgeschlossen, clrRahmen, clrWarnung)",
+    "BorderThickness": "1",
+    "Fill": "clrKarte",
+    "Height": "Parent.TemplateHeight - 12",
+    "RadiusBottomLeft": "12",
+    "RadiusBottomRight": "12",
+    "RadiusTopLeft": "12",
+    "RadiusTopRight": "12",
+    "Width": "Parent.TemplateWidth - 48",
+    "X": "24",
+    "Y": "6"
+   }
+  },
+  "lblArName": {
+   "eltern": "conArKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrText",
+    "Size": "16",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "32",
+    "Text": "ThisItem.RundgangName & If(Coalesce(ThisItem.TestDatensatz, false), \"  · Test\", \"\")",
+    "Width": "Parent.Width - 236",
+    "X": "20",
+    "Y": "10",
+    "Wrap": "false"
+   }
+  },
+  "lblArInfo": {
+   "eltern": "conArKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "If(Coalesce(ThisItem.AnzahlNIO, 0) > 0, clrFehler, clrTextGrau)",
+    "Size": "13",
+    "Height": "44",
+    "VerticalAlign": "VerticalAlign.Top",
+    "Text": "fnTagAnzeige(DateValue(ThisItem.TagText)) & Char(10) & Coalesce(ThisItem.PrueferName, \"\") & \"  ·  \" & If(ThisItem.Status = stAbgeschlossen, Coalesce(ThisItem.AnzahlNIO, 0) & \" n.i.O.\", \"nicht abgeschlossen\")",
+    "Width": "Parent.Width - 236",
+    "X": "20",
+    "Y": "42"
+   }
+  },
+  "btnArPdf": {
+   "eltern": "conArKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "40",
+    "Size": "14",
+    "Text": "\"PDF\"",
+    "Width": "80",
+    "X": "Parent.Width - 196",
+    "Y": "(Parent.Height - 40) / 2",
+    "Visible": "!IsBlank(ThisItem.ProtokollUrl)",
+    "OnSelect": "Launch(ThisItem.ProtokollUrl)"
+   }
+  },
+  "btnArOeffnen": {
+   "eltern": "conArKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Color": "Color.White",
+    "Fill": "clrPrimaer",
+    "HoverFill": "ColorFade(clrPrimaer, -20%)",
+    "PressedFill": "ColorFade(clrPrimaer, -35%)",
+    "HoverColor": "Color.White",
+    "PressedColor": "Color.White",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "40",
+    "Size": "14",
+    "Text": "\"Ansehen\"",
+    "Width": "100",
+    "X": "Parent.Width - 108",
+    "Y": "(Parent.Height - 40) / 2",
+    "DisplayMode": "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+    "OnSelect": "If(ThisItem.Status <> stAbgeschlossen,\n    Notify(\"Nicht abgeschlossene Rundgänge setzt du auf der Startseite am jeweiligen Tag fort.\", NotificationType.Information),\n    Set(varRgID, ThisItem.RundgangID);\n    Set(varDurchID, ThisItem.ID);\n    Set(varWeiter, false);\n    Set(varAusArchiv, true);\n    Navigate(scrRundgang, ScreenTransition.None)\n)"
+   }
+  },
+  "lblArLeer": {
+   "eltern": "scrArchiv",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "15",
+    "Height": "60",
+    "Text": "\"Keine Rundgänge im gewählten Zeitraum.\"",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "360",
+    "Visible": "IsEmpty(galArListe.AllItems) && !varIsLoading"
+   }
+  },
+  "conArLaden": {
+   "eltern": "scrArchiv",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "RGBA(244, 245, 249, 0.75)",
+    "Height": "Parent.Height",
+    "Visible": "varIsLoading",
+    "Width": "Parent.Width"
+   }
+  },
+  "lblArLaden": {
+   "eltern": "conArLaden",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrPrimaer",
+    "Size": "18",
+    "Align": "Align.Center",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "40",
+    "Text": "\"Bitte warten …\"",
+    "Width": "Parent.Width",
+    "X": "0",
+    "Y": "(Parent.Height - 40) / 2"
    }
   }
  }
