@@ -16,6 +16,8 @@ EXPORTE = {
     "2026-10-27_0909": "quellen/2026-10-27_Export0909/frischerexport_20261027090933.zip",
     "2026-11-02_1541": "quellen/2026-11-02_RundgangApp/6ec7b447-rundgangapp2.11.26_20261102154137.zip",
     "2026-11-02_Builder": "quellen/2026-11-02_Builder/09684788-neueversionbuilderapp2.11.26_20261102140349.zip",
+    "2026-11-03_0959": "quellen/2026-11-03_RundgangApp/6dce8db3-RundgangDEV03.11.26_20261103095938.zip",
+    "2026-11-03_Builder": "quellen/2026-11-03_Builder/349743f9-RundgangBuilder03.11.26_20261103100033.zip",
 }
 
 

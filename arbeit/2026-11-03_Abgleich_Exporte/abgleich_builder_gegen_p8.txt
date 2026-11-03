@@ -1,0 +1,365 @@
+Steuerelemente fehlen in Studio: 0 
+Steuerelemente nur in Studio: 0 
+App.Formulas: gleich
+App.OnStart: gleich
+Properties fehlen in Studio (Standardwert?): 275
+  btnAktSperre.DisplayMode
+  btnAktSperre.OnSelect
+  btnAktSperre.X
+  btnAktSperre.Y
+  btnAktZu.Height
+  btnBZeigen.X
+  btnBZeigen.Y
+  btnBi.X
+  btnBi.Y
+  btnBildKeins.Width
+  btnBildNeuLaden.Width
+  btnBildSchliessen.Width
+  btnBildSperre.DisplayMode
+  btnBildSperre.OnSelect
+  btnBildSperre.X
+  btnBildSperre.Y
+  btnBildZu.Height
+  btnEdAktivieren.Height
+  btnEdBearbeiten.Height
+  btnEdDupl.Height
+  btnEdEntf.Height
+  btnEdEntf.Width
+  btnEdHoch.Height
+  btnEdLadenAusweg.DisplayMode
+  btnEdLadenAusweg.Height
+  btnEdLadenSperre.DisplayMode
+  btnEdLadenSperre.OnSelect
+  btnEdLadenSperre.X
+  btnEdLadenSperre.Y
+  btnEdRunter.Height
+  btnEdZurueck.Height
+  btnGlHolen.Height
+  btnGlMehrere.Height
+  btnGlNeuB.Height
+  btnGlNeuK.Height
+  btnGlNeuP.Height
+  btnGlZeile.X
+  btnGlZeile.Y
+  btnHoZeile.X
+  btnHoZeile.Y
+  btnHolenSperre.DisplayMode
+  btnHolenSperre.OnSelect
+  btnHolenSperre.X
+  btnHolenSperre.Y
+  btnHolenZu.Height
+  btnLiLadenSperre.DisplayMode
+  btnLiLadenSperre.OnSelect
+  btnLiLadenSperre.X
+  btnLiLadenSperre.Y
+  btnMehrPfl.DisplayMode
+  btnMehrPfl.X
+  btnMehrPfl.Y
+  btnMehrSperre.DisplayMode
+  btnMehrSperre.OnSelect
+  btnMehrSperre.X
+  btnMehrSperre.Y
+  btnMehrTyp.DisplayMode
+  btnMehrTyp.X
+  btnMehrTyp.Y
+  btnMehrZu.Height
+  btnNeuAbbrechen.Width
+  btnNeuAnlegen.Width
+  btnNeuArt.DisplayMode
+  btnNeuArt.Height
+  btnNeuArt.X
+  btnNeuArt.Y
+  btnNeuSperre.DisplayMode
+  btnNeuSperre.OnSelect
+  btnNeuSperre.X
+  btnNeuSperre.Y
+  btnNeuZu.Height
+  btnPGrenz.X
+  btnPGrenz.Y
+  btnPKomm.X
+  btnPKomm.Y
+  btnPPflicht.X
+  btnPPflicht.Y
+  btnPTyp.X
+  btnPTyp.Y
+  btnPlAktiv.Height
+  btnPlBisWeg.Height
+  btnPlLadenSperre.DisplayMode
+  btnPlLadenSperre.OnSelect
+  btnPlLadenSperre.X
+  btnPlLadenSperre.Y
+  btnPlZurueck.Height
+  btnPrZeile.X
+  btnPrZeile.Y
+  btnVsIO.OnSelect
+  btnVsNIO.OnSelect
+  conAkt.BorderThickness
+  conAktKarte.BorderThickness
+  conBild.BorderThickness
+  conBildKarte.BorderThickness
+  conEdB.BorderThickness
+  conEdGl.X
+  conEdK.BorderThickness
+  conEdKopf.BorderThickness
+  conEdLaden.BorderThickness
+  conEdLeer.BorderThickness
+  conEdLeiste.BorderThickness
+  conEdLeiste.X
+  conEdLeiste.Y
+  conEdMitte.BorderThickness
+  conEdP.BorderThickness
+  conGlFuss.BorderThickness
+  conGlFuss.X
+  conHolen.BorderThickness
+  conHolenKarte.BorderThickness
+  conLiKarte.X
+  conLiKopf.BorderThickness
+  conLiLaden.BorderThickness
+  conMehr.BorderThickness
+  conMehrKarte.BorderThickness
+  conNeu.BorderThickness
+  conNeuKarte.BorderThickness
+  conPRest.BorderThickness
+  conPRest.X
+  conPWerte.BorderThickness
+  conPWerte.X
+  conPZahl.BorderThickness
+  conPZahl.X
+  conPlKarte.X
+  conPlKopf.BorderThickness
+  conPlLaden.BorderThickness
+  ddHolenQuelle.DisplayMode
+  ddHolenQuelle.Height
+  ddHolenQuelle.PaddingLeft
+  ddKBereich.PaddingLeft
+  ddKBereich.X
+  ddNeuQuelle.DisplayMode
+  ddNeuQuelle.OnChange
+  ddNeuQuelle.PaddingLeft
+  ddPBedA.PaddingLeft
+  ddPBedA.X
+  ddPBedW.PaddingLeft
+  ddPFoto.PaddingLeft
+  ddPFoto.X
+  ddPKategorie.PaddingLeft
+  ddPKategorie.X
+  ddPlTag.Height
+  ddPlTag.PaddingLeft
+  ddPlZyklus.Height
+  ddPlZyklus.PaddingLeft
+  ddVsAuswahl.DisplayMode
+  ddVsAuswahl.OnChange
+  ddVsAuswahl.PaddingLeft
+  dpPlBis.Format
+  dpPlBis.Height
+  dpPlBis.Size
+  dpPlStart.Format
+  dpPlStart.Height
+  dpPlStart.Size
+  galAkt.ShowScrollbar
+  galBZeigen.X
+  galGl.ShowScrollbar
+  galGl.X
+  galHolen.ShowScrollbar
+  galLi.ShowScrollbar
+  galPGrenz.X
+  galPPflicht.X
+  galPTyp.X
+  galPl.ShowScrollbar
+  galPlTermine.ShowScrollbar
+  galPr.ShowScrollbar
+  imgBi.ImagePosition
+  lblAktArt.X
+  lblAktArt.Y
+  lblAktHinweise.Size
+  lblAktTitel.Height
+  lblAktZeile.Y
+  lblBInfo.Size
+  lblBInfo.X
+  lblBName.X
+  lblBName.Y
+  lblBZeigen.X
+  lblBildLeer.Height
+  lblBildLeer.Size
+  lblBildTitel.Height
+  lblEdArt.Y
+  lblEdLadenHinweis.X
+  lblEdLadenText.X
+  lblEdName.Height
+  lblEdPruefZahl.Height
+  lblEdPruefZahl.Size
+  lblGlFehler.Size
+  lblGlFehler.Y
+  lblGlHinter.X
+  lblGlHinter.Y
+  lblGlInfo.Y
+  lblGlText.Size
+  lblGlText.Y
+  lblHoHinter.X
+  lblHoHinter.Y
+  lblHoInfo.Y
+  lblHoText.Size
+  lblHoText.Y
+  lblHolenLeer.Height
+  lblHolenLeer.Size
+  lblHolenTitel.Height
+  lblHolenZiel.Size
+  lblKBereich.X
+  lblKInfo.Size
+  lblKInfo.X
+  lblKName.X
+  lblKName.Y
+  lblLeerHilfe.X
+  lblLeerHilfe.Y
+  lblLiInfo.Height
+  lblLiLadenText.X
+  lblLiLeer.Height
+  lblLiNutzer.Size
+  lblLiNutzer.Y
+  lblLiTitel.Y
+  lblMehrHilfe.Size
+  lblMehrTitel.Height
+  lblMehrZiel.Height
+  lblNeuArt.Size
+  lblNeuName.Size
+  lblNeuTitel.Height
+  lblPBed.X
+  lblPEinheit.X
+  lblPEinheit.Y
+  lblPFoto.X
+  lblPFoto.Y
+  lblPFrage.X
+  lblPFrage.Y
+  lblPGrenz.X
+  lblPHinweis.X
+  lblPKat.X
+  lblPMax.Y
+  lblPMin.Y
+  lblPPflicht.X
+  lblPTyp.X
+  lblPWerte.X
+  lblPWerte.Y
+  lblPlAb.Height
+  lblPlBis.Height
+  lblPlHinweis.Size
+  lblPlKeine.Height
+  lblPlKeine.Size
+  lblPlKopf4.Width
+  lblPlLadenText.X
+  lblPlLeer.Height
+  lblPlTermin.Size
+  lblPlTermin.X
+  lblPlTermin.Y
+  lblPlTitel.Y
+  lblPrLeer.Height
+  lblPrLeer.Size
+  lblPrPunkt.X
+  lblPrPunkt.Y
+  lblPrText.Y
+  lblVsListe.Size
+  lblVsMehr.Size
+  tmrArbeit.X
+  tmrArbeit.Y
+  txtBName.Height
+  txtBName.X
+  txtEdName.Height
+  txtKName.Height
+  txtKName.X
+  txtMehr.DisplayMode
+  txtMehr.OnChange
+  txtMehrAbschnitt.DisplayMode
+  txtMehrAbschnitt.OnChange
+  txtNeuName.DisplayMode
+  txtNeuName.OnChange
+  txtPEinheit.X
+  txtPFrage.Height
+  txtPFrage.X
+  txtPHinweis.Size
+  txtPHinweis.X
+  txtPWerte.X
+  txtVsWert.OnChange
+Properties mit anderem Inhalt: 28
+  btnEdEntf.OnSelect
+    soll: If(varSchreibbar && varAuswahlEbene > 0, If(!varIsLoading && Now() >= varSperreBis, If(varFrage <> "del" & varAuswahlEbene & "-" & varAuswahlID, Set(varFrage, "del" & varAuswahlEbene & "-" & varAuswahlID); Set(varSperreB
+    ist : If(varSchreibbar && varAuswahlEbene > 0, If(!varIsLoading && Now() >= varSperreBis, If(varFrage <> "del" & varAuswahlEbene & "-" & varAuswahlID, Set(varFrage, "del" & varAuswahlEbene & "-" & varAuswahlID); Set(varSperreB
+  btnGlNeuB.OnSelect
+    soll: If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+    ist : If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+  btnGlNeuK.OnSelect
+    soll: If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+    ist : If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+  btnGlNeuP.OnSelect
+    soll: If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+    ist : If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).
+  btnGlZeile.OnSelect
+    soll: If(!varIsLoading, If(ThisItem.Ebene = 3, Set(varAuswahlEbene, 3); Set(varAuswahlID, ThisItem.ID); Set(varCtxB, ThisItem.BerID); Set(varCtxK, ThisItem.KatID); Set(varFrage, ""); Reset(txtBName); Reset(txtKName); Reset(ddK
+    ist : If(!varIsLoading, If(ThisItem.Ebene = 3, Set(varAuswahlEbene, 3); Set(varAuswahlID, ThisItem.ID); Set(varCtxB, ThisItem.BerID); Set(varCtxK, ThisItem.KatID); Set(varFrage, ""); Reset(txtBName); Reset(txtKName); Reset(ddK
+  btnMehrAnlegen.OnSelect
+    soll: If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); ClearCollect(colMehr, Filter(ForAll(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10)) As z, {F: Le
+    ist : If(varSchreibbar && !varIsLoading && Now() >= varSperreBis, Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)); ClearCollect(colMehr, Filter(ForAll(Split(Substitute(txtMehr.Text, Char(13), ""), Char(10)) As z, {F: Le
+  btnPrZeile.OnSelect
+    soll: If(!varIsLoading && ThisItem.Ebene > 0, If(ThisItem.Ebene = 3, Set(varAuswahlEbene, 3); Set(varAuswahlID, ThisItem.ID); Set(varCtxB, ThisItem.BerID); Set(varCtxK, ThisItem.KatID); Set(varFrage, ""); Reset(txtBName); Rese
+    ist : If(!varIsLoading && ThisItem.Ebene > 0, If(ThisItem.Ebene = 3, Set(varAuswahlEbene, 3); Set(varAuswahlID, ThisItem.ID); Set(varCtxB, ThisItem.BerID); Set(varCtxK, ThisItem.KatID); Set(varFrage, ""); Reset(txtBName); Rese
+  conEdP.X
+    soll: 16
+    ist : 32
+  conPlTermine.X
+    soll: 980
+    ist : 982
+  conPlTermine.Y
+    soll: 90
+    ist : 116
+  ddKBereich.OnChange
+    soll: If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colK, ID = varAuswahlID).BereichID && varSchreibbar, Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).Entwur
+    ist : If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colK, ID = varAuswahlID).BereichID && varSchreibbar, Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).Entwur
+  ddPKategorie.OnChange
+    soll: If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colP, ID = varAuswahlID).KategorieID && varSchreibbar, Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).Entw
+    ist : If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colP, ID = varAuswahlID).KategorieID && varSchreibbar, Refresh(RG_Rundgaenge); Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).Entw
+  ddPKategorie.Width
+    soll: 340
+    ist : 528
+  galAkt.Items
+    soll: Ungroup( Table( {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})}, {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBla
+    ist : Ungroup( Table( {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})}, {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBla
+  galGl.Items
+    soll: Sort( Ungroup( Table( {T: ForAll(colB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: If(Coalesce(b.Ausblenden, false), "ausgeblendet", ""), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000
+    ist : Sort( Ungroup( Table( {T: ForAll(colB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})}, {T: ForAll(colK As k, With({b: LookUp(col
+  galHolen.Items
+    soll: Sort( Ungroup( Table( {T: ForAll(colSrcB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: If(Coalesce(b.Ausblenden, false), "ausgeblendet", ""), Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "
+    ist : Sort( Ungroup( Table( {T: ForAll(colSrcB As b, {Ebene: 1, ID: b.ID, BerID: b.ID, KatID: 0, Titel: b.Title, Info: "", Schl: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000")})}, {T: ForAll(colSrcK As k, With({b: Look
+  galPr.Items
+    soll: Sort( Ungroup( Table( {T: Filter(Table({Art: "Fehler", Ebene: 0, ID: 0, KatID: 0, BerID: 0, Text: "Der Rundgang hat noch keinen Bereich. → „+ Bereich“"}), IsEmpty(colB))}, {T: ForAll(Filter(colB As b, IsEmpty(Filter(colK
+    ist : Sort( Ungroup( Table( {T: Filter(Table({Art: "Fehler", Ebene: 0, ID: 0, KatID: 0, BerID: 0, Text: "Der Rundgang hat noch keinen Bereich. → „+ Bereich“"}), IsEmpty(colB))}, {T: ForAll(Filter(colB As b, IsEmpty(Filter(colK
+  lblBInfo.Height
+    soll: 180
+    ist : 120
+  lblBInfo.Text
+    soll: "Enthält " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkte." & Char(10) & Char(10) & "Ein Bereic
+    ist : "Enthält " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkte." & Char(10) & Char(10) & "Ein Bereic
+  lblBInfo.Y
+    soll: 140
+    ist : 76
+  lblGlHilfe.Height
+    soll: 36
+    ist : 34
+  lblGlInfo.Text
+    soll: If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Info)
+    ist : If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+  lblHoInfo.Text
+    soll: If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Info)
+    ist : If(ThisItem.Ebene = 2, ThisItem.Info & " Pkt.", ThisItem.Ebene = 3, ThisItem.Info, "")
+  lblMehrHilfe.Text
+    soll: "Eine Frage pro Zeile – auch eine Spalte aus Excel einfügen."
+    ist : "Eine Frage pro Zeile. Du kannst auch eine Spalte aus Excel hineinkopieren."
+  lblPKat.Width
+    soll: 340
+    ist : 528
+  lblPlKopf3.Width
+    soll: 186
+    ist : 170
+  lblVsListe.Text
+    soll: If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & If(Trim(Coalesce(p.Abschnitt, "")) = "", "", Trim(p.Abschnitt) & " › ") & p.Title & " (" & fnTypNam
+    ist : If(varAuswahlEbene = 2, Concat(Sort(Filter(colP, KategorieID = varAuswahlID), RgReihenfolge * 1000000 + ID) As p, "• " & p.Title & " (" & fnTypName(p.Eingabetyp.Value) & If(Coalesce(p.Pflicht, false), ", Pflicht", "") & 
+  tmrArbeit.OnTimerEnd
+    soll: Set(varArbeitStart, false); Set(varIsLoading, true); If(varJob = "vorbereiten", Set(varLadeText, "Rundgang wird für den Builder vorbereitet …"); Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Bereiche), Refresh(RG_Kategor
+    ist : Set(varArbeitStart, false); Set(varIsLoading, true); If(varJob = "vorbereiten", Set(varLadeText, "Rundgang wird für den Builder vorbereitet …"); Concurrent(Refresh(RG_Rundgaenge), Refresh(RG_Bereiche), Refresh(RG_Kategor
