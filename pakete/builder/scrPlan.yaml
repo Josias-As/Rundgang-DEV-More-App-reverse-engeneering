@@ -78,6 +78,7 @@ Screens:
                         IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true));
                         If(varPatchFehler,
                             Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                            Refresh(RG_Rundgaenge);
                             Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
                             Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg);
                             Notify(If(Coalesce(varPlanRg.Testrundgang, false), "Testrundgang: Neue Läufe zählen als Testdaten.", "Kein Testrundgang mehr: Neue Läufe zählen als echte Rundgänge."), NotificationType.Success)

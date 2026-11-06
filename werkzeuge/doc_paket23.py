@@ -73,7 +73,8 @@ def builder_teil():
     for name in neue_ctl:
         c = finde(name)
         z += ["### B1 – neues Steuerelement `%s`" % name, "", "**Wo hin:** **`%s`** markieren → Strg+V." % eltern.get(name, "?"), "",
-              "```yaml"] + builder.yaml_control(c, "") + ["```", ""]
+              "```yaml"] + builder.yaml_control(c, "") + ["```", ""] + (
+            ["**Kurzzeitig rot:** `colKoNutz` gibt es erst nach B2.8 (`scrKontakte.OnVisible`). Erwartet.", ""] if name == "lblKoNutzung" else [])
     for i, k in enumerate(geaendert, 1):
         z += block("B2.%d" % i, k, v[k], n[k], ERKL_B.get(k, "Siehe Kurzfassung."), eltern)
     return z, geaendert, neue_ctl
@@ -93,14 +94,14 @@ def main():
          "Unter „Ansprechpartner“ steht je Eintrag, bei wie vielen kritischen Prüfpunkten in wie vielen Rundgängen er eingetragen ist; inaktiv + verwendet ist rot.",
          "- **A6 (Builder):** Beim Entfernen eines Prüfpunkts warnt der Text, wenn andere Fragen über Bedingung oder Vergleich davon abhängen.",
          "- **A1:** Der Generator schreibt in der deutschen Formelleiste jetzt `.Miniaturansicht.` statt `.Thumbnail.` (Paket 13 und alle späteren). In YAML-Blöcken bleibt der interne Name `Thumbnail` (wie im Export).",
-         "- Umfang: App %d Properties + 1 Knopf + 1 Spalte; Builder %d Properties%s. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet, nicht unabhängig geprüft.**"
+         "- Umfang: App %d Properties + 1 Knopf + 1 Spalte; Builder %d Properties%s. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet.** Leicht unabhängig geprüft, Befunde eingearbeitet (`arbeit/2026-11-06_Paket23/pruefung_unabhaengig.md`)."
          % (na, len(keys_b), (" + " + ", ".join(neue_b)) if neue_b else ""), ""] + za + zb + [
          "## Test", "",
          "| # | Schritt | erwartet |", "|---|---|---|",
-         "| T1 | Start (heute) mit den ZZ-Test-Läufen 18, 20–22 offen | kein roter Hinweis für diese |",
-         "| T2 | zwei echte offene Läufe an früheren Tagen | Hinweis „… (1/2)“, „Weiter ›“ → „(2/2)“, „Öffnen“ öffnet den angezeigten |",
+         "| T1 | Startseite öffnen. Die ZZ-Test-Läufe 18, 20–22 (02./03.11., `TestDatensatz` = Ja) sind noch offen | kein roter Hinweis für diese |",
+         "| T2 | zwei echte offene Läufe an früheren Tagen (z. B. ID 19 + einen echten Lauf an einem anderen Tag anfangen und nicht abschließen) | Hinweis „… (1/2)“, „Weiter ›“ → „(2/2)“, „Öffnen“ öffnet den angezeigten |",
          "| T3 | Builder: Plan → „○ Testrundgang“ | „✓ Testrundgang“, Übersicht „· Testrundgang“ |",
-         "| T4 | App: Lauf dieses Rundgangs starten | `TestDatensatz` = Ja (Konsole/Liste), Protokoll „TESTDATEN“, Fotos unter `TEST/` |",
+         "| T4 | App: Lauf dieses Rundgangs starten | `TestDatensatz` = Ja (Konsole/Liste), Protokoll „TESTDATEN“, Fotos unter `TEST/` (bestehendes Verhalten, hängt an `TestDatensatz`) |",
          "| T5 | Rundgang mit Namen „ZZ Test …“, Testrundgang = Nein | Lauf zählt als echt (Absicht) |",
          "| T6 | Builder: Ansprechpartner inaktiv stellen, der an einem kritischen Prüfpunkt hängt | rote Zeile „Eingetragen bei 1 …“; im Prüfpunkt „Bei n.i.O.“: „(inaktiv – entfernen)“, antippen → weg |",
          "| T7 | Builder: Prüfpunkt entfernen, an dem eine Bedingung hängt | Warntext „Achtung: 1 Frage hängt davon ab …“ |", "",

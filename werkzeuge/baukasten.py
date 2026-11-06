@@ -1342,15 +1342,15 @@ def paket22(st):
 
 # ---------------------------------------------------------------- Paket 23 (A8 Banner „Nicht abgeschlossen“, A11 Testkennung)
 OFFEN_F = 'Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))'
-OFFEN_L = 'Sort(' + OFFEN_F + ', TagText)'
+OFFEN_L = 'SortByColumns(' + OFFEN_F + ', "TagText", SortOrder.Ascending, "ID", SortOrder.Ascending)'
 OFFEN_I = 'Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l))'
 
 
 def paket23(st):
     p = {"nr": 23, "props": [], "neu": []}
     st.sp.append(("RG_Rundgaenge", "Testrundgang", "Ja/Nein"))
-    aendern(st, p, "23.2", "btnStartTagLaden.OnSelect", lambda t: rep(
-        t, "RundgangID, RundgangName, TagText))", "RundgangID, RundgangName, TagText, TestDatensatz))"))
+    aendern(st, p, "23.2", "btnStartTagLaden.OnSelect", lambda t: rep(rep(t, "RundgangID, RundgangName, TagText))", "RundgangID, RundgangName, TagText, TestDatensatz))"),
+        "\n);\nSet(varIsLoading, false)", "\n);\nSet(varOffenNr, 1);\nSet(varIsLoading, false)"))
     ganz(st, p, "23.3", "conStartOffen.Visible", "CountRows(" + OFFEN_F + ") > 0")
     ganz(st, p, "23.3", "lblStartOffen.Text",
          "With({l: " + OFFEN_L + "},\n"

@@ -1150,7 +1150,7 @@
      "key": "btnStartTagLaden.OnSelect",
      "schritt": "23.2",
      "vorher": "Set(varIsLoading, true);\nConcurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\nConcurrent(\n    ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),\n    ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),\n    ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText))\n);\nSet(varIsLoading, false)",
-     "nachher": "Set(varIsLoading, true);\nConcurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\nConcurrent(\n    ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),\n    ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),\n    ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText, TestDatensatz))\n);\nSet(varIsLoading, false)"
+     "nachher": "Set(varIsLoading, true);\nConcurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\nConcurrent(\n    ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),\n    ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),\n    ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText, TestDatensatz))\n);\nSet(varOffenNr, 1);\nSet(varIsLoading, false)"
     },
     {
      "key": "conStartOffen.Visible",
@@ -1162,7 +1162,7 @@
      "key": "lblStartOffen.Text",
      "schritt": "23.3",
      "vorher": "With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText)), n: CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute))},\n    \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(n > 1, \" (und \" & (n - 1) & \" weitere)\", \"\"))",
-     "nachher": "With({l: Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), TagText)},\n    If(CountRows(l) = 0, \"\",\n        With({i: Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l))},\n            With({o: Index(l, i)},\n                \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(CountRows(l) > 1, \"  (\" & i & \"/\" & CountRows(l) & \")\", \"\")\n            )\n        )\n    )\n)"
+     "nachher": "With({l: SortByColumns(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), \"TagText\", SortOrder.Ascending, \"ID\", SortOrder.Ascending)},\n    If(CountRows(l) = 0, \"\",\n        With({i: Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l))},\n            With({o: Index(l, i)},\n                \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(CountRows(l) > 1, \"  (\" & i & \"/\" & CountRows(l) & \")\", \"\")\n            )\n        )\n    )\n)"
     },
     {
      "key": "lblStartOffen.Width",
@@ -1174,7 +1174,7 @@
      "key": "btnStartOffen.OnSelect",
      "schritt": "23.3",
      "vorher": "If(!varIsLoading,\n    With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText))},\n        If(!IsBlank(o),\n            Set(varTag, DateValue(o.TagText));\n            Set(varTagText, o.TagText);\n            Set(varRgID, o.RundgangID);\n            Set(varSchluessel, o.Title);\n            Set(varDurchID, o.ID);\n            Navigate(scrRundgang, ScreenTransition.None)\n        )\n    )\n)",
-     "nachher": "If(!varIsLoading,\n    With({l: Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), TagText)},\n        If(CountRows(l) > 0,\n            With({o: Index(l, Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l)))},\n                Set(varTag, DateValue(o.TagText));\n                Set(varTagText, o.TagText);\n                Set(varRgID, o.RundgangID);\n                Set(varSchluessel, o.Title);\n                Set(varDurchID, o.ID);\n                Navigate(scrRundgang, ScreenTransition.None)\n            )\n        )\n    )\n)"
+     "nachher": "If(!varIsLoading,\n    With({l: SortByColumns(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), \"TagText\", SortOrder.Ascending, \"ID\", SortOrder.Ascending)},\n        If(CountRows(l) > 0,\n            With({o: Index(l, Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l)))},\n                Set(varTag, DateValue(o.TagText));\n                Set(varTagText, o.TagText);\n                Set(varRgID, o.RundgangID);\n                Set(varSchluessel, o.Title);\n                Set(varDurchID, o.ID);\n                Navigate(scrRundgang, ScreenTransition.None)\n            )\n        )\n    )\n)"
     },
     {
      "key": "btnRgAktion.OnSelect",

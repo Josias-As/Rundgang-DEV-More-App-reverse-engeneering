@@ -9,7 +9,7 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket23), `werkzeuge/bui
 - **A7 (Builder):** Im Fenster „Bei n.i.O.“ erscheinen eingetragene, aber inaktive Ansprechpartner („inaktiv – entfernen“) und lassen sich herausnehmen. Unter „Ansprechpartner“ steht je Eintrag, bei wie vielen kritischen Prüfpunkten in wie vielen Rundgängen er eingetragen ist; inaktiv + verwendet ist rot.
 - **A6 (Builder):** Beim Entfernen eines Prüfpunkts warnt der Text, wenn andere Fragen über Bedingung oder Vergleich davon abhängen.
 - **A1:** Der Generator schreibt in der deutschen Formelleiste jetzt `.Miniaturansicht.` statt `.Thumbnail.` (Paket 13 und alle späteren). In YAML-Blöcken bleibt der interne Name `Thumbnail` (wie im Export).
-- Umfang: App 6 Properties + 1 Knopf + 1 Spalte; Builder 8 Properties + btnPlTest, lblKoNutzung. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet, nicht unabhängig geprüft.**
+- Umfang: App 6 Properties + 1 Knopf + 1 Spalte; Builder 8 Properties + btnPlTest, lblKoNutzung. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet.** Leicht unabhängig geprüft, Befunde eingearbeitet (`arbeit/2026-11-06_Paket23/pruefung_unabhaengig.md`).
 
 ## Teil A – Rundgang DEV
 
@@ -33,12 +33,14 @@ Concurrent(
     ClearCollect(colErgTag; ShowColumns(Filter(RG_KategorieErgebnisse; TagText = varTagText); DurchfuehrungID; KategorieID));
     ClearCollect(colOffenAlt; ShowColumns(Filter(RG_Durchfuehrungen; Status = stInArbeit || Status = stAbschluss); ID; Title; RundgangID; RundgangName; TagText; TestDatensatz))
 );;
+Set(varOffenNr; 1);;
 Set(varIsLoading; false)
 ```
 
 ```diff
 -    ClearCollect(colOffenAlt; ShowColumns(Filter(RG_Durchfuehrungen; Status = stInArbeit || Status = stAbschluss); ID; Title; RundgangID; RundgangName; TagText))
 +    ClearCollect(colOffenAlt; ShowColumns(Filter(RG_Durchfuehrungen; Status = stInArbeit || Status = stAbschluss); ID; Title; RundgangID; RundgangName; TagText; TestDatensatz))
++Set(varOffenNr; 1);;
 ```
 
 **Kurz erklärt:** Liest zu den offenen Läufen auch `TestDatensatz` mit (nur eine Spalte mehr in `ShowColumns`).
@@ -67,7 +69,7 @@ CountRows(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDat
 **Pfad:** `scrStart › conStartOffen › lblStartOffen` → Text
 
 ```
-With({l: Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); TagText)};
+With({l: SortByColumns(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); "TagText"; SortOrder.Ascending; "ID"; SortOrder.Ascending)};
     If(CountRows(l) = 0; "";
         With({i: Min(Max(Coalesce(varOffenNr; 1); 1); CountRows(l))};
             With({o: Index(l; i)};
@@ -81,7 +83,7 @@ With({l: Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(Tes
 ```diff
 -With({o: First(Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute); TagText)); n: CountRows(Filter(colOffenAlt; DateValue(TagText) < varHeute))};
 -    "⚠  Nicht abgeschlossen: " & o.RundgangName & " vom " & Text(DateValue(o.TagText); "dd.mm.yyyy") & If(n > 1; " (und " & (n - 1) & " weitere)"; ""))
-+With({l: Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); TagText)};
++With({l: SortByColumns(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); "TagText"; SortOrder.Ascending; "ID"; SortOrder.Ascending)};
 +    If(CountRows(l) = 0; "";
 +        With({i: Min(Max(Coalesce(varOffenNr; 1); 1); CountRows(l))};
 +            With({o: Index(l; i)};
@@ -119,7 +121,7 @@ If(CountRows(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(Test
 
 ```
 If(!varIsLoading;
-    With({l: Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); TagText)};
+    With({l: SortByColumns(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); "TagText"; SortOrder.Ascending; "ID"; SortOrder.Ascending)};
         If(CountRows(l) > 0;
             With({o: Index(l; Min(Max(Coalesce(varOffenNr; 1); 1); CountRows(l)))};
                 Set(varTag; DateValue(o.TagText));;
@@ -143,7 +145,7 @@ If(!varIsLoading;
 -            Set(varSchluessel; o.Title);;
 -            Set(varDurchID; o.ID);;
 -            Navigate(scrRundgang; ScreenTransition.None)
-+    With({l: Sort(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); TagText)};
++    With({l: SortByColumns(Filter(colOffenAlt; DateValue(TagText) < varHeute && !Coalesce(TestDatensatz; false)); "TagText"; SortOrder.Ascending; "ID"; SortOrder.Ascending)};
 +        If(CountRows(l) > 0;
 +            With({o: Index(l; Min(Max(Coalesce(varOffenNr; 1); 1); CountRows(l)))};
 +                Set(varTag; DateValue(o.TagText));;
@@ -276,6 +278,7 @@ Spalte aus A1. Builder: Daten → `RG_Rundgaenge` → ⋯ → Aktualisieren.
             IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true));
             If(varPatchFehler,
                 Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                Refresh(RG_Rundgaenge);
                 Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
                 Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg);
                 Notify(If(Coalesce(varPlanRg.Testrundgang, false), "Testrundgang: Neue Läufe zählen als Testdaten.", "Kein Testrundgang mehr: Neue Läufe zählen als echte Rundgänge."), NotificationType.Success)
@@ -313,6 +316,8 @@ Spalte aus A1. Builder: Daten → `RG_Rundgaenge` → ⋯ → Aktualisieren.
       X: =0
       Y: =480
 ```
+
+**Kurzzeitig rot:** `colKoNutz` gibt es erst nach B2.8 (`scrKontakte.OnVisible`). Erwartet.
 
 ### B2.1 · `btnNioKontakt.Text`
 
@@ -472,10 +477,10 @@ Set(varIsLoading; false)
 
 | # | Schritt | erwartet |
 |---|---|---|
-| T1 | Start (heute) mit den ZZ-Test-Läufen 18, 20–22 offen | kein roter Hinweis für diese |
-| T2 | zwei echte offene Läufe an früheren Tagen | Hinweis „… (1/2)“, „Weiter ›“ → „(2/2)“, „Öffnen“ öffnet den angezeigten |
+| T1 | Startseite öffnen. Die ZZ-Test-Läufe 18, 20–22 (02./03.11., `TestDatensatz` = Ja) sind noch offen | kein roter Hinweis für diese |
+| T2 | zwei echte offene Läufe an früheren Tagen (z. B. ID 19 + einen echten Lauf an einem anderen Tag anfangen und nicht abschließen) | Hinweis „… (1/2)“, „Weiter ›“ → „(2/2)“, „Öffnen“ öffnet den angezeigten |
 | T3 | Builder: Plan → „○ Testrundgang“ | „✓ Testrundgang“, Übersicht „· Testrundgang“ |
-| T4 | App: Lauf dieses Rundgangs starten | `TestDatensatz` = Ja (Konsole/Liste), Protokoll „TESTDATEN“, Fotos unter `TEST/` |
+| T4 | App: Lauf dieses Rundgangs starten | `TestDatensatz` = Ja (Konsole/Liste), Protokoll „TESTDATEN“, Fotos unter `TEST/` (bestehendes Verhalten, hängt an `TestDatensatz`) |
 | T5 | Rundgang mit Namen „ZZ Test …“, Testrundgang = Nein | Lauf zählt als echt (Absicht) |
 | T6 | Builder: Ansprechpartner inaktiv stellen, der an einem kritischen Prüfpunkt hängt | rote Zeile „Eingetragen bei 1 …“; im Prüfpunkt „Bei n.i.O.“: „(inaktiv – entfernen)“, antippen → weg |
 | T7 | Builder: Prüfpunkt entfernen, an dem eine Bedingung hängt | Warntext „Achtung: 1 Frage hängt davon ab …“ |
