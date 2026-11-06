@@ -90,6 +90,7 @@ Aufräumen später (nur mit Josias' Ja): obige Rundgänge inaktiv, Testläufe/Er
 
 ## 4. Arbeitsregeln (aus der Praxis, wichtig)
 
+- **Antwortformat (neu, 06.11.):** Ganz oben einmal „App: Rundgang DEV“ bzw. „App: Rundgang Builder“. Je Block nur eine Zeile mit Farbmarker + **Steuerelement** · Property bzw. Einfügeziel, kein Erklärtext. Legende: 🟦 Formel ersetzen · 🟩 neu einfügen (YAML, Ziel markieren → Strg+V) · 🟧 SharePoint-Konsolen-Skript · 🟨 Daten in Studio (aktualisieren/hinzufügen, nichts ausgewählt) · 🟥 danach prüfen. Kopierblöcke nur mit dem einzufügenden Inhalt.
 - **Antwortformat für Josias:** `**Steuerelement** · Property`, darunter ein Codeblock **nur** mit dem einzufügenden Code. Wenig Text. Eine Gruppe je Nachricht, Josias antwortet „next“.
 - Formelleiste **deutsch** (`;` und `;;`), YAML **englisch** (`,` und `;`). Ganze Property ersetzen, nie Teile.
 - **YAML einfügen:** Container/Bildschirm selbst markieren → Strg+V (bei Galerievorlage ein Kind der Vorlage, z. B. `txtKaZahl`). Danach prüfen, dass X/Y/Height noch **Formeln** sind (Studio friert sie manchmal als Zahl ein).
