@@ -708,7 +708,8 @@ Screens:
                         FontWeight: =FontWeight.Semibold
                         Height: =52
                         Size: =If(Left(varFrage, 3) = "del", 12, 16)
-                        Text: =If(Left(varFrage, 3) = "del", If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", "Entfernt den Prüfpunkt. Nochmal tippen."), Switch(varAuswahlEbene, 1, "Bereich", 2, "Kategorie", "Prüfpunkt"))
+                        Text: |-
+                          =If(Left(varFrage, 3) = "del", If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", With({n: CountRows(Filter(colP, BedingungPunkt = varAuswahlID || VergleichPunkt = varAuswahlID))}, If(n > 0, "Achtung: " & n & If(n = 1, " Frage hängt", " Fragen hängen") & " davon ab: Bedingung bzw. Vergleich fällt weg. Nochmal tippen.", "Entfernt den Prüfpunkt. Nochmal tippen."))), Switch(varAuswahlEbene, 1, "Bereich", 2, "Kategorie", "Prüfpunkt"))
                         Width: =If(Left(varFrage, 3) = "del", 360, 130)
                         X: =16
                         Y: =0
@@ -1937,7 +1938,8 @@ Screens:
                         HoverFill: =clrPrimaerHell
                         OnSelect: |-
                           =If(!varIsLoading,
-                              ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));
+                              Refresh(RG_Ansprechpartner);
+                              ClearCollect(colKontakte, RG_Ansprechpartner);
                               Reset(txtNioRueckText);
                               Reset(txtNioKritText);
                               Set(varNioOffen, true)
@@ -4342,7 +4344,7 @@ Screens:
                       Properties:
                         AccessibleLabel: ="Ansprechpartner"
                         Height: =220
-                        Items: =Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))
+                        Items: =Sort(Filter(colKontakte, Coalesce(Aktiv, false) || Text(ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value), If(Coalesce(Aktiv, false), "0", "1") & If(Coalesce(Allgemein, false), "0", "1") & Lower(Title))
                         ShowScrollbar: =true
                         TemplatePadding: =0
                         TemplateSize: =44
@@ -4396,7 +4398,7 @@ Screens:
                               RadiusTopLeft: =6
                               RadiusTopRight: =6
                               Size: =13
-                              Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")
+                              Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  (inaktiv – entfernen)")
                               Width: =Parent.TemplateWidth - 4
                               X: =0
                               Y: =2
@@ -4408,7 +4410,7 @@ Screens:
                         Height: =48
                         Size: =13
                         Text: ="Noch keine Ansprechpartner. Lege sie in der Übersicht unter „Ansprechpartner“ an."
-                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false) && IsEmpty(colKontakte)
+                        Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false) && IsEmpty(Filter(colKontakte, Coalesce(Aktiv, false)))
                         Width: =612
                         X: =24
                         Y: =320

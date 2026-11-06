@@ -305,7 +305,7 @@
                 Properties:
                   AccessibleLabel: ="Ansprechpartner"
                   Height: =220
-                  Items: =Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))
+                  Items: =Sort(Filter(colKontakte, Coalesce(Aktiv, false) || Text(ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value), If(Coalesce(Aktiv, false), "0", "1") & If(Coalesce(Allgemein, false), "0", "1") & Lower(Title))
                   ShowScrollbar: =true
                   TemplatePadding: =0
                   TemplateSize: =44
@@ -359,7 +359,7 @@
                         RadiusTopLeft: =6
                         RadiusTopRight: =6
                         Size: =13
-                        Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")
+                        Text: =If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in Filter(Split(Coalesce(LookUp(colP, ID = varAuswahlID).Ansprechpartner, ""), ";"), Trim(Value) <> "").Value, "✓ ", "○ ")) & ThisItem.Title & If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "") & If(Coalesce(ThisItem.Aktiv, false), "", "  (inaktiv – entfernen)")
                         Width: =Parent.TemplateWidth - 4
                         X: =0
                         Y: =2
@@ -371,7 +371,7 @@
                   Height: =48
                   Size: =13
                   Text: ="Noch keine Ansprechpartner. Lege sie in der Übersicht unter „Ansprechpartner“ an."
-                  Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false) && IsEmpty(colKontakte)
+                  Visible: =Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false) && IsEmpty(Filter(colKontakte, Coalesce(Aktiv, false)))
                   Width: =612
                   X: =24
                   Y: =320

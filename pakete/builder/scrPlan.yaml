@@ -57,6 +57,43 @@ Screens:
                   Width: =900
                   X: =172
                   Y: =0
+            - btnPlTest:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =RGBA(255, 255, 255, 0.12)
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(255, 255, 255, 0.24)
+                  OnSelect: |-
+                    =If(!varIsLoading && Now() >= varSperreBis && varPlanRgID > 0,
+                        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
+                        Set(varPatchFehler, false);
+                        IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true));
+                        If(varPatchFehler,
+                            Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                            Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
+                            Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg);
+                            Notify(If(Coalesce(varPlanRg.Testrundgang, false), "Testrundgang: Neue Läufe zählen als Testdaten.", "Kein Testrundgang mehr: Neue Läufe zählen als echte Rundgänge."), NotificationType.Success)
+                        )
+                    )
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(255, 255, 255, 0.32)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: =If(Coalesce(varPlanRg.Testrundgang, false), "✓ Testrundgang", "○ Testrundgang")
+                  Width: =220
+                  X: =Parent.Width - 236
+                  Y: =12
       - lblPlHinweis:
           Control: Label@2.5.1
           Properties:
@@ -65,7 +102,7 @@ Screens:
             Height: =44
             Size: =13
             Text: |-
-              ="Wann ist der Rundgang dran? Änderungen gelten sofort, auch für einen aktiven Rundgang." & If(!Coalesce(varPlanRg.Aktiv, false), " Der Rundgang ist nicht aktiv: Er erscheint erst nach dem Aktivieren auf der Startseite.", "")
+              ="Wann ist der Rundgang dran? Änderungen gelten sofort, auch für einen aktiven Rundgang." & If(!Coalesce(varPlanRg.Aktiv, false), " Der Rundgang ist nicht aktiv: Er erscheint erst nach dem Aktivieren auf der Startseite.", "") & If(Coalesce(varPlanRg.Testrundgang, false), " Testrundgang: Läufe zählen als Testdaten (eigener Ordner, nicht im Hinweis „Nicht abgeschlossen“).", "")
             Width: =Parent.Width - 48
             X: =24
             Y: =72

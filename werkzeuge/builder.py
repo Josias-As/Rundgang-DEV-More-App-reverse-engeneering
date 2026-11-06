@@ -32,7 +32,7 @@ SICHER = " && RundgangID = varRgID && Fassung = varFassung"
 EDIT = "If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)"
 BTN_DM = "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)"
 NEU_SPALTEN = {
-    "RG_Rundgaenge": {"Status": "Text", "Fassung": "Zahl", "EntwurfFassung": "Zahl", "EntwurfVon": "Text"},
+    "RG_Rundgaenge": {"Status": "Text", "Fassung": "Zahl", "EntwurfFassung": "Zahl", "EntwurfVon": "Text", "Testrundgang": "Ja/Nein"},
     "RG_Bereiche": {"Fassung": "Zahl", "QuelleID": "Zahl", "Ausblenden": "Ja/Nein"},
     "RG_Kategorien": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl"},
     "RG_Pruefpunkte": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl",
@@ -760,7 +760,8 @@ LI_VERWERFEN = zweimal('"verwerfen" & ThisItem.ID',
 PLAN_TEXT = ('With({pl: Filter(colPlanAlle, RundgangID = ThisItem.ID && Coalesce(Aktiv, false))}, '
              'If(IsEmpty(pl), "kein Plan", "Plan: " & Concat(pl As x, Left(fnWochentag(x.Wochentag), 2) & " " & fnZyklus(x.ZyklusWochen), ", ")))')
 LI_INFO = ('If(' + ST + ' = "Entwurf", "noch nie aktiviert", "aktive Fassung " & fnAktiveFassung(ThisItem.Fassung)) & "  ·  " & ' + PLAN_TEXT
-           + ' & If(Coalesce(ThisItem.EntwurfFassung, 0) > 0 && ' + ST + ' <> "Entwurf", "  ·  Entwurf Fassung " & ThisItem.EntwurfFassung & " in Arbeit" & If(Coalesce(ThisItem.EntwurfVon, "") <> "", " (" & ThisItem.EntwurfVon & ")", ""), "")')
+           + ' & If(Coalesce(ThisItem.EntwurfFassung, 0) > 0 && ' + ST + ' <> "Entwurf", "  ·  Entwurf Fassung " & ThisItem.EntwurfFassung & " in Arbeit" & If(Coalesce(ThisItem.EntwurfVon, "") <> "", " (" & ThisItem.EntwurfVon & ")", ""), "") & '
+           'If(Coalesce(ThisItem.Testrundgang, false), "  ·  Testrundgang", "")')
 LI_FRAGE = ('Switch(varFrage,\n'
             '    "fassung" & ThisItem.ID, "Nochmal tippen: Es entsteht ein Entwurf (neue Fassung). Der laufende Rundgang bleibt unverändert, bis du ihn aktivierst.",\n'
             '    "aktion" & ThisItem.ID, If(' + ST + ' = "Aktiv", If(varHeuteLaeuft, "Achtung: Heute läuft noch ein Rundgang. Archiviert erscheint er nicht mehr auf der Startseite. Nochmal tippen zum Archivieren.", "Nochmal tippen: Der Rundgang erscheint nicht mehr auf der Startseite."), '
@@ -1062,7 +1063,9 @@ ENTFERNEN = ("If(varSchreibbar && varAuswahlEbene > 0, " + ind(zweimal(DEL_KEY,
 ENTF_TEXT = ('If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & '
              'CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", '
              'varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", '
-             '"Entfernt den Prüfpunkt. Nochmal tippen.")')
+             'With({n: CountRows(Filter(colP, BedingungPunkt = varAuswahlID || VergleichPunkt = varAuswahlID))}, '
+             'If(n > 0, "Achtung: " & n & If(n = 1, " Frage hängt", " Fragen hängen") & " davon ab: Bedingung bzw. Vergleich fällt weg. Nochmal tippen.", '
+             '"Entfernt den Prüfpunkt. Nochmal tippen.")))')
 
 PP = lambda f: patch_feld("RG_Pruefpunkte", "colP", f)  # noqa: E731
 
@@ -1141,7 +1144,7 @@ VS_W = 'If(Max(Len(Coalesce(%s.TextIO, "")), Len(Coalesce(%s.TextNIO, ""))) > 8,
 REST_Y = 'If(%s, 360, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
 
 
-NIO_OEFFNEN = ('If(!varIsLoading,\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));\n'
+NIO_OEFFNEN = ('If(!varIsLoading,\n    Refresh(RG_Ansprechpartner);\n    ClearCollect(colKontakte, RG_Ansprechpartner);\n'
                '    Reset(txtNioRueckText);\n    Reset(txtNioKritText);\n    Set(varNioOffen, true)\n)')
 NIO_IDS = 'Filter(Split(Coalesce(%s.Ansprechpartner, ""), ";"), Trim(Value) <> "")' % CUR
 NIO_TOGGLE = ('If(!Coalesce(ThisItem.Allgemein, false),\n    With({ids: ' + NIO_IDS + '},\n        '
@@ -1167,14 +1170,15 @@ con_nio = overlay("conNio", "varNioOffen", 660, 640, [
         Visible='Coalesce(%s.Kritisch, false)' % CUR),
     lbl("lblNioKontakte", '"Ansprechpartner – antippen zum Auswählen"', "24", "282", "612", "24", size=12,
         color="clrTextGrau", Visible='Coalesce(%s.Kritisch, false)' % CUR),
-    gal("galNioKontakte", 'Sort(colKontakte, If(Coalesce(Allgemein, false), 0, 1) & Lower(Title))', "24", "310", "612", "220", 44, [
+    gal("galNioKontakte", 'Sort(Filter(colKontakte, Coalesce(Aktiv, false) || Text(ID) in ' + NIO_IDS + '.Value), If(Coalesce(Aktiv, false), "0", "1") & If(Coalesce(Allgemein, false), "0", "1") & Lower(Title))', "24", "310", "612", "220", 44, [
         btn("btnNioKontakt", 'If(Coalesce(ThisItem.Allgemein, false), "✓ ", If(Text(ThisItem.ID) in ' + NIO_IDS + '.Value, "✓ ", "○ ")) & ThisItem.Title & '
-            'If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "")',
+            'If(Trim(Coalesce(ThisItem.Kontakt, "")) = "", "", " – " & ThisItem.Kontakt) & If(Coalesce(ThisItem.Allgemein, false), "  (immer)", "") & '
+            'If(Coalesce(ThisItem.Aktiv, false), "", "  (inaktiv – entfernen)")',
             "0", "2", "Parent.TemplateWidth - 4", "40", NIO_TOGGLE, art="sekundaer", size=13, Align="Align.Left", PaddingLeft="12",
             DisplayMode='If(varSchreibbar && !varIsLoading && !Coalesce(ThisItem.Allgemein, false), DisplayMode.Edit, DisplayMode.Disabled)'),
     ], '"Ansprechpartner"', Visible='Coalesce(%s.Kritisch, false)' % CUR),
     lbl("lblNioLeer", '"Noch keine Ansprechpartner. Lege sie in der Übersicht unter „Ansprechpartner“ an."', "24", "320", "612", "48", size=13,
-        color="clrFehler", Visible='Coalesce(%s.Kritisch, false) && IsEmpty(colKontakte)' % CUR),
+        color="clrFehler", Visible='Coalesce(%s.Kritisch, false) && IsEmpty(Filter(colKontakte, Coalesce(Aktiv, false)))' % CUR),
     lbl("lblNioHinweis", '"Wirkt bei n.i.O. und bei Zahlen außerhalb der Grenzen (Modus „Mangel“). Es wird nichts verschickt."', "24", "532", "612", "40", size=12, color="clrTextGrau"),
     btn("btnNioFertig", '"Fertig"', "476", "576", "160", "44", "Set(varNioOffen, false)"),
 ], '"Bei n.i.O."', "Set(varNioOffen, false)")
@@ -1681,6 +1685,13 @@ PL_NEU = ("If(" + FREI + ",\n"
           "    If(varPatchFehler, Notify(\"Anlegen fehlgeschlagen.\", NotificationType.Error))\n"
           ")")
 
+PL_TEST = ("If(" + FREI + " && varPlanRgID > 0,\n    " + LOCK + ";\n    Set(varPatchFehler, false);\n"
+           "    IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true));\n"
+           "    If(varPatchFehler,\n        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+           "        Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));\n"
+           "        Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg);\n"
+           "        Notify(If(Coalesce(varPlanRg.Testrundgang, false), \"Testrundgang: Neue Läufe zählen als Testdaten.\", \"Kein Testrundgang mehr: Neue Läufe zählen als echte Rundgänge.\"), NotificationType.Success)\n"
+           "    )\n)")
 scr_plan = C("scrPlan", "Screen", {
     "Fill": "clrHintergrund",
     "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nConcurrent(Refresh(RG_Plan), Refresh(RG_Rundgaenge));\n"
@@ -1689,9 +1700,11 @@ scr_plan = C("scrPlan", "Screen", {
     con("conPlKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
         btn("btnPlZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
         lbl("lblPlTitel", '"Plan – " & varPlanRg.Title', "172", "0", "900", "64", size=20, color="Color.White", bold=True),
+        btn("btnPlTest", 'If(Coalesce(varPlanRg.Testrundgang, false), "✓ Testrundgang", "○ Testrundgang")', "Parent.Width - 236", "12", "220", "40", PL_TEST, art="kopf"),
     ]),
     lbl("lblPlHinweis", '"Wann ist der Rundgang dran? Änderungen gelten sofort, auch für einen aktiven Rundgang." & '
-        'If(!Coalesce(varPlanRg.Aktiv, false), " Der Rundgang ist nicht aktiv: Er erscheint erst nach dem Aktivieren auf der Startseite.", "")',
+        'If(!Coalesce(varPlanRg.Aktiv, false), " Der Rundgang ist nicht aktiv: Er erscheint erst nach dem Aktivieren auf der Startseite.", "") & '
+        'If(Coalesce(varPlanRg.Testrundgang, false), " Testrundgang: Läufe zählen als Testdaten (eigener Ordner, nicht im Hinweis „Nicht abgeschlossen“).", "")',
         "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
     lbl("lblPlKopf1", '"Wochentag"', "40", "116", "180", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf2", '"Rhythmus"', "228", "116", "180", "24", size=12, color="clrTextGrau"),
@@ -1748,9 +1761,16 @@ KO_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
           "        SetFocus(txtKoRolle)\n"
           "    )\n"
           ")")
+KO_TREFFER = '(";" & Text(varKoID) & ";") in (";" & Substitute(Coalesce(u.Ansprechpartner, ""), " ", "") & ";")'
+KO_N = 'CountRows(Filter(colKoNutz As u, ' + KO_TREFFER + '))'
+KO_NUTZ = ('If(Coalesce(%s.Allgemein, false), "Erscheint bei jedem kritischen Mangel.", '
+           'With({n: %s, r: CountRows(Distinct(Filter(colKoNutz As u, %s), RundgangID))}, '
+           'If(n = 0, "Noch bei keinem kritischen Prüfpunkt eingetragen.", "Eingetragen bei " & n & " kritischen Prüfpunkt" & If(n = 1, "", "en") & " in " & r & " Rundgang" & If(r = 1, "", "en") & "." & '
+           'If(Coalesce(%s.Aktiv, false), "", " Inaktiv: Prüfer sehen ihn dort nicht mehr. Im Prüfpunkt unter „Bei n.i.O.“ entfernen."))))') % (KO_CUR, KO_N, KO_TREFFER, KO_CUR)
 scr_kontakte = C("scrKontakte", "Screen", {
     "Fill": "clrHintergrund",
-    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Ansprechpartner);\nClearCollect(colKoAlle, RG_Ansprechpartner);\n"
+    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nConcurrent(Refresh(RG_Ansprechpartner), Refresh(RG_Pruefpunkte));\nClearCollect(colKoAlle, RG_Ansprechpartner);\n"
+                 "ClearCollect(colKoNutz, ShowColumns(Filter(RG_Pruefpunkte, Aktiv = true && Kritisch = true), Ansprechpartner, RundgangID));\n"
                  "Set(varKoID, Coalesce(First(Sort(colKoAlle, Title)).ID, 0));\n" + KO_RESET + ";\nSet(varIsLoading, false)",
 }, [
     con("conKoKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
@@ -1790,6 +1810,8 @@ scr_kontakte = C("scrKontakte", "Screen", {
         optionen("galKoAktiv", 'Table({W: "ja", N: "aktiv"}, {W: "nein", N: "inaktiv"})', 'If(Coalesce(%s.Aktiv, false), "ja", "nein")' % KO_CUR,
                  'If((ThisItem.W = "ja") <> Coalesce(%s.Aktiv, false),\n    %s\n)' % (KO_CUR, ind(ko_patch('{Aktiv: ThisItem.W = "ja"}'), 4)),
                  "0", "428", "300", 2, '"Status"', h=40, size=13, aktiv=BTN_DM),
+        lbl("lblKoNutzung", KO_NUTZ, "0", "480", "Parent.Width", "64", size=12,
+            Color='If(!Coalesce(%s.Aktiv, false) && %s > 0, clrFehler, clrTextGrau)' % (KO_CUR, KO_N), VerticalAlign="VerticalAlign.Top"),
     ]),
     laden_overlay("conKoLaden"),
 ])
@@ -2243,6 +2265,10 @@ TEXTE = [
     ("lblGlInfo", "i.O./n.i.O.", 11, 90, 0, 1), ("lblGlInfo", "Datum+Zeit", 11, 90, 0, 1), ("lblGlInfo", "Mehrfach", 11, 90, 0, 1),
     ("btnEdDupl", "Duplizieren", 13, 120, 16, 1), ("btnEdEntf", "Ja, entfernen", 13, 160, 16, 1),
     ("lblEdArt (Frage)", "Entfernt den Bereich mit 12 Kategorien und 140 Prüfpunkten. Nochmal tippen.", 12, 360, 0, 3),
+    ("lblEdArt (Frage)", "Achtung: 12 Fragen hängen davon ab: Bedingung bzw. Vergleich fällt weg. Nochmal tippen.", 12, 360, 0, 3),
+    ("btnPlTest", "✓ Testrundgang", 14, 220, 20, 1),
+    ("lblKoNutzung", "Eingetragen bei 12 kritischen Prüfpunkten in 3 Rundgängen. Inaktiv: Prüfer sehen ihn dort nicht mehr. Im Prüfpunkt unter „Bei n.i.O.“ entfernen.", 12, 520, 0, 3),
+    ("btnNioKontakt", "○ Elektriker – Elektro Müller GmbH  (inaktiv – entfernen)", 13, 608, 24, 1),
     ("galPTyp", "✓ i.O./n.i.O.", 12, 132 - 6, 16, 1), ("galPTyp", "📅 + Uhrzeit", 12, 132 - 6, 16, 1), ("galPTyp", "☑ Mehrfach", 12, 132 - 6, 16, 1),
     ("galPGrenz", "nicht speicherbar", 12, 176 - 6, 16, 1), ("galPGrenz", "Hinweis + Grund", 12, 176 - 6, 16, 1),
     ("galPKomm", "bei Mangel", 13, 128 - 6, 16, 1), ("galPPflicht", "freiwillig", 13, 128 - 6, 16, 1),

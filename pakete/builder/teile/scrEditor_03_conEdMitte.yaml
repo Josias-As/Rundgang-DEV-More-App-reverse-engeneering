@@ -29,7 +29,8 @@
                   FontWeight: =FontWeight.Semibold
                   Height: =52
                   Size: =If(Left(varFrage, 3) = "del", 12, 16)
-                  Text: =If(Left(varFrage, 3) = "del", If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", "Entfernt den Prüfpunkt. Nochmal tippen."), Switch(varAuswahlEbene, 1, "Bereich", 2, "Kategorie", "Prüfpunkt"))
+                  Text: |-
+                    =If(Left(varFrage, 3) = "del", If(varAuswahlEbene = 1, "Entfernt den Bereich mit " & CountRows(Filter(colK, BereichID = varAuswahlID)) & " Kategorien und " & CountRows(Filter(colP, KategorieID in Filter(colK, BereichID = varAuswahlID).ID)) & " Prüfpunkten. Nochmal tippen.", varAuswahlEbene = 2, "Entfernt die Kategorie mit " & CountRows(Filter(colP, KategorieID = varAuswahlID)) & " Prüfpunkten. Nochmal tippen.", With({n: CountRows(Filter(colP, BedingungPunkt = varAuswahlID || VergleichPunkt = varAuswahlID))}, If(n > 0, "Achtung: " & n & If(n = 1, " Frage hängt", " Fragen hängen") & " davon ab: Bedingung bzw. Vergleich fällt weg. Nochmal tippen.", "Entfernt den Prüfpunkt. Nochmal tippen."))), Switch(varAuswahlEbene, 1, "Bereich", 2, "Kategorie", "Prüfpunkt"))
                   Width: =If(Left(varFrage, 3) = "del", 360, 130)
                   X: =16
                   Y: =0
@@ -1258,7 +1259,8 @@
                   HoverFill: =clrPrimaerHell
                   OnSelect: |-
                     =If(!varIsLoading,
-                        ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true));
+                        Refresh(RG_Ansprechpartner);
+                        ClearCollect(colKontakte, RG_Ansprechpartner);
                         Reset(txtNioRueckText);
                         Reset(txtNioKritText);
                         Set(varNioOffen, true)

@@ -13,7 +13,7 @@ from doc_paket12_16 import block, pfad  # noqa: E402
 
 BL = json.load(open(doc_app89.BLOECKE, encoding="utf-8"))
 BV = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p14_15.json"), encoding="utf-8"))
-BN = json.load(open(os.path.join(builder.AUS_ARB, "bloecke.json"), encoding="utf-8"))
+BN = json.load(open(os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8", "builder_nach_p13.json"), encoding="utf-8"))  # eingefroren (Stand nach 13)
 
 KURZ = [
     "- **Anleitungen:** Eine neue Liste `RG_Anleitungen` (Titel, Text beliebig lang, aktiv). Eine Anleitung kann an vielen Prüfpunkten hängen.",
@@ -64,7 +64,7 @@ def app_teil():
 
 def builder_teil():
     v, n = BV["de"], BN["de"]
-    geaendert = sorted(k for k in n if k in v and v[k] != n[k])
+    geaendert = sorted(k for k in n if k in v and BV["props"][k] != BN["props"][k])
     eltern = BN["eltern"]
     gruppen = [("Start und Foto/Anleitung", ["App.OnStart", "lblPFoto.Width", "ddPFoto.Width", "ddPFoto.Items", "ddPFoto.Default"]),
                ("Vorschau, neue Prüfpunkte, Liste", ["lblVsRegeln.Text", "btnGlNeuP.OnSelect", "btnMehrAnlegen.OnSelect", "galAkt.Items"]),

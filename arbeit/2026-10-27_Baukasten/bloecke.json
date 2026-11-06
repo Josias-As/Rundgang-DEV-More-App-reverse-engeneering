@@ -162,6 +162,11 @@
    "RG_Pruefpunkte",
    "AnleitungID",
    "Zahl"
+  ],
+  [
+   "RG_Rundgaenge",
+   "Testrundgang",
+   "Ja/Nein"
   ]
  ],
  "pakete": [
@@ -1136,6 +1141,50 @@
     "lblKaInfoText",
     "imgKaInfo",
     "btnKaInfoSchliessen"
+   ]
+  },
+  {
+   "nr": 23,
+   "props": [
+    {
+     "key": "btnStartTagLaden.OnSelect",
+     "schritt": "23.2",
+     "vorher": "Set(varIsLoading, true);\nConcurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\nConcurrent(\n    ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),\n    ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),\n    ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText))\n);\nSet(varIsLoading, false)",
+     "nachher": "Set(varIsLoading, true);\nConcurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\nConcurrent(\n    ClearCollect(colDurchTag, Filter(RG_Durchfuehrungen, TagText = varTagText)),\n    ClearCollect(colErgTag, ShowColumns(Filter(RG_KategorieErgebnisse, TagText = varTagText), DurchfuehrungID, KategorieID)),\n    ClearCollect(colOffenAlt, ShowColumns(Filter(RG_Durchfuehrungen, Status = stInArbeit || Status = stAbschluss), ID, Title, RundgangID, RundgangName, TagText, TestDatensatz))\n);\nSet(varIsLoading, false)"
+    },
+    {
+     "key": "conStartOffen.Visible",
+     "schritt": "23.3",
+     "vorher": "CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute)) > 0",
+     "nachher": "CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))) > 0"
+    },
+    {
+     "key": "lblStartOffen.Text",
+     "schritt": "23.3",
+     "vorher": "With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText)), n: CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute))},\n    \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(n > 1, \" (und \" & (n - 1) & \" weitere)\", \"\"))",
+     "nachher": "With({l: Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), TagText)},\n    If(CountRows(l) = 0, \"\",\n        With({i: Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l))},\n            With({o: Index(l, i)},\n                \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(CountRows(l) > 1, \"  (\" & i & \"/\" & CountRows(l) & \")\", \"\")\n            )\n        )\n    )\n)"
+    },
+    {
+     "key": "lblStartOffen.Width",
+     "schritt": "23.3",
+     "vorher": "Parent.Width - 260",
+     "nachher": "If(CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))) > 1, Parent.Width - 380, Parent.Width - 260)"
+    },
+    {
+     "key": "btnStartOffen.OnSelect",
+     "schritt": "23.3",
+     "vorher": "If(!varIsLoading,\n    With({o: First(Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute), TagText))},\n        If(!IsBlank(o),\n            Set(varTag, DateValue(o.TagText));\n            Set(varTagText, o.TagText);\n            Set(varRgID, o.RundgangID);\n            Set(varSchluessel, o.Title);\n            Set(varDurchID, o.ID);\n            Navigate(scrRundgang, ScreenTransition.None)\n        )\n    )\n)",
+     "nachher": "If(!varIsLoading,\n    With({l: Sort(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)), TagText)},\n        If(CountRows(l) > 0,\n            With({o: Index(l, Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l)))},\n                Set(varTag, DateValue(o.TagText));\n                Set(varTagText, o.TagText);\n                Set(varRgID, o.RundgangID);\n                Set(varSchluessel, o.Title);\n                Set(varDurchID, o.ID);\n                Navigate(scrRundgang, ScreenTransition.None)\n            )\n        )\n    )\n)"
+    },
+    {
+     "key": "btnRgAktion.OnSelect",
+     "schritt": "23.4",
+     "vorher": "If(!varIsLoading && Now() >= varSperreBis,\n    Set(varIsLoading, true);\n    Set(varPatchFehler, false);\n    Set(varRgID, ThisItem.ID);\n    Set(varSchluessel, \"R\" & ThisItem.ID & \"-\" & varTagText);\n    Refresh(RG_Durchfuehrungen);\n    Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n    If(varDurchID = 0,\n        If(DateDiff(varTag, varHeute, TimeUnit.Days) < 0 || DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage,\n            Notify(\"Für diesen Tag kann kein Rundgang gestartet werden.\", NotificationType.Error),\n            With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},\n                With({kk: Sort(AddColumns(Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0), BReihe, LookUp(b As be2, be2.ID = BereichID).RgReihenfolge, BName, If(Coalesce(LookUp(b As be3, be3.ID = BereichID).Ausblenden, false), \"\", LookUp(b As be4, be4.ID = BereichID).Title)), BReihe * 10000 + RgReihenfolge)},\n                    ClearCollect(colKatBau, ForAll(Sequence(CountRows(kk)) As s, With({z: Index(kk, s.Value)}, {KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                )\n            );\n            If(CountRows(colKatBau) = 0,\n                Notify(\"Für diesen Rundgang sind keine aktiven Kategorien hinterlegt.\", NotificationType.Error),\n                IfError(\n                    Patch(RG_Durchfuehrungen, Defaults(RG_Durchfuehrungen), {Title: varSchluessel, RundgangID: varRgID, RundgangName: ThisItem.Title, TagText: varTagText, KW: ISOWeekNum(varTag), Wochentag: Weekday(varTag, StartOfWeek.Monday), Status: stInArbeit, AnzahlKategorien: CountRows(colKatBau), KategorieListe: JSON(colKatBau, JSONFormat.Compact), PrueferEmail: User().Email, PrueferName: User().FullName, StartZeit: Now(), TestDatensatz: StartsWith(ThisItem.Title, \"ZZ Test\")}),\n                    Set(varPatchFehler, true)\n                );\n                Refresh(RG_Durchfuehrungen);\n                Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n                If(varDurchID = 0, Notify(\"Der Rundgang konnte nicht gestartet werden. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error))\n            )\n        )\n    );\n    If(varDurchID > 0, Navigate(scrRundgang, ScreenTransition.None));\n    Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n    Set(varIsLoading, false)\n)",
+     "nachher": "If(!varIsLoading && Now() >= varSperreBis,\n    Set(varIsLoading, true);\n    Set(varPatchFehler, false);\n    Set(varRgID, ThisItem.ID);\n    Set(varSchluessel, \"R\" & ThisItem.ID & \"-\" & varTagText);\n    Refresh(RG_Durchfuehrungen);\n    Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n    If(varDurchID = 0,\n        If(DateDiff(varTag, varHeute, TimeUnit.Days) < 0 || DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage,\n            Notify(\"Für diesen Tag kann kein Rundgang gestartet werden.\", NotificationType.Error),\n            With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},\n                With({kk: Sort(AddColumns(Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0), BReihe, LookUp(b As be2, be2.ID = BereichID).RgReihenfolge, BName, If(Coalesce(LookUp(b As be3, be3.ID = BereichID).Ausblenden, false), \"\", LookUp(b As be4, be4.ID = BereichID).Title)), BReihe * 10000 + RgReihenfolge)},\n                    ClearCollect(colKatBau, ForAll(Sequence(CountRows(kk)) As s, With({z: Index(kk, s.Value)}, {KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                )\n            );\n            If(CountRows(colKatBau) = 0,\n                Notify(\"Für diesen Rundgang sind keine aktiven Kategorien hinterlegt.\", NotificationType.Error),\n                IfError(\n                    Patch(RG_Durchfuehrungen, Defaults(RG_Durchfuehrungen), {Title: varSchluessel, RundgangID: varRgID, RundgangName: ThisItem.Title, TagText: varTagText, KW: ISOWeekNum(varTag), Wochentag: Weekday(varTag, StartOfWeek.Monday), Status: stInArbeit, AnzahlKategorien: CountRows(colKatBau), KategorieListe: JSON(colKatBau, JSONFormat.Compact), PrueferEmail: User().Email, PrueferName: User().FullName, StartZeit: Now(), TestDatensatz: Coalesce(ThisItem.Testrundgang, false)}),\n                    Set(varPatchFehler, true)\n                );\n                Refresh(RG_Durchfuehrungen);\n                Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n                If(varDurchID = 0, Notify(\"Der Rundgang konnte nicht gestartet werden. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error))\n            )\n        )\n    );\n    If(varDurchID > 0, Navigate(scrRundgang, ScreenTransition.None));\n    Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n    Set(varIsLoading, false)\n)"
+    }
+   ],
+   "neu": [
+    "btnStartOffenWeiter"
    ]
   }
  ],
@@ -2427,6 +2476,37 @@
     "Width": "200",
     "X": "Parent.Width - 220",
     "Y": "Parent.Height - 76"
+   }
+  },
+  "btnStartOffenWeiter": {
+   "eltern": "conStartOffen",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrFehler",
+    "BorderThickness": "1",
+    "Color": "clrFehler",
+    "Fill": "Color.White",
+    "HoverFill": "clrFehlerHell",
+    "PressedFill": "clrFehlerHell",
+    "HoverColor": "clrFehler",
+    "PressedColor": "clrFehler",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "56",
+    "Size": "14",
+    "Text": "\"Weiter ›\"",
+    "Width": "120",
+    "X": "Parent.Width - 356",
+    "Y": "20",
+    "Visible": "CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))) > 1",
+    "DisplayMode": "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+    "OnSelect": "With({n: CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)))},\n    Set(varOffenNr, If(Coalesce(varOffenNr, 1) >= n, 1, Coalesce(varOffenNr, 1) + 1))\n)"
    }
   }
  }

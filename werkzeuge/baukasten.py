@@ -1340,7 +1340,51 @@ def paket22(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13]
+# ---------------------------------------------------------------- Paket 23 (A8 Banner „Nicht abgeschlossen“, A11 Testkennung)
+OFFEN_F = 'Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))'
+OFFEN_L = 'Sort(' + OFFEN_F + ', TagText)'
+OFFEN_I = 'Min(Max(Coalesce(varOffenNr, 1), 1), CountRows(l))'
+
+
+def paket23(st):
+    p = {"nr": 23, "props": [], "neu": []}
+    st.sp.append(("RG_Rundgaenge", "Testrundgang", "Ja/Nein"))
+    aendern(st, p, "23.2", "btnStartTagLaden.OnSelect", lambda t: rep(
+        t, "RundgangID, RundgangName, TagText))", "RundgangID, RundgangName, TagText, TestDatensatz))"))
+    ganz(st, p, "23.3", "conStartOffen.Visible", "CountRows(" + OFFEN_F + ") > 0")
+    ganz(st, p, "23.3", "lblStartOffen.Text",
+         "With({l: " + OFFEN_L + "},\n"
+         "    If(CountRows(l) = 0, \"\",\n"
+         "        With({i: " + OFFEN_I + "},\n"
+         "            With({o: Index(l, i)},\n"
+         "                \"⚠  Nicht abgeschlossen: \" & o.RundgangName & \" vom \" & Text(DateValue(o.TagText), \"dd.mm.yyyy\") & If(CountRows(l) > 1, \"  (\" & i & \"/\" & CountRows(l) & \")\", \"\")\n"
+         "            )\n        )\n    )\n)")
+    ganz(st, p, "23.3", "lblStartOffen.Width", "If(CountRows(" + OFFEN_F + ") > 1, Parent.Width - 380, Parent.Width - 260)")
+    ganz(st, p, "23.3", "btnStartOffen.OnSelect",
+         "If(!varIsLoading,\n"
+         "    With({l: " + OFFEN_L + "},\n"
+         "        If(CountRows(l) > 0,\n"
+         "            With({o: Index(l, " + OFFEN_I + ")},\n"
+         "                Set(varTag, DateValue(o.TagText));\n"
+         "                Set(varTagText, o.TagText);\n"
+         "                Set(varRgID, o.RundgangID);\n"
+         "                Set(varSchluessel, o.Title);\n"
+         "                Set(varDurchID, o.ID);\n"
+         "                Navigate(scrRundgang, ScreenTransition.None)\n"
+         "            )\n        )\n    )\n)")
+    neues_control(st, p, "btnStartOffenWeiter", "conStartOffen", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", BorderColor="clrFehler", Color="clrFehler", HoverColor="clrFehler", PressedColor="clrFehler",
+        HoverFill="clrFehlerHell", PressedFill="clrFehlerHell", Fill="Color.White",
+        Height="56", Size="14", Text='"Weiter ›"', Width="120", X="Parent.Width - 356", Y="20",
+        Visible="CountRows(" + OFFEN_F + ") > 1",
+        DisplayMode="If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
+        OnSelect="With({n: CountRows(" + OFFEN_F + ")},\n    Set(varOffenNr, If(Coalesce(varOffenNr, 1) >= n, 1, Coalesce(varOffenNr, 1) + 1))\n)"))
+    aendern(st, p, "23.4", "btnRgAktion.OnSelect", lambda t: rep(
+        t, 'TestDatensatz: StartsWith(ThisItem.Title, "ZZ Test")', "TestDatensatz: Coalesce(ThisItem.Testrundgang, false)"))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1583,6 +1627,9 @@ def textbreite(text, size):
 # (Steuerelement, Text, Schriftgröße, verfügbare Breite in px, erlaubte Zeilen, Innenabstand links+rechts)
 # Breiten bei Tablet-Hochformat 768: Karte = 768 - 48 = 720, Fotofenster-Karte = 720
 TEXTE = [
+    ("btnStartOffenWeiter", "Weiter ›", 14, 120, 1, 20),
+    ("lblStartOffen", "⚠  Nicht abgeschlossen: Infrastrukturrundgang TGI vom 02.11.2026  (2/5)", 14, 768 - 380, 2, 0),
+    ("lblStartOffen", "⚠  Nicht abgeschlossen: Haustechnik Rundgang Lohfelden vom 02.11.2026", 14, 768 - 260, 2, 0),
     ("lblKaFrage", "ZZ Test Mängelarten  *  (mehrere möglich)", 17, 540, 1, 10),
     ("btnKaFoto", "📷 Foto (10)", 15, 144, 1, 20),
     ("btnKaFoto", "📷 Foto *", 15, 144, 1, 20),

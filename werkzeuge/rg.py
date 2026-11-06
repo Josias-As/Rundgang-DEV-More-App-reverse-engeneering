@@ -157,6 +157,7 @@ def hat_kommentar(f):
 
 
 def to_de(f, kommentare=False):
+    """Englisch -> deutsche Formelleiste. Die Bibliotheksspalte Thumbnail heißt in der deutschen Formelleiste Miniaturansicht (belegt 06.11., A1)."""
     out = []
     i, n = 0, len(f)
     while i < n:
@@ -173,6 +174,10 @@ def to_de(f, kommentare=False):
             j = n if j < 0 else j
             out.append(f[i:j])
             i = j
+            continue
+        if f.startswith(".Thumbnail.", i):
+            out.append(".Miniaturansicht.")
+            i += len(".Thumbnail.")
             continue
         if ch == ";":
             out.append(";;")
@@ -202,6 +207,10 @@ def from_de(f):
         if f.startswith(";;", i):
             out.append(";")
             i += 2
+            continue
+        if f.startswith(".Miniaturansicht.", i):
+            out.append(".Thumbnail.")
+            i += len(".Miniaturansicht.")
             continue
         if ch == ";":
             out.append(",")

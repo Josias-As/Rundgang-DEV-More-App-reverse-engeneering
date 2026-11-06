@@ -1022,6 +1022,38 @@
   btnKaInfoSchliessen.Width        ok
   btnKaInfoSchliessen.X            ok
   btnKaInfoSchliessen.Y            ok
+== Paket 23: 6 Properties, neue Steuerelemente: btnStartOffenWeiter
+  btnStartTagLaden.OnSelect        ok
+  conStartOffen.Visible            ok
+  lblStartOffen.Text               ok
+  lblStartOffen.Width              ok
+  btnStartOffen.OnSelect           ok
+  btnRgAktion.OnSelect             ok
+  btnStartOffenWeiter.BorderColor  ok
+  btnStartOffenWeiter.BorderThickness ok
+  btnStartOffenWeiter.Color        ok
+  btnStartOffenWeiter.Fill         ok
+  btnStartOffenWeiter.HoverFill    ok
+  btnStartOffenWeiter.PressedFill  ok
+  btnStartOffenWeiter.HoverColor   ok
+  btnStartOffenWeiter.PressedColor ok
+  btnStartOffenWeiter.Font         ok
+  btnStartOffenWeiter.RadiusBottomLeft ok
+  btnStartOffenWeiter.RadiusBottomRight ok
+  btnStartOffenWeiter.RadiusTopLeft ok
+  btnStartOffenWeiter.RadiusTopRight ok
+  btnStartOffenWeiter.DisabledFill ok
+  btnStartOffenWeiter.DisabledColor ok
+  btnStartOffenWeiter.DisabledBorderColor ok
+  btnStartOffenWeiter.Height       ok
+  btnStartOffenWeiter.Size         ok
+  btnStartOffenWeiter.Text         ok
+  btnStartOffenWeiter.Width        ok
+  btnStartOffenWeiter.X            ok
+  btnStartOffenWeiter.Y            ok
+  btnStartOffenWeiter.Visible      ok
+  btnStartOffenWeiter.DisplayMode  ok
+  btnStartOffenWeiter.OnSelect     ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -1041,8 +1073,12 @@
   Paket 14: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 17: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 13: colAntworten hat in allen drei Zweigen dieselben 47 Felder
+  Paket 23: colAntworten hat in allen drei Zweigen dieselben 47 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
+  btnStartOffenWeiter            91 px (+10 %) / 100 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Weiter ›'
+  lblStartOffen                 679 px (+10 %) / 388 px, 2 Zeile(n) nötig, erlaubt 2  ok  '⚠  Nicht abgeschlossen: Infrastrukturrundgang TGI vom 02.11.2026  (2/5)'
+  lblStartOffen                 689 px (+10 %) / 508 px, 2 Zeile(n) nötig, erlaubt 2  ok  '⚠  Nicht abgeschlossen: Haustechnik Rundgang Lohfelden vom 02.11.2026'
   lblKaFrage                    470 px (+10 %) / 530 px, 1 Zeile(n) nötig, erlaubt 1  ok  'ZZ Test Mängelarten  *  (mehrere möglich)'
   btnKaFoto                     122 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto (10)'
   btnKaFoto                      93 px (+10 %) / 124 px, 1 Zeile(n) nötig, erlaubt 1  ok  '📷 Foto *'

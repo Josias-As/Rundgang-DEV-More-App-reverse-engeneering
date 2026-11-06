@@ -1,9 +1,9 @@
-Rundgang-Builder: 5 Bildschirme, 336 Steuerelemente, 4708 Properties, 53 Variablen, 17 Funktionen
-Patch-Felder geprüft: 310
+Rundgang-Builder: 5 Bildschirme, 338 Steuerelemente, 4740 Properties, 53 Variablen, 17 Funktionen
+Patch-Felder geprüft: 311
 YAML scrListe: 613 Properties zeichengleich zurückgelesen
 YAML scrEditor: 3102 Properties zeichengleich zurückgelesen
-YAML scrPlan: 371 Properties zeichengleich zurückgelesen
-YAML scrKontakte: 364 Properties zeichengleich zurückgelesen
+YAML scrPlan: 394 Properties zeichengleich zurückgelesen
+YAML scrKontakte: 373 Properties zeichengleich zurückgelesen
 YAML scrAnleitungen: 256 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
@@ -37,6 +37,10 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnEdDupl                93 px (+10 %) /  104 px, 1 Zeile(n), erlaubt 1  ok  'Duplizieren'
   btnEdEntf               112 px (+10 %) /  144 px, 1 Zeile(n), erlaubt 1  ok  'Ja, entfernen'
   lblEdArt (Frage)        600 px (+10 %) /  360 px, 2 Zeile(n), erlaubt 3  ok  'Entfernt den Bereich mit 12 Kategorien und 140 Prüfpunkten. Nochmal tippen.'
+  lblEdArt (Frage)        699 px (+10 %) /  360 px, 2 Zeile(n), erlaubt 3  ok  'Achtung: 12 Fragen hängen davon ab: Bedingung bzw. Vergleich fällt weg. Nochmal tippen.'
+  btnPlTest               156 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '✓ Testrundgang'
+  lblKoNutzung           1097 px (+10 %) /  520 px, 3 Zeile(n), erlaubt 3  ok  'Eingetragen bei 12 kritischen Prüfpunkten in 3 Rundgängen. Inaktiv: Prüfer sehen ihn dort nicht mehr. Im Prüfpunkt unter „Bei n.i.O.“ entfernen.'
+  btnNioKontakt           480 px (+10 %) /  584 px, 1 Zeile(n), erlaubt 1  ok  '○ Elektriker – Elektro Müller GmbH  (inaktiv – entfernen)'
   galPTyp                  99 px (+10 %) /  110 px, 1 Zeile(n), erlaubt 1  ok  '✓ i.O./n.i.O.'
   galPTyp                  97 px (+10 %) /  110 px, 1 Zeile(n), erlaubt 1  ok  '📅 + Uhrzeit'
   galPTyp                 100 px (+10 %) /  110 px, 1 Zeile(n), erlaubt 1  ok  '☑ Mehrfach'
@@ -172,7 +176,6 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPWerte.OnChange             LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Auswahlwerte: neu}), Set(varPatchFehler,
   txtPWerte.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
-  btnPNio.OnSelect               Filter(RG_Ansprechpartner, Aktiv = true))
   ddPAnl.Items                   Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, Ungroup(Ta
   ddPAnl.Items                   LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a
   ddPAnl.Default                 Filter(RG_Anleitungen, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).AnleitungID, 0)}, If(cur = 0
@@ -289,6 +292,8 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtZaTol.OnChange              LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   scrPlan.OnVisible              LookUp(RG_Rundgaenge, ID = varPlanRgID))
   scrPlan.OnVisible              Filter(RG_Plan, RundgangID = varPlanRgID))
+  btnPlTest.OnSelect             LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true))
+  btnPlTest.OnSelect             LookUp(RG_Rundgaenge, ID = varPlanRgID))
   ddPlTag.OnChange               LookUp(RG_Plan, ID = ThisItem.ID), {Wochentag: Self.Selected.W, Title: Left(varPlanRg.Title & " – " & Self.Selected.N, 255)})
   ddPlTag.OnChange               LookUp(RG_Plan, ID = ThisItem.ID))
   ddPlZyklus.OnChange            LookUp(RG_Plan, ID = ThisItem.ID), {ZyklusWochen: Self.Selected.W}), Set(varPatchFehler, true))
@@ -302,6 +307,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID))
   btnPlNeu.OnSelect              Filter(RG_Plan, RundgangID = varPlanRgID))
+  scrKontakte.OnVisible          Filter(RG_Pruefpunkte, Aktiv = true && Kritisch = true), Ansprechpartner, RundgangID))
   btnKoNeu.OnSelect              LookUp(RG_Ansprechpartner, ID = varNeuID))
   txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtKoRolle.OnChange            LookUp(RG_Ansprechpartner, ID = varKoID))

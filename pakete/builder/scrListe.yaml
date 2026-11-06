@@ -288,7 +288,7 @@ Screens:
                         Height: =40
                         Size: =12
                         Text: |-
-                          =If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf", "noch nie aktiviert", "aktive Fassung " & fnAktiveFassung(ThisItem.Fassung)) & "  ·  " & With({pl: Filter(colPlanAlle, RundgangID = ThisItem.ID && Coalesce(Aktiv, false))}, If(IsEmpty(pl), "kein Plan", "Plan: " & Concat(pl As x, Left(fnWochentag(x.Wochentag), 2) & " " & fnZyklus(x.ZyklusWochen), ", "))) & If(Coalesce(ThisItem.EntwurfFassung, 0) > 0 && fnStatus(ThisItem.Status, ThisItem.Aktiv) <> "Entwurf", "  ·  Entwurf Fassung " & ThisItem.EntwurfFassung & " in Arbeit" & If(Coalesce(ThisItem.EntwurfVon, "") <> "", " (" & ThisItem.EntwurfVon & ")", ""), "")
+                          =If(fnStatus(ThisItem.Status, ThisItem.Aktiv) = "Entwurf", "noch nie aktiviert", "aktive Fassung " & fnAktiveFassung(ThisItem.Fassung)) & "  ·  " & With({pl: Filter(colPlanAlle, RundgangID = ThisItem.ID && Coalesce(Aktiv, false))}, If(IsEmpty(pl), "kein Plan", "Plan: " & Concat(pl As x, Left(fnWochentag(x.Wochentag), 2) & " " & fnZyklus(x.ZyklusWochen), ", "))) & If(Coalesce(ThisItem.EntwurfFassung, 0) > 0 && fnStatus(ThisItem.Status, ThisItem.Aktiv) <> "Entwurf", "  ·  Entwurf Fassung " & ThisItem.EntwurfFassung & " in Arbeit" & If(Coalesce(ThisItem.EntwurfVon, "") <> "", " (" & ThisItem.EntwurfVon & ")", ""), "") & If(Coalesce(ThisItem.Testrundgang, false), "  ·  Testrundgang", "")
                         VerticalAlign: =VerticalAlign.Top
                         Width: =510
                         X: =16

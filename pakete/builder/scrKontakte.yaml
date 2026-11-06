@@ -5,8 +5,9 @@ Screens:
       OnVisible: |-
         =Set(varIsLoading, true);
         Set(varLadeText, "");
-        Refresh(RG_Ansprechpartner);
+        Concurrent(Refresh(RG_Ansprechpartner), Refresh(RG_Pruefpunkte));
         ClearCollect(colKoAlle, RG_Ansprechpartner);
+        ClearCollect(colKoNutz, ShowColumns(Filter(RG_Pruefpunkte, Aktiv = true && Kritisch = true), Ansprechpartner, RundgangID));
         Set(varKoID, Coalesce(First(Sort(colKoAlle, Title)).ID, 0));
         Reset(txtKoRolle);
         Reset(txtKoName);
@@ -509,6 +510,19 @@ Screens:
                         Width: =Parent.TemplateWidth - 6
                         X: =0
                         Y: =0
+            - lblKoNutzung:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =If(!Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false) && CountRows(Filter(colKoNutz As u, (";" & Text(varKoID) & ";") in (";" & Substitute(Coalesce(u.Ansprechpartner, ""), " ", "") & ";"))) > 0, clrFehler, clrTextGrau)
+                  Font: =Font.'Segoe UI'
+                  Height: =64
+                  Size: =12
+                  Text: |-
+                    =If(Coalesce(LookUp(colKoAlle, ID = varKoID).Allgemein, false), "Erscheint bei jedem kritischen Mangel.", With({n: CountRows(Filter(colKoNutz As u, (";" & Text(varKoID) & ";") in (";" & Substitute(Coalesce(u.Ansprechpartner, ""), " ", "") & ";"))), r: CountRows(Distinct(Filter(colKoNutz As u, (";" & Text(varKoID) & ";") in (";" & Substitute(Coalesce(u.Ansprechpartner, ""), " ", "") & ";")), RundgangID))}, If(n = 0, "Noch bei keinem kritischen Prüfpunkt eingetragen.", "Eingetragen bei " & n & " kritischen Prüfpunkt" & If(n = 1, "", "en") & " in " & r & " Rundgang" & If(r = 1, "", "en") & "." & If(Coalesce(LookUp(colKoAlle, ID = varKoID).Aktiv, false), "", " Inaktiv: Prüfer sehen ihn dort nicht mehr. Im Prüfpunkt unter „Bei n.i.O.“ entfernen."))))
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =480
       - conKoLaden:
           Control: GroupContainer@1.5.0
           Variant: ManualLayout
