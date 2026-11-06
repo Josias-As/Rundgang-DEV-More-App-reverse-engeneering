@@ -32,7 +32,7 @@ SICHER = " && RundgangID = varRgID && Fassung = varFassung"
 EDIT = "If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)"
 BTN_DM = "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)"
 NEU_SPALTEN = {
-    "RG_Rundgaenge": {"Status": "Text", "Fassung": "Zahl", "EntwurfFassung": "Zahl", "EntwurfVon": "Text", "Testrundgang": "Ja/Nein"},
+    "RG_Rundgaenge": {"Status": "Text", "Fassung": "Zahl", "EntwurfFassung": "Zahl", "EntwurfVon": "Text", "Testrundgang": "Ja/Nein", "Standort": "Text", "Adresse": "Text", "Auftraggeber": "Text"},
     "RG_Bereiche": {"Fassung": "Zahl", "QuelleID": "Zahl", "Ausblenden": "Ja/Nein"},
     "RG_Kategorien": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl"},
     "RG_Pruefpunkte": {"RundgangID": "Zahl", "Fassung": "Zahl", "QuelleID": "Zahl",
@@ -44,10 +44,11 @@ NEU_SPALTEN = {
                        "AnleitungID": "Zahl", "ZugangscodeID": "Zahl"},
     "RG_Anleitungen": {"Title": "Text", "Anleitung": "Text", "Aktiv": "Ja/Nein"},
     "RG_Zugangscodes": {"Title": "Text", "Code": "Text", "Hinweis": "Text", "Aktiv": "Ja/Nein"},
+    "RG_Pruefer": {"Title": "Text", "Email": "Text", "Aktiv": "Ja/Nein"},
     "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
-QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen", "RG_Zugangscodes"]
+QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen", "RG_Zugangscodes", "RG_Pruefer"]
 
 # ---------------------------------------------------------------- App.Formulas und App.OnStart
 
@@ -1704,6 +1705,17 @@ PL_NEU = ("If(" + FREI + ",\n"
           "    If(varPatchFehler, Notify(\"Anlegen fehlgeschlagen.\", NotificationType.Error))\n"
           ")")
 
+def pl_kopf(name, feld, x, w, hint):
+    return txt(name, 'Coalesce(varPlanRg.%s, "")' % feld,
+               ('If(varPlanRgID > 0 && !varIsLoading && Trim(Self.Text) <> Trim(Coalesce(varPlanRg.%s, "")),\n'
+                '    Set(varPatchFehler, false);\n'
+                '    IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {%s: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));\n'
+                '    If(varPatchFehler,\n        Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),\n'
+                '        Refresh(RG_Rundgaenge);\n        Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));\n'
+                '        Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg)\n    )\n)') % (feld, feld),
+               x, "Parent.Height - 108", w, "40", hint, '"%s"' % feld)
+
+
 PL_TEST = ("If(" + FREI + " && varPlanRgID > 0,\n    " + LOCK + ";\n    Set(varPatchFehler, false);\n"
            "    IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Testrundgang: !Coalesce(varPlanRg.Testrundgang, false)}), Set(varPatchFehler, true));\n"
            "    If(varPatchFehler,\n        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
@@ -1731,7 +1743,14 @@ scr_plan = C("scrPlan", "Screen", {
     lbl("lblPlKopf3", '"Startwoche (Montag)"', "452", "116", "186", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf4", '"Gültig bis"', "640", "116", "150", "24", size=12, color="clrTextGrau"),
     lbl("lblPlKopf5", '"Status"', "838", "116", "100", "24", size=12, color="clrTextGrau"),
-    gal("galPl", "Sort(colPlanR, ID)", "24", "140", "934", "Parent.Height - 220", 72, [pl_karte], '"Planzeilen"'),
+    gal("galPl", "Sort(colPlanR, ID)", "24", "140", "934", "Parent.Height - 300", 72, [pl_karte], '"Planzeilen"'),
+    lbl("lblPlKopfT", '"Kopfdaten für das Protokoll"', "24", "Parent.Height - 154", "600", "24", size=13, bold=True),
+    lbl("lblPlStandortT", '"Standort"', "24", "Parent.Height - 128", "300", "20", size=12, color="clrTextGrau"),
+    pl_kopf("txtPlStandort", "Standort", "24", "300", '"z. B. TGI Lohfelden"'),
+    lbl("lblPlAdresseT", '"Adresse"', "336", "Parent.Height - 128", "320", "20", size=12, color="clrTextGrau"),
+    pl_kopf("txtPlAdresse", "Adresse", "336", "320", '"z. B. Matthäus-Merian-Straße 6, 34253 Lohfelden"'),
+    lbl("lblPlAuftragT", '"Auftraggeber (optional)"', "668", "Parent.Height - 128", "290", "20", size=12, color="clrTextGrau"),
+    pl_kopf("txtPlAuftrag", "Auftraggeber", "668", "290", '"optional"'),
     lbl("lblPlLeer", '"Noch kein Plan. „+ Termin hinzufügen“ legt einen an (Montag, jede Woche)."', "24", "150", "934", "40",
         size=14, color="clrTextGrau", Visible="IsEmpty(colPlanR) && !varIsLoading"),
     btn("btnPlNeu", '"+ Termin hinzufügen"', "24", "Parent.Height - 68", "240", "48", PL_NEU),
@@ -1796,6 +1815,7 @@ scr_kontakte = C("scrKontakte", "Screen", {
     con("conKoKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
         btn("btnKoZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
         lbl("lblKoTitel", '"Ansprechpartner"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
+        btn("btnKoPruefer", '"👤 Prüfer ›"', "Parent.Width - 196", "12", "180", "40", "If(!varIsLoading, Navigate(scrPruefer, ScreenTransition.None))", art="kopf"),
     ]),
     lbl("lblKoHilfe", '"Wer soll bei einem kritischen Mangel informiert werden? „bei jedem“ erscheint bei jedem kritischen Mangel. '
         'Nicht mehr gebraucht: auf „inaktiv“ stellen, nicht löschen."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
@@ -1969,7 +1989,52 @@ scr_codes = C("scrCodes", "Screen", {
     laden_overlay("conZcLaden"),
 ])
 
-SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen, scr_codes]
+# ---------------------------------------------------------------- Bildschirm Prüfer (Paket 11)
+PF_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
+          "    With({e: Lower(ThisItem.Mail), alt: LookUp(colPfAlle, Lower(Email) = Lower(ThisItem.Mail))},\n"
+          "        Set(varPatchFehler, false);\n"
+          "        If(IsBlank(alt),\n"
+          "            IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: e, Aktiv: true}), Set(varPatchFehler, true)),\n"
+          "            !Coalesce(alt.Aktiv, false),\n"
+          "            IfError(Patch(RG_Pruefer, LookUp(RG_Pruefer, ID = alt.ID), {Aktiv: true}), Set(varPatchFehler, true))\n"
+          "        );\n"
+          "        Refresh(RG_Pruefer);\n"
+          "        ClearCollect(colPfAlle, RG_Pruefer);\n"
+          "        If(varPatchFehler, Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error), Notify(ThisItem.DisplayName & \" ist in der Prüferliste.\", NotificationType.Success))\n"
+          "    )\n)")
+PF_AKTIV = ("If(" + FREI + ",\n    " + LOCK + ";\n    Set(varPatchFehler, false);\n"
+            "    IfError(Patch(RG_Pruefer, LookUp(RG_Pruefer, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true));\n"
+            "    If(varPatchFehler,\n        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+            "        Patch(colPfAlle, LookUp(colPfAlle, ID = ThisItem.ID), LookUp(RG_Pruefer, ID = ThisItem.ID))\n    )\n)")
+scr_pruefer = C("scrPruefer", "Screen", {
+    "Fill": "clrHintergrund",
+    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Pruefer);\nClearCollect(colPfAlle, RG_Pruefer);\nReset(txtPfSuche);\nSet(varIsLoading, false)",
+}, [
+    con("conPfKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
+        btn("btnPfZurueck", '"← Ansprechpartner"', "16", "12", "210", "40", "If(!varIsLoading, Navigate(scrKontakte, ScreenTransition.None))", art="kopf"),
+        lbl("lblPfTitelKopf", '"Prüfer"', "242", "0", "600", "64", size=20, color="Color.White", bold=True),
+    ]),
+    lbl("lblPfHilfe", '"Diese Personen erscheinen in der Rundgang-App zum Antippen. Jeder Mitarbeiter darf prüfen: Vertretungen sucht der Prüfer dort selbst, '
+        'sie kommen dann automatisch hierher. Nicht mehr gebraucht: auf „inaktiv“ tippen (nicht löschen)."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
+    gal("galPf", 'Sort(colPfAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "124", "620", "Parent.Height - 140", 60, [
+        lbl("lblPfName", 'ThisItem.Title & "  ·  " & Coalesce(ThisItem.Email, "")', "12", "0", "Parent.TemplateWidth - 160", "Parent.TemplateHeight - 4",
+            size=14, Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
+        btn("btnPfAktiv", 'If(Coalesce(ThisItem.Aktiv, false), "aktiv", "inaktiv")', "Parent.TemplateWidth - 140", "8", "128", "40", PF_AKTIV, art="sekundaer", size=13,
+            Fill='If(Coalesce(ThisItem.Aktiv, false), clrPrimaerHell, clrKarte)'),
+    ], '"Prüfer"'),
+    lbl("lblPfLeer", '"Noch keine Prüfer. Rechts nach Namen suchen."', "24", "134", "620", "48", size=13, color="clrTextGrau",
+        Visible="IsEmpty(colPfAlle) && !varIsLoading"),
+    lbl("lblPfSuchT", '"Person aus dem Firmenverzeichnis hinzufügen"', "668", "124", "Parent.Width - 692", "24", size=13, bold=True),
+    txt("txtPfSuche", '""', "false", "668", "152", "Parent.Width - 692", "44", '"Name eingeben (mind. 3 Buchstaben)"', '"Name suchen"', DelayOutput="true"),
+    gal("galPfSuche", 'If(Len(Trim(txtPfSuche.Text)) >= 3, Filter(Office365Users.SearchUserV2({searchTerm: Trim(txtPfSuche.Text), top: 15, isSearchTermRequired: true}).value, !IsBlank(Mail) && AccountEnabled))',
+        "668", "204", "Parent.Width - 692", "Parent.Height - 220", 56, [
+        btn("btnPfNeu", '"+ " & ThisItem.DisplayName & If(Coalesce(ThisItem.Department, "") = "", "", "  ·  " & ThisItem.Department)',
+            "0", "4", "Parent.TemplateWidth", "48", PF_NEU, art="sekundaer", size=13, Align="Align.Left", PaddingLeft="12"),
+    ], '"Suchergebnisse"'),
+    laden_overlay("conPfLaden"),
+])
+
+SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen, scr_codes, scr_pruefer]
 
 
 def maske(f):
@@ -2109,7 +2174,7 @@ def yaml_screen(s):
 
 # ---------------------------------------------------------------- Prüfungen
 
-BUILTINS = set("""If Set Not And Or CountRows Filter LookUp Sort First Last Coalesce IsBlank IsEmpty Blank Text Value Trim Lower Upper Len
+BUILTINS = set("""Office365Users Mail AccountEnabled If Set Not And Or CountRows Filter LookUp Sort First Last Coalesce IsBlank IsEmpty Blank Text Value Trim Lower Upper Len
 Left Mid Right Split Concat ForAll Sequence Index Table With Patch Collect ClearCollect Clear Remove RemoveIf Distinct Notify
 NotificationType Navigate ScreenTransition Refresh Concurrent IfError IsError Reset Select SetFocus Launch Now Today DateAdd DateDiff
 TimeUnit Switch Max Min RoundDown Mod Defaults User GUID Substitute StartsWith Color ColorValue ColorFade RGBA DisplayMode Font
@@ -2117,7 +2182,7 @@ FontWeight Align Parent Self ThisItem ThisRecord true false Boolean StartOfWeek 
 Warning Success Information None Edit View Disabled White Semibold Normal Days Seconds Monday Fit Fill Small Thumbnail FirstN Char
 SortOrder Descending Ascending Center Right VerticalAlign Top Overflow Scroll TextMode MultiLine TextFormat DateTimeFormat ShortDate
 Text FullName Email Value ImagePosition ShowColumns""".split())
-MEMBER_OK = set("""Value ID Title Text Selected SelectedDate AllItems Thumbnail Small Large Error Warning Success Information None
+MEMBER_OK = set("""Department DisplayName Mail SearchUserV2 value Value ID Title Text Selected SelectedDate AllItems Thumbnail Small Large Error Warning Success Information None
 Edit View Disabled White Semibold Normal Days Seconds Monday Fit Fill Descending Ascending Center Right Top Scroll MultiLine Number
 ShortDate FullName Email TemplateWidth TemplateHeight Width Height Data Black Transparent Middle Left""".split())
 FUNKTIONEN = dict((m.group(1), len([x for x in m.group(2).split(",") if x.strip()]))
@@ -2365,7 +2430,8 @@ TEXTE = [
     ("ddPAnl", "Kompressor ablesen", 14, 256, 60, 1),
     ("lblPBed", "Keine Bedingung möglich: Andere Fragen hängen von dieser ab.", 12, 528, 0, 1),
     ("lblPGrenz", "Wert außerhalb der Grenzen ergibt", 12, 528, 0, 1), ("lblPWerte", "Antwortmöglichkeiten – eine pro Zeile", 12, 528, 0, 1),
-    ("btnPBild", "Bild ändern", 13, 124, 16, 1), ("btnPCode", "🔑", 13, 48, 4, 1), ("btnAnCodes", "🔑 Zugangscodes ›", 14, 220, 20, 1),
+    ("btnPBild", "Bild ändern", 13, 124, 16, 1), ("btnKoPruefer", "👤 Prüfer ›", 14, 180, 20, 1), ("btnPfZurueck", "← Ansprechpartner", 14, 210, 20, 1),
+    ("lblPlKopfT", "Kopfdaten für das Protokoll", 13, 600, 0, 1), ("btnPCode", "🔑", 13, 48, 4, 1), ("btnAnCodes", "🔑 Zugangscodes ›", 14, 220, 20, 1),
     ("btnZcZurueck", "← Anleitungen", 14, 170, 20, 1), ("ddPCode", "Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)", 14, 572, 60, 1),
     ("lblVsTitel", "Vorschau – so sieht es der Prüfer", 14, 394, 0, 1),
     ("lblPrTitel", "Prüfung: 12 Fehler, 3 Hinweise", 14, 394, 0, 1),

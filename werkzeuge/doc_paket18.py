@@ -27,7 +27,7 @@ SP = ["- Neue Liste **`RG_Zugangscodes`**: `Title` (vorhanden, = Bezeichnung), `
 
 def main():
     za, na, neu_a, anh_a = g.app_teil(18, ERKL_APP, SP)
-    zb, keys_b, neu_b, anh_b = g.builder_teil("builder_nach_p23.json", None, ERKL_B,
+    zb, keys_b, neu_b, anh_b = g.builder_teil("builder_nach_p23.json", "builder_nach_p18.json", ERKL_B,
                                                ["Liste und Spalte aus A1 (nur einmal anlegen). Builder: `RG_Pruefpunkte` aktualisieren, `RG_Zugangscodes` hinzufügen."])
     z = ["# Paket 18 – Zugangscodes (Bedien-Codes, erst nach Antippen sichtbar)", "",
          "Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket18), `werkzeuge/builder.py`, `werkzeuge/doc_paket18.py`. Voraussetzung: Paket 23 in beiden Apps.", "",

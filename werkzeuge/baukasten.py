@@ -1445,12 +1445,164 @@ def paket18(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18]
+# ---------------------------------------------------------------- Paket 11 (Prüfer wählen, Unterschrift, Kopfdaten)
+PR_LEER = 'Coalesce(varPruefer.Email, "") = ""'
+PR_WAEHLEN = ("If(!varIsLoading && Now() >= varSperreBis,\n"
+              "    Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));\n"
+              "    Set(varPruefer, {Name: %s, Email: Lower(%s)});\n%s"
+              "    Reset(txtPwSuche);\n"
+              "    Set(varPrWahl, false)\n)")
+PR_NEU = ("    If(IsBlank(LookUp(colPrueferAlle, Lower(Email) = Lower(ThisItem.Mail))),\n"
+          "        IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: Lower(ThisItem.Mail), Aktiv: true}), Notify(\"In die Prüferliste konnte nicht gespeichert werden – du prüfst trotzdem unter diesem Namen.\", NotificationType.Warning));\n"
+          "        Refresh(RG_Pruefer);\n"
+          "        ClearCollect(colPrueferAlle, RG_Pruefer)\n"
+          "    );\n")
+
+
+def paket11(st):
+    p = {"nr": 11, "props": [], "neu": []}
+    st.sp.append(("RG_Pruefer", "(neue Liste: Title = Name, Email, Aktiv)", "Liste"))
+    st.sp.append(("RG_Pruefer", "Email", "Spalte"))
+    for sp_, typ in (("Standort", "Text"), ("Adresse", "Text"), ("Auftraggeber", "Text")):
+        st.sp.append(("RG_Rundgaenge", sp_, typ))
+    for sp_, typ in (("UnterschriftBild", "Text (mehrzeilig, nur Text)"), ("UnterschriftUrl", "Text (mehrzeilig)"),
+                     ("UnterschriftName", "Text"), ("UnterschriftZeit", "Datum+Uhrzeit"), ("Geraetekonto", "Text")):
+        st.sp.append(("RG_Durchfuehrungen", sp_, typ))
+    st.neue_quellen.add("RG_Pruefer")
+    st.neue_quellen.add("Office365Users")
+
+    aendern(st, p, "11.3", "App.OnStart", lambda t: rep(t, "Set(varArchivStart, false)",
+            'Set(varArchivStart, false);\nSet(varPruefer, {Name: "", Email: ""});\nSet(varPrWahl, true);\nSet(varUnterschriftOffen, false);\n'
+            'Set(varUnterschriftDa, false);\nSet(varUnterschriftBild, "");\nSet(varUnterschriftUrl, "")'))
+    aendern(st, p, "11.3", "scrStart.OnVisible", lambda t: rep(t, "    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true))\n);",
+            "    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true)),\n    ClearCollect(colPrueferAlle, RG_Pruefer)\n);"))
+    ganz(st, p, "11.4", "lblStartNutzer.Text",
+         'If(' + PR_LEER + ', "Kein Prüfer gewählt", varPruefer.Name & "  ·  wechseln ›") & If(cfgTestmodus, "  ·  TESTMODUS", "")')
+    standard_ersetzen(st, p, "11.4", "lblStartNutzer.OnSelect", "false", "If(!varIsLoading, Set(varPrWahl, true))")
+    # User() -> gewählter Prüfer
+    aendern(st, p, "11.5", "btnRgAktion.OnSelect", lambda t: rep(
+        "If(" + PR_LEER + ",\n    Set(varPrWahl, true),\n" + "\n".join("    " + z for z in rep(
+            t, "PrueferEmail: User().Email, PrueferName: User().FullName,",
+            "PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name, Geraetekonto: User().Email,").split("\n")) + "\n)", "X_NIE_X", "X_NIE_X", 0))
+    aendern(st, p, "11.5", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "PrueferEmail: User().Email, PrueferName: User().FullName,", "PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name,"))
+    aendern(st, p, "11.5", "btnKaKritOk.OnSelect", lambda t: rep(t, "KritischVon: User().FullName", "KritischVon: varPruefer.Name"))
+
+    # Abschluss mit Unterschrift
+    def abschluss(t):
+        t = rep(t, "    If(!varAbschlussFrage,\n        Set(varAbschlussFrage, true);\n        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),",
+                "    If(!varAbschlussFrage,\n        Set(varUnterschriftDa, false);\n        Reset(penRuUnterschrift);\n        Set(varUnterschriftOffen, true);\n"
+                "        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),")
+        t = rep(t, "FestgestelltVon: User().Email,", "FestgestelltVon: varPruefer.Email,")
+        t = rep(t, "                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll)}), Set(varPatchFehler, true));\n",
+                "                        With({datei: \"Unterschrift-D\" & varDurchID & \"-\" & Text(Now(), \"yyyymmdd-hhmmss\") & \".png\", ordner: fnArchivOrdner(varDurch.TagText, varDurch.TestDatensatz) & \"/\" & varDurch.Title},\n"
+                "                            Set(varUnterschriftUrl, If(IsError(aRG_Foto_hochladen.Run({contentBytes: penRuUnterschrift.Image, name: datei}, datei, ordner, varDurchID, 0, varDurch.TestDatensatz)), \"\", fnSpUrl(\"RG_Fotos\", ordner & \"/\" & datei)))\n"
+                "                        );\n"
+                "                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll), "
+                "UnterschriftBild: varUnterschriftBild, UnterschriftUrl: varUnterschriftUrl, UnterschriftName: varPruefer.Name, UnterschriftZeit: Now()}), Set(varPatchFehler, true));\n")
+        t = rep(t, "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\", NotificationType.Success);\n",
+                "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\" & If(varUnterschriftUrl = \"\", \" (Unterschrift-Datei nicht hochgeladen, steht aber im Protokoll.)\", \"\"), NotificationType.Success);\n"
+                "                                Set(varUnterschriftOffen, false);\n"
+                "                                Set(varPruefer, {Name: \"\", Email: \"\"});\n"
+                "                                Set(varPrWahl, true);\n")
+        return t
+    aendern(st, p, "11.6", "btnRuAbschluss.OnSelect", abschluss)
+
+    # Protokoll: Kopf + Unterschrift
+    def protokoll(t):
+        t = rep(t, "With({d: varDurch},", "With({d: varDurch, r: LookUp(RG_Rundgaenge, ID = varDurch.RundgangID)},")
+        t = rep(t, "        \"<div>\" & fnTagAnzeige(DateValue(d.TagText)) & \" · Prüfer: \" & fnHtml(d.PrueferName) & \"</div>\" &\n",
+                "        If(Trim(Coalesce(r.Standort, \"\") & Coalesce(r.Adresse, \"\")) = \"\", \"\", \"<div>\" & fnHtml(Trim(Coalesce(r.Standort, \"\") & If(Coalesce(r.Standort, \"\") <> \"\" && Coalesce(r.Adresse, \"\") <> \"\", \" · \", \"\") & Coalesce(r.Adresse, \"\"))) & \"</div>\") &\n"
+                "        If(Trim(Coalesce(r.Auftraggeber, \"\")) = \"\", \"\", \"<div>Auftraggeber: \" & fnHtml(r.Auftraggeber) & \"</div>\") &\n"
+                "        \"<div>\" & fnTagAnzeige(DateValue(d.TagText)) & \" · Prüfer: \" & fnHtml(d.PrueferName) & \"</div>\" &\n")
+        t = rep(t, "    If(IsBlank(d.ProtokollUrl), \"\",",
+                "    If(Coalesce(d.UnterschriftBild, \"\") = \"\", \"\", \"<div style='margin-top:22px'><img src='\" & d.UnterschriftBild & \"' style='height:90px'>\" &\n"
+                "        \"<div style='border-top:1px solid #1B1B1F;width:300px;padding-top:4px;font-size:12px'>\" & fnHtml(Coalesce(d.UnterschriftName, d.PrueferName)) & \" · \" & Text(d.UnterschriftZeit, \"dd.mm.yyyy hh:mm\") & \"</div></div>\") &\n"
+                "    If(IsBlank(d.ProtokollUrl), \"\",")
+        return t
+    aendern(st, p, "11.7", "htmProtokoll.HtmlText", protokoll)
+
+    # Prüferauswahl (Startseite)
+    neues_control(st, p, "conPwWahl", "scrStart", "GroupContainer@1.5.0", {
+        "Fill": "clrHintergrund", "Height": "Parent.Height", "Visible": "varPrWahl || " + PR_LEER, "Width": "Parent.Width"})
+    neues_control(st, p, "lblPwTitel", "conPwWahl", "Label@2.5.1", _label(
+        Color="clrPrimaer", FontWeight="FontWeight.Semibold", Height="48", Size="24", Text='"Wer prüft?"', Width="Parent.Width - 48", X="24", Y="32"))
+    neues_control(st, p, "lblPwHinweis", "conPwWahl", "Label@2.5.1", _label(
+        Color="clrTextGrau", Height="48", Size="14", VerticalAlign="VerticalAlign.Top",
+        Text='"Bitte deinen Namen antippen. Nach dem Abschließen eines Rundgangs wird neu gefragt."', Width="Parent.Width - 48", X="24", Y="84"))
+    neues_control(st, p, "galPwListe", "conPwWahl", "Gallery@2.15.0", {
+        "AccessibleLabel": '"Prüfer"', "Height": "420", "Items": "Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false)), Lower(Title))",
+        "ShowScrollbar": "true", "TemplatePadding": "0", "TemplateSize": "68", "Width": "Parent.Width", "X": "0", "Y": "140"})
+    neues_control(st, p, "btnPwName", "galPwListe", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Align="Align.Left", Height="Parent.TemplateHeight - 12", PaddingLeft="20", Size="18",
+        Text='ThisItem.Title & If(Lower(ThisItem.Email) = Lower(Coalesce(varPruefer.Email, "")), "   ✓", "")',
+        Width="Parent.TemplateWidth - 48", X="24", Y="6", OnSelect=PR_WAEHLEN % ("ThisItem.Title", "ThisItem.Email", "")))
+    neues_control(st, p, "lblPwLeer", "conPwWahl", "Label@2.5.1", _label(
+        Color="clrTextGrau", Height="48", Size="14", Text='"Noch niemand in der Prüferliste. Unten nach dem Namen suchen."',
+        Visible="IsEmpty(Filter(colPrueferAlle, Coalesce(Aktiv, false)))", Width="Parent.Width - 48", X="24", Y="150"))
+    neues_control(st, p, "lblPwSuchT", "conPwWahl", "Label@2.5.1", _label(
+        Color="clrText", FontWeight="FontWeight.Semibold", Height="28", Size="15", Text='"Andere Person suchen (z. B. Vertretung)"',
+        Width="Parent.Width - 48", X="24", Y="576"))
+    neues_control(st, p, "txtPwSuche", "conPwWahl", "Classic/TextInput@2.3.2", {
+        "AccessibleLabel": '"Name suchen"', "BorderColor": "clrRahmen", "Color": "clrText", "Default": '""', "DelayOutput": "true",
+        "FocusedBorderColor": "clrPrimaer", "Font": "Font.'Segoe UI'", "Height": "56", "HintText": '"Name eingeben (mind. 3 Buchstaben)"',
+        "HoverBorderColor": "clrPrimaer", "RadiusBottomLeft": "8", "RadiusBottomRight": "8", "RadiusTopLeft": "8", "RadiusTopRight": "8",
+        "Size": "16", "Width": "Parent.Width - 48", "X": "24", "Y": "608"})
+    neues_control(st, p, "galPwSuche", "conPwWahl", "Gallery@2.15.0", {
+        "AccessibleLabel": '"Suchergebnisse"', "Height": "Parent.Height - 676 - 96",
+        "Items": 'If(varPrWahl || ' + PR_LEER + ', If(Len(Trim(txtPwSuche.Text)) >= 3, Filter(Office365Users.SearchUserV2({searchTerm: Trim(txtPwSuche.Text), top: 15, isSearchTermRequired: true}).value, !IsBlank(Mail) && AccountEnabled)))',
+        "ShowScrollbar": "true", "TemplatePadding": "0", "TemplateSize": "64", "Width": "Parent.Width", "X": "0", "Y": "676"})
+    neues_control(st, p, "btnPwTreffer", "galPwSuche", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Align="Align.Left", Height="Parent.TemplateHeight - 10", PaddingLeft="20", Size="15",
+        Text='ThisItem.DisplayName & If(Coalesce(ThisItem.Department, "") = "", "", "  ·  " & ThisItem.Department)',
+        Width="Parent.TemplateWidth - 48", X="24", Y="5", OnSelect=PR_WAEHLEN % ("ThisItem.DisplayName", "ThisItem.Mail", PR_NEU)))
+    neues_control(st, p, "btnPwZu", "conPwWahl", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Height="56", Size="16", Text='"Schließen"', Visible="!(" + PR_LEER + ")", Width="200", X="Parent.Width - 224", Y="Parent.Height - 80",
+        OnSelect="Set(varPrWahl, false)"))
+
+    # Unterschrift (Rundgang-Übersicht)
+    neues_control(st, p, "conRuUnterschrift", "scrRundgang", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(0, 0, 0, 0.45)", "Height": "Parent.Height", "Visible": "varUnterschriftOffen", "Width": "Parent.Width"})
+    neues_control(st, p, "btnRuUSperre", "conRuUnterschrift", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Fill": "RGBA(0, 0, 0, 0)", "Height": "Parent.Height", "HoverFill": "RGBA(0, 0, 0, 0)",
+        "PressedFill": "RGBA(0, 0, 0, 0)", "Text": '""', "Width": "Parent.Width"})
+    neues_control(st, p, "conRuUKarte", "conRuUnterschrift", "GroupContainer@1.5.0", {
+        "Fill": "clrKarte", "Height": "600", "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
+        "Width": "Parent.Width - 64", "X": "32", "Y": "(Parent.Height - Self.Height) / 2"})
+    neues_control(st, p, "lblRuUTitel", "conRuUKarte", "Label@2.5.1", _label(
+        Color="clrPrimaer", FontWeight="FontWeight.Semibold", Height="40", Size="20", Text='"Unterschrift"', Width="Parent.Width - 40", X="20", Y="14"))
+    neues_control(st, p, "lblRuUText", "conRuUKarte", "Label@2.5.1", _label(
+        Color="clrTextGrau", Height="48", Size="14", VerticalAlign="VerticalAlign.Top",
+        Text='"Mit der Unterschrift schließt " & varPruefer.Name & " den Rundgang ab. Danach sind keine Änderungen mehr möglich."',
+        Width="Parent.Width - 40", X="20", Y="56"))
+    neues_control(st, p, "penRuUnterschrift", "conRuUKarte", "PEN_MENUE", {
+        "BorderColor": "clrRahmen", "BorderThickness": "1", "Color": "clrText", "Fill": "Color.White", "Height": "300",
+        "OnSelect": "Set(varUnterschriftDa, true)", "Width": "Parent.Width - 40", "X": "20", "Y": "116"})
+    neues_control(st, p, "lblRuUName", "conRuUKarte", "Label@2.5.1", _label(
+        Height="28", Size="14", Text='varPruefer.Name & "  ·  " & Text(Now(), "dd.mm.yyyy hh:mm")', Width="Parent.Width - 40", X="20", Y="428"))
+    neues_control(st, p, "btnRuULoeschen", "conRuUKarte", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Height="52", Size="15", Text='"Löschen"', Width="140", X="20", Y="Parent.Height - 76",
+        OnSelect="Reset(penRuUnterschrift);\nSet(varUnterschriftDa, false)"))
+    neues_control(st, p, "btnRuUAbbrechen", "conRuUKarte", "Classic/Button@2.2.0", _knopf(
+        "sekundaer", Height="52", Size="15", Text='"Abbrechen"', Width="150", X="172", Y="Parent.Height - 76",
+        OnSelect="Set(varUnterschriftOffen, false);\nSet(varAbschlussFrage, false)"))
+    neues_control(st, p, "btnRuUOk", "conRuUKarte", "Classic/Button@2.2.0", _knopf(
+        "primaer", Height="52", Size="15", Text='"Unterschreiben und abschließen"', Width="Parent.Width - 354", X="334", Y="Parent.Height - 76",
+        DisplayMode="If(varUnterschriftDa && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)",
+        OnSelect=("If(varUnterschriftDa && !varIsLoading,\n"
+                  "    Set(varUnterschriftBild, With({j: JSON(penRuUnterschrift.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)));\n"
+                  "    Set(varUnterschriftUrl, \"\");\n"
+                  "    Set(varAbschlussFrage, true);\n"
+                  "    Select(btnRuAbschluss)\n)")))
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11]
 
 
 # ---------------------------------------------------------------- Prüfungen
 
-BUILTINS = set("""If Set Not And Or CountRows Filter LookUp Sort SortByColumns First Last Coalesce IsBlank IsEmpty Blank Text
+BUILTINS = set("""DisplayName Mail AccountEnabled Department SearchUserV2 searchTerm top isSearchTermRequired If Set Not And Or CountRows Filter LookUp Sort SortByColumns First Last Coalesce IsBlank IsEmpty Blank Text
 Value Trim Lower Upper Len Left Mid Right Split Concat ForAll Sequence Index Table ParseJSON JSON JSONFormat With Patch
 Collect ClearCollect Clear Remove UpdateIf Distinct ShowColumns AddColumns DropColumns Notify NotificationType Navigate
 ScreenTransition Refresh Concurrent IfError IsError Reset Select Launch Now Today DateAdd DateDiff DateValue TimeUnit
@@ -1688,6 +1840,10 @@ def textbreite(text, size):
 # (Steuerelement, Text, Schriftgröße, verfügbare Breite in px, erlaubte Zeilen, Innenabstand links+rechts)
 # Breiten bei Tablet-Hochformat 768: Karte = 768 - 48 = 720, Fotofenster-Karte = 720
 TEXTE = [
+    ("btnRuUOk", "Unterschreiben und abschließen", 15, 768 - 64 - 354, 1, 20),
+    ("lblRuUText", "Mit der Unterschrift schließt Maximilian Mustermann-Schneider den Rundgang ab. Danach sind keine Änderungen mehr möglich.", 14, 768 - 64 - 40, 2, 0),
+    ("lblStartNutzer", "Maximilian Mustermann  ·  wechseln ›  ·  TESTMODUS", 16, 768 // 2 - 24, 2, 0),
+    ("lblPwSuchT", "Andere Person suchen (z. B. Vertretung)", 15, 768 - 48, 1, 0),
     ("lblKaCodeTitel", "🔑 Bedienteil Kältemaschine 1 (Infrastrukturraum)", 19, 768 - 96 - 40, 1, 0),
     ("lblKaCodeHinweis", "Code nur für das Bedienteil. Nicht weitergeben. Bei Störung: Haustechnik anrufen (Durchwahl 123).", 14, 768 - 96 - 40, 3, 0),
     ("btnStartOffenWeiter", "Weiter ›", 14, 120, 1, 20),

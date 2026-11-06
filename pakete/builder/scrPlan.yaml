@@ -167,7 +167,7 @@ Screens:
           Variant: Vertical
           Properties:
             AccessibleLabel: ="Planzeilen"
-            Height: =Parent.Height - 220
+            Height: =Parent.Height - 300
             Items: =Sort(colPlanR, ID)
             ShowScrollbar: =true
             TemplatePadding: =0
@@ -414,6 +414,138 @@ Screens:
                         Width: =100
                         X: =814
                         Y: =14
+      - lblPlKopfT:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrText
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =24
+            Size: =13
+            Text: ="Kopfdaten für das Protokoll"
+            Width: =600
+            X: =24
+            Y: =Parent.Height - 154
+      - lblPlStandortT:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =20
+            Size: =12
+            Text: ="Standort"
+            Width: =300
+            X: =24
+            Y: =Parent.Height - 128
+      - txtPlStandort:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            AccessibleLabel: ="Standort"
+            BorderColor: =clrRahmen
+            Color: =clrText
+            Default: =Coalesce(varPlanRg.Standort, "")
+            DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+            Fill: =clrKarte
+            FocusedBorderColor: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HintText: ="z. B. TGI Lohfelden"
+            HoverBorderColor: =clrPrimaer
+            OnChange: |-
+              =If(varPlanRgID > 0 && !varIsLoading && Trim(Self.Text) <> Trim(Coalesce(varPlanRg.Standort, "")),
+                  Set(varPatchFehler, false);
+                  IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Standort: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                  If(varPatchFehler,
+                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                      Refresh(RG_Rundgaenge);
+                      Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
+                      Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg)
+                  )
+              )
+            Size: =14
+            Width: =300
+            X: =24
+            Y: =Parent.Height - 108
+      - lblPlAdresseT:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =20
+            Size: =12
+            Text: ="Adresse"
+            Width: =320
+            X: =336
+            Y: =Parent.Height - 128
+      - txtPlAdresse:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            AccessibleLabel: ="Adresse"
+            BorderColor: =clrRahmen
+            Color: =clrText
+            Default: =Coalesce(varPlanRg.Adresse, "")
+            DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+            Fill: =clrKarte
+            FocusedBorderColor: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HintText: ="z. B. Matthäus-Merian-Straße 6, 34253 Lohfelden"
+            HoverBorderColor: =clrPrimaer
+            OnChange: |-
+              =If(varPlanRgID > 0 && !varIsLoading && Trim(Self.Text) <> Trim(Coalesce(varPlanRg.Adresse, "")),
+                  Set(varPatchFehler, false);
+                  IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Adresse: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                  If(varPatchFehler,
+                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                      Refresh(RG_Rundgaenge);
+                      Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
+                      Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg)
+                  )
+              )
+            Size: =14
+            Width: =320
+            X: =336
+            Y: =Parent.Height - 108
+      - lblPlAuftragT:
+          Control: Label@2.5.1
+          Properties:
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =20
+            Size: =12
+            Text: ="Auftraggeber (optional)"
+            Width: =290
+            X: =668
+            Y: =Parent.Height - 128
+      - txtPlAuftrag:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            AccessibleLabel: ="Auftraggeber"
+            BorderColor: =clrRahmen
+            Color: =clrText
+            Default: =Coalesce(varPlanRg.Auftraggeber, "")
+            DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+            Fill: =clrKarte
+            FocusedBorderColor: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HintText: ="optional"
+            HoverBorderColor: =clrPrimaer
+            OnChange: |-
+              =If(varPlanRgID > 0 && !varIsLoading && Trim(Self.Text) <> Trim(Coalesce(varPlanRg.Auftraggeber, "")),
+                  Set(varPatchFehler, false);
+                  IfError(Patch(RG_Rundgaenge, LookUp(RG_Rundgaenge, ID = varPlanRgID), {Auftraggeber: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                  If(varPatchFehler,
+                      Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                      Refresh(RG_Rundgaenge);
+                      Set(varPlanRg, LookUp(RG_Rundgaenge, ID = varPlanRgID));
+                      Patch(colRg, LookUp(colRg, ID = varPlanRgID), varPlanRg)
+                  )
+              )
+            Size: =14
+            Width: =290
+            X: =668
+            Y: =Parent.Height - 108
       - lblPlLeer:
           Control: Label@2.5.1
           Properties:

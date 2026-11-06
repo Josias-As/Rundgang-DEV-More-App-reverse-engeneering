@@ -1,11 +1,12 @@
-Rundgang-Builder: 6 Bildschirme, 372 Steuerelemente, 5214 Properties, 55 Variablen, 17 Funktionen
-Patch-Felder geprüft: 323
+Rundgang-Builder: 7 Bildschirme, 395 Steuerelemente, 5514 Properties, 55 Variablen, 17 Funktionen
+Patch-Felder geprüft: 331
 YAML scrListe: 613 Properties zeichengleich zurückgelesen
 YAML scrEditor: 3273 Properties zeichengleich zurückgelesen
-YAML scrPlan: 394 Properties zeichengleich zurückgelesen
-YAML scrKontakte: 373 Properties zeichengleich zurückgelesen
+YAML scrPlan: 475 Properties zeichengleich zurückgelesen
+YAML scrKontakte: 396 Properties zeichengleich zurückgelesen
 YAML scrAnleitungen: 279 Properties zeichengleich zurückgelesen
 YAML scrCodes: 280 Properties zeichengleich zurückgelesen
+YAML scrPruefer: 196 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnLiNeu                166 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '+ Neuer Rundgang'
@@ -56,6 +57,9 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   lblPGrenz               266 px (+10 %) /  528 px, 1 Zeile(n), erlaubt 1  ok  'Wert außerhalb der Grenzen ergibt'
   lblPWerte               291 px (+10 %) /  528 px, 1 Zeile(n), erlaubt 1  ok  'Antwortmöglichkeiten – eine pro Zeile'
   btnPBild                 93 px (+10 %) /  108 px, 1 Zeile(n), erlaubt 1  ok  'Bild ändern'
+  btnKoPruefer            118 px (+10 %) /  160 px, 1 Zeile(n), erlaubt 1  ok  '👤 Prüfer ›'
+  btnPfZurueck            182 px (+10 %) /  190 px, 1 Zeile(n), erlaubt 1  ok  '← Ansprechpartner'
+  lblPlKopfT              228 px (+10 %) /  600 px, 1 Zeile(n), erlaubt 1  ok  'Kopfdaten für das Protokoll'
   btnPCode                 24 px (+10 %) /   44 px, 1 Zeile(n), erlaubt 1  ok  '🔑'
   btnAnCodes              195 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '🔑 Zugangscodes ›'
   btnZcZurueck            137 px (+10 %) /  150 px, 1 Zeile(n), erlaubt 1  ok  '← Anleitungen'
@@ -319,6 +323,12 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnPlBisWeg.OnSelect           LookUp(RG_Plan, ID = ThisItem.ID))
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))
   btnPlAktiv.OnSelect            LookUp(RG_Plan, ID = ThisItem.ID))
+  txtPlStandort.OnChange         LookUp(RG_Rundgaenge, ID = varPlanRgID), {Standort: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtPlStandort.OnChange         LookUp(RG_Rundgaenge, ID = varPlanRgID))
+  txtPlAdresse.OnChange          LookUp(RG_Rundgaenge, ID = varPlanRgID), {Adresse: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtPlAdresse.OnChange          LookUp(RG_Rundgaenge, ID = varPlanRgID))
+  txtPlAuftrag.OnChange          LookUp(RG_Rundgaenge, ID = varPlanRgID), {Auftraggeber: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtPlAuftrag.OnChange          LookUp(RG_Rundgaenge, ID = varPlanRgID))
   btnPlNeu.OnSelect              Filter(RG_Plan, RundgangID = varPlanRgID))
   scrKontakte.OnVisible          Filter(RG_Pruefpunkte, Aktiv = true && Kritisch = true), Ansprechpartner, RundgangID))
   btnKoNeu.OnSelect              LookUp(RG_Ansprechpartner, ID = varNeuID))
@@ -350,5 +360,8 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtZcHinweis.OnChange          LookUp(RG_Zugangscodes, ID = varZcID))
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID))
+  btnPfAktiv.OnSelect            LookUp(RG_Pruefer, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))
+  btnPfAktiv.OnSelect            LookUp(RG_Pruefer, ID = ThisItem.ID))
+  btnPfNeu.OnSelect              LookUp(RG_Pruefer, ID = alt.ID), {Aktiv: true})), Set(varPatchFehler, true))
 
 Fehler gesamt: 0

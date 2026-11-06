@@ -14,15 +14,17 @@ BL = json.load(open(doc_app89.BLOECKE, encoding="utf-8"))
 SNAP = os.path.join(rg.REPO, "arbeit", "2026-11-02_Paket8")
 
 
-def app_teil(nr, erkl, sp_schritte, zusatz_vor=None):
+def app_teil(nr, erkl, sp_schritte, zusatz_vor=None, ohne=(), nach=None):
     p = [q for q in BL["pakete"] if q["nr"] == nr][0]
     eltern = dict(rg.App(doc_app89.EXPORT).eltern)
     for n, i in BL["neue_controls"].items():
         eltern[n] = i["eltern"]
     alle = doc_app89.neue_bis(BL, nr)
+    for o in ohne:
+        alle.pop(o, None)
     z = ["## Teil A – Rundgang DEV", "", "### A1 – SharePoint und Daten (zuerst)", ""] + sp_schritte + [""]
     z += zusatz_vor or []
-    oben = [n for n in p["neu"] if alle[n]["eltern"] not in p["neu"]]
+    oben = [n for n in p["neu"] if n in alle and alle[n]["eltern"] not in p["neu"]]
     for i, n in enumerate(oben, 1):
         wo = alle[n]["eltern"]
         if wo is None:
@@ -40,6 +42,7 @@ def app_teil(nr, erkl, sp_schritte, zusatz_vor=None):
         else:
             z += ["### A2.%d – neues Steuerelement `%s`" % (i, n), "", "**Wo hin:** in der Strukturansicht **`%s`** markieren → Strg+V." % wo, "",
                   "```yaml"] + doc_app89.yaml_block(n, alle) + ["```", ""]
+        z += (nach or {}).get(n, [])
     z += ["### A3 – geänderte Properties", ""]
     for i, c in enumerate(p["props"], 1):
         z += block("A3.%d" % i, c["key"], doc_app89.de(c["vorher"]), doc_app89.de(c["nachher"]), erkl.get(c["key"], ""), eltern)

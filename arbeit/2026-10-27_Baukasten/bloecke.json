@@ -187,6 +187,56 @@
    "RG_Pruefpunkte",
    "ZugangscodeID",
    "Zahl"
+  ],
+  [
+   "RG_Pruefer",
+   "(neue Liste: Title = Name, Email, Aktiv)",
+   "Liste"
+  ],
+  [
+   "RG_Pruefer",
+   "Email",
+   "Spalte"
+  ],
+  [
+   "RG_Rundgaenge",
+   "Standort",
+   "Text"
+  ],
+  [
+   "RG_Rundgaenge",
+   "Adresse",
+   "Text"
+  ],
+  [
+   "RG_Rundgaenge",
+   "Auftraggeber",
+   "Text"
+  ],
+  [
+   "RG_Durchfuehrungen",
+   "UnterschriftBild",
+   "Text (mehrzeilig, nur Text)"
+  ],
+  [
+   "RG_Durchfuehrungen",
+   "UnterschriftUrl",
+   "Text (mehrzeilig)"
+  ],
+  [
+   "RG_Durchfuehrungen",
+   "UnterschriftName",
+   "Text"
+  ],
+  [
+   "RG_Durchfuehrungen",
+   "UnterschriftZeit",
+   "Datum+Uhrzeit"
+  ],
+  [
+   "RG_Durchfuehrungen",
+   "Geraetekonto",
+   "Text"
   ]
  ],
  "pakete": [
@@ -1234,6 +1284,89 @@
     "lblKaCodeHinweis",
     "btnKaCodeSchliessen"
    ]
+  },
+  {
+   "nr": 11,
+   "props": [
+    {
+     "key": "App.OnStart",
+     "schritt": "11.3",
+     "vorher": "Set(varHeute, Today());\nSet(varTag, Today());\nSet(varTagText, Text(Today(), \"yyyy-mm-dd\"));\nSet(varIsLoading, false);\nSet(varSperreBis, Now());\nSet(varPatchFehler, false);\nSet(varRgID, 0);\nSet(varSchluessel, \"\");\nSet(varDurchID, 0);\nSet(varDurch, Defaults(RG_Durchfuehrungen));\nSet(varKatID, 0);\nSet(varKatPos, 0);\nSet(varKatName, \"\");\nSet(varBereichName, \"\");\nSet(varSchluesselK, \"\");\nSet(varErgebnis, Defaults(RG_KategorieErgebnisse));\nSet(varNachlese, Defaults(RG_KategorieErgebnisse));\nSet(varGespeichertBeimOeffnen, Defaults(RG_KategorieErgebnisse).GespeichertAm);\nSet(varAntwortJSON, \"\");\nSet(varNurLesen, false);\nSet(varAbschlussFrage, false);\nSet(varZurueckFrage, false);\nSet(varGeaendert, false);\nSet(varAlleIOFrage, false);\nSet(varProtokollZeit, Now());\nSet(varIstAdmin, CountRows(Filter(Split(Lower(cfgAdmins), \";\") As a, Trim(a.Value) = Lower(User().Email))) > 0);\nSet(varZuruecksetzenFrage, false);\nSet(varWeiter, false);\nSet(varZeigeFehlend, false);\nSet(varFotoPP, 0);\nSet(varArchivStart, false)\n",
+     "nachher": "Set(varHeute, Today());\nSet(varTag, Today());\nSet(varTagText, Text(Today(), \"yyyy-mm-dd\"));\nSet(varIsLoading, false);\nSet(varSperreBis, Now());\nSet(varPatchFehler, false);\nSet(varRgID, 0);\nSet(varSchluessel, \"\");\nSet(varDurchID, 0);\nSet(varDurch, Defaults(RG_Durchfuehrungen));\nSet(varKatID, 0);\nSet(varKatPos, 0);\nSet(varKatName, \"\");\nSet(varBereichName, \"\");\nSet(varSchluesselK, \"\");\nSet(varErgebnis, Defaults(RG_KategorieErgebnisse));\nSet(varNachlese, Defaults(RG_KategorieErgebnisse));\nSet(varGespeichertBeimOeffnen, Defaults(RG_KategorieErgebnisse).GespeichertAm);\nSet(varAntwortJSON, \"\");\nSet(varNurLesen, false);\nSet(varAbschlussFrage, false);\nSet(varZurueckFrage, false);\nSet(varGeaendert, false);\nSet(varAlleIOFrage, false);\nSet(varProtokollZeit, Now());\nSet(varIstAdmin, CountRows(Filter(Split(Lower(cfgAdmins), \";\") As a, Trim(a.Value) = Lower(User().Email))) > 0);\nSet(varZuruecksetzenFrage, false);\nSet(varWeiter, false);\nSet(varZeigeFehlend, false);\nSet(varFotoPP, 0);\nSet(varArchivStart, false);\nSet(varPruefer, {Name: \"\", Email: \"\"});\nSet(varPrWahl, true);\nSet(varUnterschriftOffen, false);\nSet(varUnterschriftDa, false);\nSet(varUnterschriftBild, \"\");\nSet(varUnterschriftUrl, \"\")"
+    },
+    {
+     "key": "scrStart.OnVisible",
+     "schritt": "11.3",
+     "vorher": "Set(varIsLoading, true);\nSet(varAusArchiv, false);\nIf(IsBlank(varHeute) || varHeute <> Today(), Set(varHeute, Today()); Set(varTag, Today()));\nSet(varTagText, Text(varTag, \"yyyy-mm-dd\"));\nConcurrent(\n    ClearCollect(colRundgaenge, Filter(RG_Rundgaenge, Aktiv = true)),\n    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true))\n);\nSelect(btnStartTagLaden)",
+     "nachher": "Set(varIsLoading, true);\nSet(varAusArchiv, false);\nIf(IsBlank(varHeute) || varHeute <> Today(), Set(varHeute, Today()); Set(varTag, Today()));\nSet(varTagText, Text(varTag, \"yyyy-mm-dd\"));\nConcurrent(\n    ClearCollect(colRundgaenge, Filter(RG_Rundgaenge, Aktiv = true)),\n    ClearCollect(colPlan, Filter(RG_Plan, Aktiv = true)),\n    ClearCollect(colPrueferAlle, RG_Pruefer)\n);\nSelect(btnStartTagLaden)"
+    },
+    {
+     "key": "lblStartNutzer.Text",
+     "schritt": "11.4",
+     "vorher": "User().FullName & If(cfgTestmodus, \"  ·  TESTMODUS\", \"\")",
+     "nachher": "If(Coalesce(varPruefer.Email, \"\") = \"\", \"Kein Prüfer gewählt\", varPruefer.Name & \"  ·  wechseln ›\") & If(cfgTestmodus, \"  ·  TESTMODUS\", \"\")"
+    },
+    {
+     "key": "lblStartNutzer.OnSelect",
+     "schritt": "11.4",
+     "vorher": "false",
+     "nachher": "If(!varIsLoading, Set(varPrWahl, true))",
+     "standard": true
+    },
+    {
+     "key": "btnRgAktion.OnSelect",
+     "schritt": "11.5",
+     "vorher": "If(!varIsLoading && Now() >= varSperreBis,\n    Set(varIsLoading, true);\n    Set(varPatchFehler, false);\n    Set(varRgID, ThisItem.ID);\n    Set(varSchluessel, \"R\" & ThisItem.ID & \"-\" & varTagText);\n    Refresh(RG_Durchfuehrungen);\n    Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n    If(varDurchID = 0,\n        If(DateDiff(varTag, varHeute, TimeUnit.Days) < 0 || DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage,\n            Notify(\"Für diesen Tag kann kein Rundgang gestartet werden.\", NotificationType.Error),\n            With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},\n                With({kk: Sort(AddColumns(Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0), BReihe, LookUp(b As be2, be2.ID = BereichID).RgReihenfolge, BName, If(Coalesce(LookUp(b As be3, be3.ID = BereichID).Ausblenden, false), \"\", LookUp(b As be4, be4.ID = BereichID).Title)), BReihe * 10000 + RgReihenfolge)},\n                    ClearCollect(colKatBau, ForAll(Sequence(CountRows(kk)) As s, With({z: Index(kk, s.Value)}, {KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                )\n            );\n            If(CountRows(colKatBau) = 0,\n                Notify(\"Für diesen Rundgang sind keine aktiven Kategorien hinterlegt.\", NotificationType.Error),\n                IfError(\n                    Patch(RG_Durchfuehrungen, Defaults(RG_Durchfuehrungen), {Title: varSchluessel, RundgangID: varRgID, RundgangName: ThisItem.Title, TagText: varTagText, KW: ISOWeekNum(varTag), Wochentag: Weekday(varTag, StartOfWeek.Monday), Status: stInArbeit, AnzahlKategorien: CountRows(colKatBau), KategorieListe: JSON(colKatBau, JSONFormat.Compact), PrueferEmail: User().Email, PrueferName: User().FullName, StartZeit: Now(), TestDatensatz: Coalesce(ThisItem.Testrundgang, false)}),\n                    Set(varPatchFehler, true)\n                );\n                Refresh(RG_Durchfuehrungen);\n                Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n                If(varDurchID = 0, Notify(\"Der Rundgang konnte nicht gestartet werden. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error))\n            )\n        )\n    );\n    If(varDurchID > 0, Navigate(scrRundgang, ScreenTransition.None));\n    Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n    Set(varIsLoading, false)\n)",
+     "nachher": "If(Coalesce(varPruefer.Email, \"\") = \"\",\n    Set(varPrWahl, true),\n    If(!varIsLoading && Now() >= varSperreBis,\n        Set(varIsLoading, true);\n        Set(varPatchFehler, false);\n        Set(varRgID, ThisItem.ID);\n        Set(varSchluessel, \"R\" & ThisItem.ID & \"-\" & varTagText);\n        Refresh(RG_Durchfuehrungen);\n        Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n        If(varDurchID = 0,\n            If(DateDiff(varTag, varHeute, TimeUnit.Days) < 0 || DateDiff(varTag, varHeute, TimeUnit.Days) > cfgNachholTage,\n                Notify(\"Für diesen Tag kann kein Rundgang gestartet werden.\", NotificationType.Error),\n                With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},\n                    With({kk: Sort(AddColumns(Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0), BReihe, LookUp(b As be2, be2.ID = BereichID).RgReihenfolge, BName, If(Coalesce(LookUp(b As be3, be3.ID = BereichID).Ausblenden, false), \"\", LookUp(b As be4, be4.ID = BereichID).Title)), BReihe * 10000 + RgReihenfolge)},\n                        ClearCollect(colKatBau, ForAll(Sequence(CountRows(kk)) As s, With({z: Index(kk, s.Value)}, {KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                    )\n                );\n                If(CountRows(colKatBau) = 0,\n                    Notify(\"Für diesen Rundgang sind keine aktiven Kategorien hinterlegt.\", NotificationType.Error),\n                    IfError(\n                        Patch(RG_Durchfuehrungen, Defaults(RG_Durchfuehrungen), {Title: varSchluessel, RundgangID: varRgID, RundgangName: ThisItem.Title, TagText: varTagText, KW: ISOWeekNum(varTag), Wochentag: Weekday(varTag, StartOfWeek.Monday), Status: stInArbeit, AnzahlKategorien: CountRows(colKatBau), KategorieListe: JSON(colKatBau, JSONFormat.Compact), PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name, Geraetekonto: User().Email, StartZeit: Now(), TestDatensatz: Coalesce(ThisItem.Testrundgang, false)}),\n                        Set(varPatchFehler, true)\n                    );\n                    Refresh(RG_Durchfuehrungen);\n                    Set(varDurchID, Coalesce(LookUp(RG_Durchfuehrungen, Title = varSchluessel).ID, 0));\n                    If(varDurchID = 0, Notify(\"Der Rundgang konnte nicht gestartet werden. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error))\n                )\n            )\n        );\n        If(varDurchID > 0, Navigate(scrRundgang, ScreenTransition.None));\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n    )\n)"
+    },
+    {
+     "key": "btnKaSpeichern.OnSelect",
+     "schritt": "11.5",
+     "vorher": "If(\n    varRueckPP > 0 || varKritPP > 0,\n        Notify(\"Bitte zuerst die offene Frage im Fenster beantworten.\", NotificationType.Warning),\n    Value(lblKaFehlendAnzahl.Text) > 0,\n        Set(varZeigeFehlend, true);\n        Set(varSprungRec, First(Filter(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge) As a, If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl))) && fnFehlt(a.Typ, a.Pflicht, a.Bewertung, a.WertText, a.WertZahl, a.Kommentar, a.FotoModus, CountRows(Filter(colFotos, PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos), a.KommentarPflicht, a.Grenzmodus, a.MinWert, a.MaxWert, a.Kritisch && !a.KritischOk))));\n        Set(varKritPP, Coalesce(First(Sort(Filter(colAntworten As a, !a.Inaktiv && a.Bewertung = \"NIO\" && a.Kritisch && !a.KritischOk && If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl)))), Reihenfolge)).PruefpunktID, 0));\n        Reset(galKaPruefpunkte),\n    !varIsLoading && Now() >= varSperreBis,\n        Set(varIsLoading, true);\n        Set(varPatchFehler, false);\n        Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\n        Concurrent(\n            ClearCollect(colErledigt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, KategorieID, AnzahlNIO, GespeichertAm, PrueferName)),\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID))\n        );\n        With({durch: varDurch, erg: LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)},\n            If(\n                CountRows(Filter(colAntworten, !Inaktiv)) = 0,\n                    Notify(\"Diese Kategorie hat keine aktiven Prüfpunkte. Bitte die Stammdaten prüfen lassen.\", NotificationType.Error),\n                Value(lblKaFehlendAnzahl.Text) > 0,\n                    Notify(\"Bitte noch ausfüllen: \" & lblKaFehlend.Text, NotificationType.Warning),\n                durch.Status <> stInArbeit,\n                    Notify(\"Der Rundgang ist nicht mehr in Arbeit – Änderungen sind nicht möglich.\", NotificationType.Error),\n                !IsBlank(erg) && erg.GespeichertAm <> varGespeichertBeimOeffnen,\n                    Notify(\"Diese Kategorie wurde inzwischen von \" & erg.PrueferName & \" gespeichert. Bitte zurück und neu öffnen.\", NotificationType.Error),\n                ClearCollect(colVersteckt, ShowColumns(Filter(colAntworten As a, !a.Inaktiv && !(If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl))))), PruefpunktID));\n                ClearCollect(colFotoNeu, Filter(colFotos As f0, IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0, a0.PruefpunktID = f0.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus))));\n                ForAll(colFotoNeu As f,\n                    Patch(colFotos, LookUp(colFotos, Nr = f.Nr),\n                        {Url: With({ordner: fnArchivOrdner(durch.TagText, durch.TestDatensatz) & \"/\" & durch.Title}, If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild, name: f.Datei}, f.Datei, ordner, varDurchID, f.PruefpunktID, durch.TestDatensatz)), \"\", fnSpUrl(\"RG_Fotos\", ordner & \"/\" & f.Datei)))})\n                );\n                If(CountRows(Filter(colFotos As f1, IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1, a1.PruefpunktID = f1.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)))) > 0,\n                    Notify(CountRows(Filter(colFotos As f2, IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2, a2.PruefpunktID = f2.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)))) & \" Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen.\", NotificationType.Error),\n                    ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)), PruefpunktID) As d,\n                        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = d.Value),\n                            {Fotos: With({alt: LookUp(colAntworten, PruefpunktID = d.Value).Fotos, neu: Concat(Filter(colFotos, PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)), Url, \" | \")},\n                                If(IsBlank(alt), neu, alt & \" | \" & neu))})\n                    );\n                    UpdateIf(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID), {Uebernommen: true});\n                    UpdateIf(colAntworten, !Inaktiv && !fnKommentarNoetig(Typ, Bewertung, WertText, WertZahl, KommentarPflicht, Grenzmodus, MinWert, MaxWert), {Kommentar: \"\"});\n                    UpdateIf(colAntworten, !Inaktiv, {Warnung: Typ = \"ZAHL\" && Grenzmodus = \"Warnen\" && fnAusserhalb(WertZahl, MinWert, MaxWert)});\n                    ClearCollect(colSpeichern, ForAll(colAntworten As r, If(r.PruefpunktID in colVersteckt.PruefpunktID, Patch(r, {Bewertung: \"\", WertText: \"\", WertZahl: Blank(), Kommentar: \"\", Fotos: \"\", Warnung: false, Ausgeblendet: true}), r.Inaktiv, r, Patch(r, {Ausgeblendet: false}))));\n                    ClearCollect(colAbsTmp, ShowColumns(Filter(colSpeichern, !Inaktiv && !Ausgeblendet && Abschnitt <> \"\"), PruefpunktID, Reihenfolge, Abschnitt));\n                    UpdateIf(colSpeichern, AbsKopf, {AbsKopf: false});\n                    ForAll(colAbsTmp As t,\n                        Patch(colSpeichern, LookUp(colSpeichern, PruefpunktID = t.PruefpunktID),\n                            {AbsKopf: t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(colAbsTmp As u, Lower(u.Abschnitt) = Lower(t.Abschnitt)), Reihenfolge * 1000000 + PruefpunktID)}\n                        )\n                    );\n                    Set(varAntwortJSON, JSON(ShowColumns(colSpeichern, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung, Ausgeblendet, Abschnitt, AbsKopf, Kritisch, KritischOk, KritischZeit, KritischVon, TextIO, TextNIO, Letzter, LetzterTag, AbwText), JSONFormat.Compact));\n                    IfError(\n                        Patch(RG_KategorieErgebnisse, If(IsBlank(erg), Defaults(RG_KategorieErgebnisse), erg),\n                            {Title: varSchluesselK, DurchfuehrungID: varDurchID, TagText: durch.TagText, KategorieID: varKatID, Position: varKatPos, BereichName: varBereichName, KategorieName: varKatName, Antworten: varAntwortJSON, AnzahlNIO: CountRows(Filter(colSpeichern, Bewertung = \"NIO\")), PrueferEmail: User().Email, PrueferName: User().FullName, GespeichertAm: Now(), TestDatensatz: durch.TestDatensatz}),\n                        Set(varPatchFehler, true)\n                    );\n                    Refresh(RG_KategorieErgebnisse);\n                    Set(varNachlese, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK));\n                    If(varNachlese.Antworten = varAntwortJSON,\n                        Set(varGeaendert, false);\n                        Clear(colFotos);\n                        Notify(\"Gespeichert.\", NotificationType.Success);\n                        Set(varWeiter, true);\n                        Navigate(scrRundgang, ScreenTransition.None),\n                        Notify(\"Speichern wurde nicht bestätigt. Bitte erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error)\n                    )\n                )\n            )\n        );\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n)",
+     "nachher": "If(\n    varRueckPP > 0 || varKritPP > 0,\n        Notify(\"Bitte zuerst die offene Frage im Fenster beantworten.\", NotificationType.Warning),\n    Value(lblKaFehlendAnzahl.Text) > 0,\n        Set(varZeigeFehlend, true);\n        Set(varSprungRec, First(Filter(Sort(Filter(colAntworten, !Inaktiv), Reihenfolge) As a, If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl))) && fnFehlt(a.Typ, a.Pflicht, a.Bewertung, a.WertText, a.WertZahl, a.Kommentar, a.FotoModus, CountRows(Filter(colFotos, PruefpunktID = a.PruefpunktID && !Uebernommen)) + fnLinkAnzahl(a.Fotos), a.KommentarPflicht, a.Grenzmodus, a.MinWert, a.MaxWert, a.Kritisch && !a.KritischOk))));\n        Set(varKritPP, Coalesce(First(Sort(Filter(colAntworten As a, !a.Inaktiv && a.Bewertung = \"NIO\" && a.Kritisch && !a.KritischOk && If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl)))), Reihenfolge)).PruefpunktID, 0));\n        Reset(galKaPruefpunkte),\n    !varIsLoading && Now() >= varSperreBis,\n        Set(varIsLoading, true);\n        Set(varPatchFehler, false);\n        Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\n        Concurrent(\n            ClearCollect(colErledigt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, KategorieID, AnzahlNIO, GespeichertAm, PrueferName)),\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID))\n        );\n        With({durch: varDurch, erg: LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)},\n            If(\n                CountRows(Filter(colAntworten, !Inaktiv)) = 0,\n                    Notify(\"Diese Kategorie hat keine aktiven Prüfpunkte. Bitte die Stammdaten prüfen lassen.\", NotificationType.Error),\n                Value(lblKaFehlendAnzahl.Text) > 0,\n                    Notify(\"Bitte noch ausfüllen: \" & lblKaFehlend.Text, NotificationType.Warning),\n                durch.Status <> stInArbeit,\n                    Notify(\"Der Rundgang ist nicht mehr in Arbeit – Änderungen sind nicht möglich.\", NotificationType.Error),\n                !IsBlank(erg) && erg.GespeichertAm <> varGespeichertBeimOeffnen,\n                    Notify(\"Diese Kategorie wurde inzwischen von \" & erg.PrueferName & \" gespeichert. Bitte zurück und neu öffnen.\", NotificationType.Error),\n                ClearCollect(colVersteckt, ShowColumns(Filter(colAntworten As a, !a.Inaktiv && !(If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl))))), PruefpunktID));\n                ClearCollect(colFotoNeu, Filter(colFotos As f0, IsBlank(f0.Url) && With({a: LookUp(colAntworten As a0, a0.PruefpunktID = f0.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus))));\n                ForAll(colFotoNeu As f,\n                    Patch(colFotos, LookUp(colFotos, Nr = f.Nr),\n                        {Url: With({ordner: fnArchivOrdner(durch.TagText, durch.TestDatensatz) & \"/\" & durch.Title}, If(IsError(aRG_Foto_hochladen.Run({contentBytes: f.Bild, name: f.Datei}, f.Datei, ordner, varDurchID, f.PruefpunktID, durch.TestDatensatz)), \"\", fnSpUrl(\"RG_Fotos\", ordner & \"/\" & f.Datei)))})\n                );\n                If(CountRows(Filter(colFotos As f1, IsBlank(f1.Url) && With({a: LookUp(colAntworten As a1, a1.PruefpunktID = f1.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)))) > 0,\n                    Notify(CountRows(Filter(colFotos As f2, IsBlank(f2.Url) && With({a: LookUp(colAntworten As a2, a2.PruefpunktID = f2.PruefpunktID)}, !(a.PruefpunktID in colVersteckt.PruefpunktID) && fnFotoNeuErlaubt(a.Bewertung, a.FotoModus)))) & \" Foto(s) konnten nicht hochgeladen werden. Bitte „Speichern“ erneut tippen.\", NotificationType.Error),\n                    ForAll(Distinct(Filter(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID)), PruefpunktID) As d,\n                        Patch(colAntworten, LookUp(colAntworten, PruefpunktID = d.Value),\n                            {Fotos: With({alt: LookUp(colAntworten, PruefpunktID = d.Value).Fotos, neu: Concat(Filter(colFotos, PruefpunktID = d.Value && !Uebernommen && !IsBlank(Url)), Url, \" | \")},\n                                If(IsBlank(alt), neu, alt & \" | \" & neu))})\n                    );\n                    UpdateIf(colFotos, !Uebernommen && !IsBlank(Url) && !(PruefpunktID in colVersteckt.PruefpunktID), {Uebernommen: true});\n                    UpdateIf(colAntworten, !Inaktiv && !fnKommentarNoetig(Typ, Bewertung, WertText, WertZahl, KommentarPflicht, Grenzmodus, MinWert, MaxWert), {Kommentar: \"\"});\n                    UpdateIf(colAntworten, !Inaktiv, {Warnung: Typ = \"ZAHL\" && Grenzmodus = \"Warnen\" && fnAusserhalb(WertZahl, MinWert, MaxWert)});\n                    ClearCollect(colSpeichern, ForAll(colAntworten As r, If(r.PruefpunktID in colVersteckt.PruefpunktID, Patch(r, {Bewertung: \"\", WertText: \"\", WertZahl: Blank(), Kommentar: \"\", Fotos: \"\", Warnung: false, Ausgeblendet: true}), r.Inaktiv, r, Patch(r, {Ausgeblendet: false}))));\n                    ClearCollect(colAbsTmp, ShowColumns(Filter(colSpeichern, !Inaktiv && !Ausgeblendet && Abschnitt <> \"\"), PruefpunktID, Reihenfolge, Abschnitt));\n                    UpdateIf(colSpeichern, AbsKopf, {AbsKopf: false});\n                    ForAll(colAbsTmp As t,\n                        Patch(colSpeichern, LookUp(colSpeichern, PruefpunktID = t.PruefpunktID),\n                            {AbsKopf: t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(colAbsTmp As u, Lower(u.Abschnitt) = Lower(t.Abschnitt)), Reihenfolge * 1000000 + PruefpunktID)}\n                        )\n                    );\n                    Set(varAntwortJSON, JSON(ShowColumns(colSpeichern, PruefpunktID, Frage, Typ, Bewertung, WertZahl, WertText, Einheit, Kommentar, Fotos, Warnung, Ausgeblendet, Abschnitt, AbsKopf, Kritisch, KritischOk, KritischZeit, KritischVon, TextIO, TextNIO, Letzter, LetzterTag, AbwText), JSONFormat.Compact));\n                    IfError(\n                        Patch(RG_KategorieErgebnisse, If(IsBlank(erg), Defaults(RG_KategorieErgebnisse), erg),\n                            {Title: varSchluesselK, DurchfuehrungID: varDurchID, TagText: durch.TagText, KategorieID: varKatID, Position: varKatPos, BereichName: varBereichName, KategorieName: varKatName, Antworten: varAntwortJSON, AnzahlNIO: CountRows(Filter(colSpeichern, Bewertung = \"NIO\")), PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name, GespeichertAm: Now(), TestDatensatz: durch.TestDatensatz}),\n                        Set(varPatchFehler, true)\n                    );\n                    Refresh(RG_KategorieErgebnisse);\n                    Set(varNachlese, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK));\n                    If(varNachlese.Antworten = varAntwortJSON,\n                        Set(varGeaendert, false);\n                        Clear(colFotos);\n                        Notify(\"Gespeichert.\", NotificationType.Success);\n                        Set(varWeiter, true);\n                        Navigate(scrRundgang, ScreenTransition.None),\n                        Notify(\"Speichern wurde nicht bestätigt. Bitte erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error)\n                    )\n                )\n            )\n        );\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n)"
+    },
+    {
+     "key": "btnKaKritOk.OnSelect",
+     "schritt": "11.5",
+     "vorher": "If(LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = \"NIO\", Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), \"dd.mm.yyyy hh:mm\"), KritischVon: User().FullName}));\nSet(varKritPP, 0);\nSet(varGeaendert, true)",
+     "nachher": "If(LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = \"NIO\", Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), \"dd.mm.yyyy hh:mm\"), KritischVon: varPruefer.Name}));\nSet(varKritPP, 0);\nSet(varGeaendert, true)"
+    },
+    {
+     "key": "btnRuAbschluss.OnSelect",
+     "schritt": "11.6",
+     "vorher": "If(!varIsLoading && Now() >= varSperreBis,\n    If(!varAbschlussFrage,\n        Set(varAbschlussFrage, true);\n        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),\n        Set(varAbschlussFrage, false);\n        Set(varIsLoading, true);\n        Set(varPatchFehler, false);\n        Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\n        Concurrent(\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),\n            ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID))\n        );\n        If(IsError(ClearCollect(colKatListe, ForAll(Table(ParseJSON(varDurch.KategorieListe)) As j, {KategorieID: Value(j.Value.KategorieID), Position: Value(j.Value.Position), BereichName: Text(j.Value.BereichName), KategorieName: Text(j.Value.KategorieName)}))), Clear(colKatListe));\n        If(\n            !(varDurch.Status in [stInArbeit, stAbschluss]),\n                Notify(\"Dieser Rundgang ist bereits abgeschlossen.\", NotificationType.Information),\n            CountRows(colKatListe) = 0 || CountRows(colKatListe) <> varDurch.AnzahlKategorien,\n                Notify(\"Die Kategorienliste dieses Rundgangs ist unvollständig. Bitte zurück und erneut öffnen.\", NotificationType.Error),\n            CountRows(Filter(colKatListe As kl, IsBlank(LookUp(colErgAlle As e, e.KategorieID = kl.KategorieID)))) > 0,\n                Notify(\"Es sind noch nicht alle Kategorien gespeichert.\", NotificationType.Warning),\n            If(varDurch.Status = stInArbeit && IsError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbschluss})), Set(varPatchFehler, true));\n            Refresh(RG_Durchfuehrungen);\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));\n            If(varDurch.Status <> stAbschluss,\n                Notify(\"Der Rundgang konnte nicht in den Abschluss gesetzt werden. Bitte erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error),\n                Refresh(RG_KategorieErgebnisse);\n                ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID));\n                If(IsError(\n                    ClearCollect(colMaengelSoll,\n                        Filter(Ungroup(\n                            ForAll(Filter(colErgAlle, AnzahlNIO > 0) As e3,\n                                {Zeilen: ForAll(Filter(Table(ParseJSON(e3.Antworten)) As a, Text(a.Value.Bewertung) = \"NIO\") As n,\n                                    {Title: \"D\" & varDurchID & \"-P\" & Value(n.Value.PruefpunktID),\n                                     PruefpunktID: Value(n.Value.PruefpunktID),\n                                     BereichName: e3.BereichName,\n                                     KategorieName: e3.KategorieName,\n                                     Frage: Left(If(Coalesce(Text(n.Value.Abschnitt), \"\") = \"\", \"\", Text(n.Value.Abschnitt) & \" › \") & Text(n.Value.Frage), 255),\n                                     Wert: Left(Coalesce(Text(n.Value.WertText), \"\") & If(IsBlank(n.Value.WertZahl), \"\", Text(Value(n.Value.WertZahl)) & \" \" & Coalesce(Text(n.Value.Einheit), \"\")), 255),\n                                     Kommentar: If(Coalesce(IfError(Boolean(n.Value.Kritisch), false), false), \"KRITISCH – Bescheid gegeben \" & Coalesce(Text(n.Value.KritischZeit), \"\") & \". \", \"\") & Coalesce(Text(n.Value.Kommentar), \"\"),\n                             FotoUrls: Coalesce(Text(n.Value.Fotos), \"\")})}\n                            ),\n                            Zeilen\n                        ), !IsBlank(PruefpunktID))\n                    )),\n                    Clear(colMaengelSoll)\n                );\n                If(Sum(colErgAlle, AnzahlNIO) <> CountRows(colMaengelSoll),\n                    Notify(\"Die Mängel ließen sich nicht vollständig aus den Antworten ermitteln (\" & CountRows(colMaengelSoll) & \" von \" & Sum(colErgAlle, AnzahlNIO) & \"). Bitte den Rundgang melden.\", NotificationType.Error),\n                    Refresh(RG_Maengel);\n                    ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title));\n                    IfError(\n                        Collect(RG_Maengel,\n                            ForAll(Filter(colMaengelSoll As s, IsBlank(LookUp(colMaengelIst As i, i.Title = s.Title))) As m,\n                                {Title: m.Title, DurchfuehrungID: varDurchID, PruefpunktID: m.PruefpunktID, RundgangName: varDurch.RundgangName, BereichName: m.BereichName, KategorieName: m.KategorieName, Frage: m.Frage, Wert: m.Wert, Kommentar: m.Kommentar, FotoUrls: m.FotoUrls, FestgestelltAm: Now(), FestgestelltVon: User().Email, Status: {Value: \"Offen\"}, TestDatensatz: varDurch.TestDatensatz})\n                        ),\n                        Set(varPatchFehler, true)\n                    );\n                    Concurrent(Refresh(RG_Maengel), Refresh(RG_KategorieErgebnisse), Refresh(RG_Durchfuehrungen));\n                    Concurrent(\n                        ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title)),\n                        ClearCollect(colErgJetzt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, GespeichertAm))\n                    );\n                    If(\n                        CountRows(Filter(colMaengelSoll As s2, IsBlank(LookUp(colMaengelIst As i2, i2.Title = s2.Title)))) > 0,\n                            Notify(\"Die Mängel konnten nicht vollständig gespeichert werden. Bitte „Rundgang abschließen“ erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error),\n                        Concat(Sort(colErgJetzt, ID), ID & \"@\" & Text(GespeichertAm, \"yyyy-mm-dd hh:mm:ss\"), \";\") <> Concat(Sort(colErgAlle, ID), ID & \"@\" & Text(GespeichertAm, \"yyyy-mm-dd hh:mm:ss\"), \";\"),\n                            Notify(\"Während des Abschlusses wurde eine Kategorie gespeichert. Bitte „Rundgang abschließen“ erneut tippen.\", NotificationType.Warning),\n                        LookUp(RG_Durchfuehrungen, ID = varDurchID).Status <> stAbschluss,\n                    Notify(\"Der Abschluss wurde inzwischen zurückgesetzt. Bitte die Übersicht neu öffnen.\", NotificationType.Warning),\n                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll)}), Set(varPatchFehler, true));\n                        Refresh(RG_Durchfuehrungen);\n                        Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));\n                        If(varDurch.Status = stAbgeschlossen,\n                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\", NotificationType.Success);\n                                Set(varArchivStart, false);\n                                Navigate(scrProtokoll, ScreenTransition.None),\n                            Notify(\"Der Abschluss wurde nicht bestätigt. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error)\n                        )\n                    )\n                )\n            )\n        );\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n    )\n)",
+     "nachher": "If(!varIsLoading && Now() >= varSperreBis,\n    If(!varAbschlussFrage,\n        Set(varUnterschriftDa, false);\n        Reset(penRuUnterschrift);\n        Set(varUnterschriftOffen, true);\n        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),\n        Set(varAbschlussFrage, false);\n        Set(varIsLoading, true);\n        Set(varPatchFehler, false);\n        Concurrent(Refresh(RG_Durchfuehrungen), Refresh(RG_KategorieErgebnisse));\n        Concurrent(\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID)),\n            ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID))\n        );\n        If(IsError(ClearCollect(colKatListe, ForAll(Table(ParseJSON(varDurch.KategorieListe)) As j, {KategorieID: Value(j.Value.KategorieID), Position: Value(j.Value.Position), BereichName: Text(j.Value.BereichName), KategorieName: Text(j.Value.KategorieName)}))), Clear(colKatListe));\n        If(\n            !(varDurch.Status in [stInArbeit, stAbschluss]),\n                Notify(\"Dieser Rundgang ist bereits abgeschlossen.\", NotificationType.Information),\n            CountRows(colKatListe) = 0 || CountRows(colKatListe) <> varDurch.AnzahlKategorien,\n                Notify(\"Die Kategorienliste dieses Rundgangs ist unvollständig. Bitte zurück und erneut öffnen.\", NotificationType.Error),\n            CountRows(Filter(colKatListe As kl, IsBlank(LookUp(colErgAlle As e, e.KategorieID = kl.KategorieID)))) > 0,\n                Notify(\"Es sind noch nicht alle Kategorien gespeichert.\", NotificationType.Warning),\n            If(varDurch.Status = stInArbeit && IsError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbschluss})), Set(varPatchFehler, true));\n            Refresh(RG_Durchfuehrungen);\n            Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));\n            If(varDurch.Status <> stAbschluss,\n                Notify(\"Der Rundgang konnte nicht in den Abschluss gesetzt werden. Bitte erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error),\n                Refresh(RG_KategorieErgebnisse);\n                ClearCollect(colErgAlle, Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID));\n                If(IsError(\n                    ClearCollect(colMaengelSoll,\n                        Filter(Ungroup(\n                            ForAll(Filter(colErgAlle, AnzahlNIO > 0) As e3,\n                                {Zeilen: ForAll(Filter(Table(ParseJSON(e3.Antworten)) As a, Text(a.Value.Bewertung) = \"NIO\") As n,\n                                    {Title: \"D\" & varDurchID & \"-P\" & Value(n.Value.PruefpunktID),\n                                     PruefpunktID: Value(n.Value.PruefpunktID),\n                                     BereichName: e3.BereichName,\n                                     KategorieName: e3.KategorieName,\n                                     Frage: Left(If(Coalesce(Text(n.Value.Abschnitt), \"\") = \"\", \"\", Text(n.Value.Abschnitt) & \" › \") & Text(n.Value.Frage), 255),\n                                     Wert: Left(Coalesce(Text(n.Value.WertText), \"\") & If(IsBlank(n.Value.WertZahl), \"\", Text(Value(n.Value.WertZahl)) & \" \" & Coalesce(Text(n.Value.Einheit), \"\")), 255),\n                                     Kommentar: If(Coalesce(IfError(Boolean(n.Value.Kritisch), false), false), \"KRITISCH – Bescheid gegeben \" & Coalesce(Text(n.Value.KritischZeit), \"\") & \". \", \"\") & Coalesce(Text(n.Value.Kommentar), \"\"),\n                             FotoUrls: Coalesce(Text(n.Value.Fotos), \"\")})}\n                            ),\n                            Zeilen\n                        ), !IsBlank(PruefpunktID))\n                    )),\n                    Clear(colMaengelSoll)\n                );\n                If(Sum(colErgAlle, AnzahlNIO) <> CountRows(colMaengelSoll),\n                    Notify(\"Die Mängel ließen sich nicht vollständig aus den Antworten ermitteln (\" & CountRows(colMaengelSoll) & \" von \" & Sum(colErgAlle, AnzahlNIO) & \"). Bitte den Rundgang melden.\", NotificationType.Error),\n                    Refresh(RG_Maengel);\n                    ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title));\n                    IfError(\n                        Collect(RG_Maengel,\n                            ForAll(Filter(colMaengelSoll As s, IsBlank(LookUp(colMaengelIst As i, i.Title = s.Title))) As m,\n                                {Title: m.Title, DurchfuehrungID: varDurchID, PruefpunktID: m.PruefpunktID, RundgangName: varDurch.RundgangName, BereichName: m.BereichName, KategorieName: m.KategorieName, Frage: m.Frage, Wert: m.Wert, Kommentar: m.Kommentar, FotoUrls: m.FotoUrls, FestgestelltAm: Now(), FestgestelltVon: varPruefer.Email, Status: {Value: \"Offen\"}, TestDatensatz: varDurch.TestDatensatz})\n                        ),\n                        Set(varPatchFehler, true)\n                    );\n                    Concurrent(Refresh(RG_Maengel), Refresh(RG_KategorieErgebnisse), Refresh(RG_Durchfuehrungen));\n                    Concurrent(\n                        ClearCollect(colMaengelIst, ShowColumns(Filter(RG_Maengel, DurchfuehrungID = varDurchID), Title)),\n                        ClearCollect(colErgJetzt, ShowColumns(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varDurchID), ID, GespeichertAm))\n                    );\n                    If(\n                        CountRows(Filter(colMaengelSoll As s2, IsBlank(LookUp(colMaengelIst As i2, i2.Title = s2.Title)))) > 0,\n                            Notify(\"Die Mängel konnten nicht vollständig gespeichert werden. Bitte „Rundgang abschließen“ erneut tippen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error),\n                        Concat(Sort(colErgJetzt, ID), ID & \"@\" & Text(GespeichertAm, \"yyyy-mm-dd hh:mm:ss\"), \";\") <> Concat(Sort(colErgAlle, ID), ID & \"@\" & Text(GespeichertAm, \"yyyy-mm-dd hh:mm:ss\"), \";\"),\n                            Notify(\"Während des Abschlusses wurde eine Kategorie gespeichert. Bitte „Rundgang abschließen“ erneut tippen.\", NotificationType.Warning),\n                        LookUp(RG_Durchfuehrungen, ID = varDurchID).Status <> stAbschluss,\n                    Notify(\"Der Abschluss wurde inzwischen zurückgesetzt. Bitte die Übersicht neu öffnen.\", NotificationType.Warning),\n                        With({datei: \"Unterschrift-D\" & varDurchID & \"-\" & Text(Now(), \"yyyymmdd-hhmmss\") & \".png\", ordner: fnArchivOrdner(varDurch.TagText, varDurch.TestDatensatz) & \"/\" & varDurch.Title},\n                            Set(varUnterschriftUrl, If(IsError(aRG_Foto_hochladen.Run({contentBytes: penRuUnterschrift.Image, name: datei}, datei, ordner, varDurchID, 0, varDurch.TestDatensatz)), \"\", fnSpUrl(\"RG_Fotos\", ordner & \"/\" & datei)))\n                        );\n                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll), UnterschriftBild: varUnterschriftBild, UnterschriftUrl: varUnterschriftUrl, UnterschriftName: varPruefer.Name, UnterschriftZeit: Now()}), Set(varPatchFehler, true));\n                        Refresh(RG_Durchfuehrungen);\n                        Set(varDurch, LookUp(RG_Durchfuehrungen, ID = varDurchID));\n                        If(varDurch.Status = stAbgeschlossen,\n                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\" & If(varUnterschriftUrl = \"\", \" (Unterschrift-Datei nicht hochgeladen, steht aber im Protokoll.)\", \"\"), NotificationType.Success);\n                                Set(varUnterschriftOffen, false);\n                                Set(varPruefer, {Name: \"\", Email: \"\"});\n                                Set(varPrWahl, true);\n                                Set(varArchivStart, false);\n                                Navigate(scrProtokoll, ScreenTransition.None),\n                            Notify(\"Der Abschluss wurde nicht bestätigt. Bitte erneut versuchen.\" & If(varPatchFehler, \" (SharePoint hat einen Schreibfehler gemeldet – Verbindung prüfen.)\", \"\"), NotificationType.Error)\n                        )\n                    )\n                )\n            )\n        );\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n    )\n)"
+    },
+    {
+     "key": "htmProtokoll.HtmlText",
+     "schritt": "11.7",
+     "vorher": "With({d: varDurch},\n    \"<div style='font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1B1B1F'>\" &\n    \"<div style='background:#171496;color:#ffffff;padding:14px 16px'>\" &\n        \"<div style='font-size:20px;font-weight:600'>\" & fnHtml(d.RundgangName) & \"</div>\" &\n        \"<div>\" & fnTagAnzeige(DateValue(d.TagText)) & \" · Prüfer: \" & fnHtml(d.PrueferName) & \"</div>\" &\n        \"<div>Status: \" & d.Status & \" · Beginn \" & Text(d.StartZeit, \"hh:mm\") & If(IsBlank(d.EndeZeit), \"\", \" · Ende \" & Text(d.EndeZeit, \"hh:mm\")) & \" · <b>\" & Coalesce(d.AnzahlNIO, 0) & \" n.i.O.</b></div>\" &\n    \"</div>\" &\n    Concat(Sort(colErgProt, Position) As e,\n        \"<h3 style='margin:18px 0 6px 0;font-size:16px;color:#171496'>\" & e.Position & \". \" & fnHtml(e.KategorieName) &\n        \" <span style='font-weight:400;color:#5F6370;font-size:13px'>\" & If(e.BereichName = \"\", \"\", fnHtml(e.BereichName) & \" · \") & fnHtml(e.PrueferName) & \" · \" & Text(e.GespeichertAm, \"hh:mm\") & \"</span></h3>\" &\n        \"<table style='width:100%;border-collapse:collapse;table-layout:fixed'>\" &\n        Concat(Filter(Table(ParseJSON(e.Antworten)), !Coalesce(IfError(Boolean(ThisRecord.Value.Ausgeblendet), false), false)) As a,\n            With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos), w: Coalesce(IfError(Boolean(a.Value.Warnung), false), false)},\n                If(Coalesce(IfError(Boolean(a.Value.AbsKopf), false), false), \"<tr><td colspan='3' style='padding:12px 8px 4px 8px;font-weight:600;color:#171496'>\" & fnHtml(Text(a.Value.Abschnitt)) & \"</td></tr>\", \"\") &\n                \"<tr style='border-bottom:1px solid #DADCE5;\" & If(b = \"NIO\", \"background:#FCE8E6;\", \"\") & \"'>\" &\n                \"<td style='padding:6px 8px;width:46%'>\" & fnHtml(Text(a.Value.Frage)) & \"</td>\" &\n                \"<td style='padding:6px 8px;width:110px;font-weight:600;color:\" & If(b = \"NIO\", \"#B3261E\", w, \"#9A5B00\", \"#0F7B3F\") & \"'>\" & Switch(b, \"IO\", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextIO), \"\") = \"\", Blank(), Text(a.Value.TextIO)), \"i.O.\")), \"NIO\", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextNIO), \"\") = \"\", Blank(), Text(a.Value.TextNIO)), \"n.i.O.\")), \"\") & \"</td>\" &\n                \"<td style='padding:6px 8px'>\" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl), \"\", Text(Value(a.Value.WertZahl)) & \" \" & fnHtml(Text(a.Value.Einheit))) & If(w, \" <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>\", \"\") & If(Coalesce(Text(a.Value.AbwText), \"\") = \"\", \"\", \" <span style='color:#9A5B00'>(\" & fnHtml(Text(a.Value.AbwText)) & If(IsBlank(a.Value.Letzter), \"\", \", zuletzt \" & Text(Value(a.Value.Letzter))) & \", begründet)</span>\") &\n                If(IsBlank(k) || k = \"\", \"\", \"<br><i style='color:\" & If(b = \"NIO\", \"#B3261E\", \"#5F6370\") & \"'>\" & fnHtml(k) & \"</i>\") &\n                If(b = \"NIO\" && Coalesce(IfError(Boolean(a.Value.Kritisch), false), false), \"<br><b style='color:#B3261E'>KRITISCH – \" & If(Coalesce(IfError(Boolean(a.Value.KritischOk), false), false), \"Bescheid gegeben, bestätigt von \" & fnHtml(Coalesce(Text(a.Value.KritischVon), e.PrueferName)) & \" am \" & fnHtml(Coalesce(Text(a.Value.KritischZeit), \"\")), \"nicht bestätigt\") & \"</b>\", \"\") &\n                If(IsBlank(fo) || fo = \"\", \"\", \"<br>\" & Concat(Split(fo, \" | \") As s, \"<a href='\" & Trim(s.Value) & \"'>Foto ›</a> \")) &\n                \"</td></tr>\"\n            )\n        ) & \"</table>\"\n    ) &\n    If(IsBlank(d.ProtokollUrl), \"\", \"<p style='font-size:12px'>Archiv-PDF: <a href='\" & d.ProtokollUrl & \"'>\" & fnHtml(d.Title) & \".pdf</a></p>\") &\n    \"<p style='color:#5F6370;font-size:12px;margin-top:18px'>Erstellt mit der Rundgang-App · \" & Text(varProtokollZeit, \"dd.mm.yyyy hh:mm\") & If(d.TestDatensatz, \" · TESTDATEN\", \"\") & \"</p></div>\"\n)",
+     "nachher": "With({d: varDurch, r: LookUp(RG_Rundgaenge, ID = varDurch.RundgangID)},\n    \"<div style='font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1B1B1F'>\" &\n    \"<div style='background:#171496;color:#ffffff;padding:14px 16px'>\" &\n        \"<div style='font-size:20px;font-weight:600'>\" & fnHtml(d.RundgangName) & \"</div>\" &\n        If(Trim(Coalesce(r.Standort, \"\") & Coalesce(r.Adresse, \"\")) = \"\", \"\", \"<div>\" & fnHtml(Trim(Coalesce(r.Standort, \"\") & If(Coalesce(r.Standort, \"\") <> \"\" && Coalesce(r.Adresse, \"\") <> \"\", \" · \", \"\") & Coalesce(r.Adresse, \"\"))) & \"</div>\") &\n        If(Trim(Coalesce(r.Auftraggeber, \"\")) = \"\", \"\", \"<div>Auftraggeber: \" & fnHtml(r.Auftraggeber) & \"</div>\") &\n        \"<div>\" & fnTagAnzeige(DateValue(d.TagText)) & \" · Prüfer: \" & fnHtml(d.PrueferName) & \"</div>\" &\n        \"<div>Status: \" & d.Status & \" · Beginn \" & Text(d.StartZeit, \"hh:mm\") & If(IsBlank(d.EndeZeit), \"\", \" · Ende \" & Text(d.EndeZeit, \"hh:mm\")) & \" · <b>\" & Coalesce(d.AnzahlNIO, 0) & \" n.i.O.</b></div>\" &\n    \"</div>\" &\n    Concat(Sort(colErgProt, Position) As e,\n        \"<h3 style='margin:18px 0 6px 0;font-size:16px;color:#171496'>\" & e.Position & \". \" & fnHtml(e.KategorieName) &\n        \" <span style='font-weight:400;color:#5F6370;font-size:13px'>\" & If(e.BereichName = \"\", \"\", fnHtml(e.BereichName) & \" · \") & fnHtml(e.PrueferName) & \" · \" & Text(e.GespeichertAm, \"hh:mm\") & \"</span></h3>\" &\n        \"<table style='width:100%;border-collapse:collapse;table-layout:fixed'>\" &\n        Concat(Filter(Table(ParseJSON(e.Antworten)), !Coalesce(IfError(Boolean(ThisRecord.Value.Ausgeblendet), false), false)) As a,\n            With({b: Text(a.Value.Bewertung), k: Text(a.Value.Kommentar), fo: Text(a.Value.Fotos), w: Coalesce(IfError(Boolean(a.Value.Warnung), false), false)},\n                If(Coalesce(IfError(Boolean(a.Value.AbsKopf), false), false), \"<tr><td colspan='3' style='padding:12px 8px 4px 8px;font-weight:600;color:#171496'>\" & fnHtml(Text(a.Value.Abschnitt)) & \"</td></tr>\", \"\") &\n                \"<tr style='border-bottom:1px solid #DADCE5;\" & If(b = \"NIO\", \"background:#FCE8E6;\", \"\") & \"'>\" &\n                \"<td style='padding:6px 8px;width:46%'>\" & fnHtml(Text(a.Value.Frage)) & \"</td>\" &\n                \"<td style='padding:6px 8px;width:110px;font-weight:600;color:\" & If(b = \"NIO\", \"#B3261E\", w, \"#9A5B00\", \"#0F7B3F\") & \"'>\" & Switch(b, \"IO\", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextIO), \"\") = \"\", Blank(), Text(a.Value.TextIO)), \"i.O.\")), \"NIO\", fnHtml(Coalesce(If(Coalesce(Text(a.Value.TextNIO), \"\") = \"\", Blank(), Text(a.Value.TextNIO)), \"n.i.O.\")), \"\") & \"</td>\" &\n                \"<td style='padding:6px 8px'>\" & fnHtml(Text(a.Value.WertText)) & If(IsBlank(a.Value.WertZahl), \"\", Text(Value(a.Value.WertZahl)) & \" \" & fnHtml(Text(a.Value.Einheit))) & If(w, \" <span style='color:#9A5B00'>(außerhalb Soll, begründet)</span>\", \"\") & If(Coalesce(Text(a.Value.AbwText), \"\") = \"\", \"\", \" <span style='color:#9A5B00'>(\" & fnHtml(Text(a.Value.AbwText)) & If(IsBlank(a.Value.Letzter), \"\", \", zuletzt \" & Text(Value(a.Value.Letzter))) & \", begründet)</span>\") &\n                If(IsBlank(k) || k = \"\", \"\", \"<br><i style='color:\" & If(b = \"NIO\", \"#B3261E\", \"#5F6370\") & \"'>\" & fnHtml(k) & \"</i>\") &\n                If(b = \"NIO\" && Coalesce(IfError(Boolean(a.Value.Kritisch), false), false), \"<br><b style='color:#B3261E'>KRITISCH – \" & If(Coalesce(IfError(Boolean(a.Value.KritischOk), false), false), \"Bescheid gegeben, bestätigt von \" & fnHtml(Coalesce(Text(a.Value.KritischVon), e.PrueferName)) & \" am \" & fnHtml(Coalesce(Text(a.Value.KritischZeit), \"\")), \"nicht bestätigt\") & \"</b>\", \"\") &\n                If(IsBlank(fo) || fo = \"\", \"\", \"<br>\" & Concat(Split(fo, \" | \") As s, \"<a href='\" & Trim(s.Value) & \"'>Foto ›</a> \")) &\n                \"</td></tr>\"\n            )\n        ) & \"</table>\"\n    ) &\n    If(Coalesce(d.UnterschriftBild, \"\") = \"\", \"\", \"<div style='margin-top:22px'><img src='\" & d.UnterschriftBild & \"' style='height:90px'>\" &\n        \"<div style='border-top:1px solid #1B1B1F;width:300px;padding-top:4px;font-size:12px'>\" & fnHtml(Coalesce(d.UnterschriftName, d.PrueferName)) & \" · \" & Text(d.UnterschriftZeit, \"dd.mm.yyyy hh:mm\") & \"</div></div>\") &\n    If(IsBlank(d.ProtokollUrl), \"\", \"<p style='font-size:12px'>Archiv-PDF: <a href='\" & d.ProtokollUrl & \"'>\" & fnHtml(d.Title) & \".pdf</a></p>\") &\n    \"<p style='color:#5F6370;font-size:12px;margin-top:18px'>Erstellt mit der Rundgang-App · \" & Text(varProtokollZeit, \"dd.mm.yyyy hh:mm\") & If(d.TestDatensatz, \" · TESTDATEN\", \"\") & \"</p></div>\"\n)"
+    }
+   ],
+   "neu": [
+    "conPwWahl",
+    "lblPwTitel",
+    "lblPwHinweis",
+    "galPwListe",
+    "btnPwName",
+    "lblPwLeer",
+    "lblPwSuchT",
+    "txtPwSuche",
+    "galPwSuche",
+    "btnPwTreffer",
+    "btnPwZu",
+    "conRuUnterschrift",
+    "btnRuUSperre",
+    "conRuUKarte",
+    "lblRuUTitel",
+    "lblRuUText",
+    "penRuUnterschrift",
+    "lblRuUName",
+    "btnRuULoeschen",
+    "btnRuUAbbrechen",
+    "btnRuUOk"
+   ]
   }
  ],
  "neue_controls": {
@@ -1833,7 +1966,7 @@
     "Height": "68",
     "HoverFill": "ColorFade(clrFehler, -15%)",
     "PressedFill": "ColorFade(clrFehler, -30%)",
-    "OnSelect": "If(LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = \"NIO\", Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), \"dd.mm.yyyy hh:mm\"), KritischVon: User().FullName}));\nSet(varKritPP, 0);\nSet(varGeaendert, true)",
+    "OnSelect": "If(LookUp(colAntworten, PruefpunktID = varKritPP).Bewertung = \"NIO\", Patch(colAntworten, LookUp(colAntworten, PruefpunktID = varKritPP), {KritischOk: true, KritischZeit: Text(Now(), \"dd.mm.yyyy hh:mm\"), KritischVon: varPruefer.Name}));\nSet(varKritPP, 0);\nSet(varGeaendert, true)",
     "RadiusBottomLeft": "10",
     "RadiusBottomRight": "10",
     "RadiusTopLeft": "10",
@@ -2705,6 +2838,406 @@
     "Width": "200",
     "X": "Parent.Width - 220",
     "Y": "Parent.Height - 76"
+   }
+  },
+  "conPwWahl": {
+   "eltern": "scrStart",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "clrHintergrund",
+    "Height": "Parent.Height",
+    "Visible": "varPrWahl || Coalesce(varPruefer.Email, \"\") = \"\"",
+    "Width": "Parent.Width"
+   }
+  },
+  "lblPwTitel": {
+   "eltern": "conPwWahl",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrPrimaer",
+    "Size": "24",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "48",
+    "Text": "\"Wer prüft?\"",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "32"
+   }
+  },
+  "lblPwHinweis": {
+   "eltern": "conPwWahl",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "14",
+    "Height": "48",
+    "VerticalAlign": "VerticalAlign.Top",
+    "Text": "\"Bitte deinen Namen antippen. Nach dem Abschließen eines Rundgangs wird neu gefragt.\"",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "84"
+   }
+  },
+  "galPwListe": {
+   "eltern": "conPwWahl",
+   "typ": "Gallery@2.15.0",
+   "props": {
+    "AccessibleLabel": "\"Prüfer\"",
+    "Height": "420",
+    "Items": "Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false)), Lower(Title))",
+    "ShowScrollbar": "true",
+    "TemplatePadding": "0",
+    "TemplateSize": "68",
+    "Width": "Parent.Width",
+    "X": "0",
+    "Y": "140"
+   }
+  },
+  "btnPwName": {
+   "eltern": "galPwListe",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Align": "Align.Left",
+    "Height": "Parent.TemplateHeight - 12",
+    "PaddingLeft": "20",
+    "Size": "18",
+    "Text": "ThisItem.Title & If(Lower(ThisItem.Email) = Lower(Coalesce(varPruefer.Email, \"\")), \"   ✓\", \"\")",
+    "Width": "Parent.TemplateWidth - 48",
+    "X": "24",
+    "Y": "6",
+    "OnSelect": "If(!varIsLoading && Now() >= varSperreBis,\n    Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));\n    Set(varPruefer, {Name: ThisItem.Title, Email: Lower(ThisItem.Email)});\n    Reset(txtPwSuche);\n    Set(varPrWahl, false)\n)"
+   }
+  },
+  "lblPwLeer": {
+   "eltern": "conPwWahl",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "14",
+    "Height": "48",
+    "Text": "\"Noch niemand in der Prüferliste. Unten nach dem Namen suchen.\"",
+    "Visible": "IsEmpty(Filter(colPrueferAlle, Coalesce(Aktiv, false)))",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "150"
+   }
+  },
+  "lblPwSuchT": {
+   "eltern": "conPwWahl",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrText",
+    "Size": "15",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "28",
+    "Text": "\"Andere Person suchen (z. B. Vertretung)\"",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "576"
+   }
+  },
+  "txtPwSuche": {
+   "eltern": "conPwWahl",
+   "typ": "Classic/TextInput@2.3.2",
+   "props": {
+    "AccessibleLabel": "\"Name suchen\"",
+    "BorderColor": "clrRahmen",
+    "Color": "clrText",
+    "Default": "\"\"",
+    "DelayOutput": "true",
+    "FocusedBorderColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "Height": "56",
+    "HintText": "\"Name eingeben (mind. 3 Buchstaben)\"",
+    "HoverBorderColor": "clrPrimaer",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "Size": "16",
+    "Width": "Parent.Width - 48",
+    "X": "24",
+    "Y": "608"
+   }
+  },
+  "galPwSuche": {
+   "eltern": "conPwWahl",
+   "typ": "Gallery@2.15.0",
+   "props": {
+    "AccessibleLabel": "\"Suchergebnisse\"",
+    "Height": "Parent.Height - 676 - 96",
+    "Items": "If(varPrWahl || Coalesce(varPruefer.Email, \"\") = \"\", If(Len(Trim(txtPwSuche.Text)) >= 3, Filter(Office365Users.SearchUserV2({searchTerm: Trim(txtPwSuche.Text), top: 15, isSearchTermRequired: true}).value, !IsBlank(Mail) && AccountEnabled)))",
+    "ShowScrollbar": "true",
+    "TemplatePadding": "0",
+    "TemplateSize": "64",
+    "Width": "Parent.Width",
+    "X": "0",
+    "Y": "676"
+   }
+  },
+  "btnPwTreffer": {
+   "eltern": "galPwSuche",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Align": "Align.Left",
+    "Height": "Parent.TemplateHeight - 10",
+    "PaddingLeft": "20",
+    "Size": "15",
+    "Text": "ThisItem.DisplayName & If(Coalesce(ThisItem.Department, \"\") = \"\", \"\", \"  ·  \" & ThisItem.Department)",
+    "Width": "Parent.TemplateWidth - 48",
+    "X": "24",
+    "Y": "5",
+    "OnSelect": "If(!varIsLoading && Now() >= varSperreBis,\n    Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));\n    Set(varPruefer, {Name: ThisItem.DisplayName, Email: Lower(ThisItem.Mail)});\n    If(IsBlank(LookUp(colPrueferAlle, Lower(Email) = Lower(ThisItem.Mail))),\n        IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: Lower(ThisItem.Mail), Aktiv: true}), Notify(\"In die Prüferliste konnte nicht gespeichert werden – du prüfst trotzdem unter diesem Namen.\", NotificationType.Warning));\n        Refresh(RG_Pruefer);\n        ClearCollect(colPrueferAlle, RG_Pruefer)\n    );\n    Reset(txtPwSuche);\n    Set(varPrWahl, false)\n)"
+   }
+  },
+  "btnPwZu": {
+   "eltern": "conPwWahl",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "56",
+    "Size": "16",
+    "Text": "\"Schließen\"",
+    "Visible": "!(Coalesce(varPruefer.Email, \"\") = \"\")",
+    "Width": "200",
+    "X": "Parent.Width - 224",
+    "Y": "Parent.Height - 80",
+    "OnSelect": "Set(varPrWahl, false)"
+   }
+  },
+  "conRuUnterschrift": {
+   "eltern": "scrRundgang",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "RGBA(0, 0, 0, 0.45)",
+    "Height": "Parent.Height",
+    "Visible": "varUnterschriftOffen",
+    "Width": "Parent.Width"
+   }
+  },
+  "btnRuUSperre": {
+   "eltern": "conRuUnterschrift",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Fill": "RGBA(0, 0, 0, 0)",
+    "Height": "Parent.Height",
+    "HoverFill": "RGBA(0, 0, 0, 0)",
+    "PressedFill": "RGBA(0, 0, 0, 0)",
+    "Text": "\"\"",
+    "Width": "Parent.Width"
+   }
+  },
+  "conRuUKarte": {
+   "eltern": "conRuUnterschrift",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "clrKarte",
+    "Height": "600",
+    "RadiusBottomLeft": "16",
+    "RadiusBottomRight": "16",
+    "RadiusTopLeft": "16",
+    "RadiusTopRight": "16",
+    "Width": "Parent.Width - 64",
+    "X": "32",
+    "Y": "(Parent.Height - Self.Height) / 2"
+   }
+  },
+  "lblRuUTitel": {
+   "eltern": "conRuUKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrPrimaer",
+    "Size": "20",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "40",
+    "Text": "\"Unterschrift\"",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "14"
+   }
+  },
+  "lblRuUText": {
+   "eltern": "conRuUKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrTextGrau",
+    "Size": "14",
+    "Height": "48",
+    "VerticalAlign": "VerticalAlign.Top",
+    "Text": "\"Mit der Unterschrift schließt \" & varPruefer.Name & \" den Rundgang ab. Danach sind keine Änderungen mehr möglich.\"",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "56"
+   }
+  },
+  "penRuUnterschrift": {
+   "eltern": "conRuUKarte",
+   "typ": "PEN_MENUE",
+   "props": {
+    "BorderColor": "clrRahmen",
+    "BorderThickness": "1",
+    "Color": "clrText",
+    "Fill": "Color.White",
+    "Height": "300",
+    "OnSelect": "Set(varUnterschriftDa, true)",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "116"
+   }
+  },
+  "lblRuUName": {
+   "eltern": "conRuUKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Font": "Font.'Segoe UI'",
+    "Color": "clrText",
+    "Size": "14",
+    "Height": "28",
+    "Text": "varPruefer.Name & \"  ·  \" & Text(Now(), \"dd.mm.yyyy hh:mm\")",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "428"
+   }
+  },
+  "btnRuULoeschen": {
+   "eltern": "conRuUKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "52",
+    "Size": "15",
+    "Text": "\"Löschen\"",
+    "Width": "140",
+    "X": "20",
+    "Y": "Parent.Height - 76",
+    "OnSelect": "Reset(penRuUnterschrift);\nSet(varUnterschriftDa, false)"
+   }
+  },
+  "btnRuUAbbrechen": {
+   "eltern": "conRuUKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "HoverFill": "clrPrimaerHell",
+    "PressedFill": "clrPrimaerHell",
+    "HoverColor": "clrPrimaer",
+    "PressedColor": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "52",
+    "Size": "15",
+    "Text": "\"Abbrechen\"",
+    "Width": "150",
+    "X": "172",
+    "Y": "Parent.Height - 76",
+    "OnSelect": "Set(varUnterschriftOffen, false);\nSet(varAbschlussFrage, false)"
+   }
+  },
+  "btnRuUOk": {
+   "eltern": "conRuUKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Color": "Color.White",
+    "Fill": "clrPrimaer",
+    "HoverFill": "ColorFade(clrPrimaer, -20%)",
+    "PressedFill": "ColorFade(clrPrimaer, -35%)",
+    "HoverColor": "Color.White",
+    "PressedColor": "Color.White",
+    "Font": "Font.'Segoe UI'",
+    "RadiusBottomLeft": "8",
+    "RadiusBottomRight": "8",
+    "RadiusTopLeft": "8",
+    "RadiusTopRight": "8",
+    "DisabledFill": "clrGesperrtHell",
+    "DisabledColor": "clrGesperrt",
+    "DisabledBorderColor": "clrGesperrtHell",
+    "Height": "52",
+    "Size": "15",
+    "Text": "\"Unterschreiben und abschließen\"",
+    "Width": "Parent.Width - 354",
+    "X": "334",
+    "Y": "Parent.Height - 76",
+    "DisplayMode": "If(varUnterschriftDa && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)",
+    "OnSelect": "If(varUnterschriftDa && !varIsLoading,\n    Set(varUnterschriftBild, With({j: JSON(penRuUnterschrift.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)));\n    Set(varUnterschriftUrl, \"\");\n    Set(varAbschlussFrage, true);\n    Select(btnRuAbschluss)\n)"
    }
   }
  }
