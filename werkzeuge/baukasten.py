@@ -1384,7 +1384,68 @@ def paket23(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23]
+# ---------------------------------------------------------------- Paket 18 (Zugangscodes: Bedien-Codes erst nach Antippen, nie im Protokoll)
+
+def paket18(st):
+    p = {"nr": 18, "props": [], "neu": []}
+    st.sp.append(("RG_Zugangscodes", "(neue Liste: Title, Code, Hinweis, Aktiv)", "Liste"))
+    st.sp.append(("RG_Zugangscodes", "Code", "Spalte"))
+    st.sp.append(("RG_Zugangscodes", "Hinweis", "Spalte"))
+    st.sp.append(("RG_Pruefpunkte", "ZugangscodeID", "Zahl"))
+    st.neue_quellen.add("RG_Zugangscodes")
+
+    def onvisible(t):
+        t = rep(t, "Set(varInfoID, 0);\n", "Set(varInfoID, 0);\nSet(varCodeOffen, false);\n")
+        t = rep(t, "AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(pp.AnleitungID, 0))), 0, pp.AnleitungID), Inaktiv: false}",
+                "AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(pp.AnleitungID, 0))), 0, pp.AnleitungID), CodeID: Coalesce(pp.ZugangscodeID, 0), Inaktiv: false}")
+        t = rep(t, "                     AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(p.AnleitungID, 0))), 0, p.AnleitungID),\n",
+                "                     AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(p.AnleitungID, 0))), 0, p.AnleitungID),\n"
+                "                     CodeID: Coalesce(p.ZugangscodeID, 0),\n")
+        t = rep(t, "AnlID: 0, Inaktiv: true}", "AnlID: 0, CodeID: 0, Inaktiv: true}")
+        return t
+    aendern(st, p, "18.3", "scrKategorie.OnVisible", onvisible)
+    aendern(st, p, "18.4", "lblKaFrage.Width", lambda t: rep(t, "- If(ThisItem.AnlID > 0, 64, 0)", "- If(ThisItem.AnlID > 0, 64, 0) - If(ThisItem.CodeID > 0, 48, 0)"))
+    neues_control(st, p, "btnKaCode", "conKaKarte", "Classic/Button@2.2.0", {
+        "BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "Font": "Font.'Segoe UI'",
+        "Height": "40", "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
+        "OnSelect": "Set(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));\n"
+                    "If(IsBlank(varCode.ID) || !Coalesce(varCode.Aktiv, false),\n"
+                    "    Notify(\"Für diesen Prüfpunkt ist kein Code hinterlegt.\", NotificationType.Warning),\n"
+                    "    Set(varCodeFrage, ThisItem.Frage);\n    Set(varCodeOffen, true)\n)",
+        "RadiusBottomLeft": "20", "RadiusBottomRight": "20", "RadiusTopLeft": "20", "RadiusTopRight": "20", "Size": "15", "Text": '"🔑"',
+        "Visible": "ThisItem.CodeID > 0", "Width": "40",
+        "X": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 48, 0)", "Y": "7"})
+    neues_control(st, p, "conKaCode", "scrKategorie", "GroupContainer@1.5.0", {
+        "Fill": "RGBA(0, 0, 0, 0.45)", "Height": "Parent.Height", "Visible": "varCodeOffen", "Width": "Parent.Width"})
+    neues_control(st, p, "btnKaCodeSperre", "conKaCode", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Fill": "RGBA(0, 0, 0, 0)", "Height": "Parent.Height", "HoverFill": "RGBA(0, 0, 0, 0)",
+        "PressedFill": "RGBA(0, 0, 0, 0)", "Text": '""', "Width": "Parent.Width"})
+    neues_control(st, p, "conKaCodeKarte", "conKaCode", "GroupContainer@1.5.0", {
+        "Fill": "clrKarte", "Height": "360",
+        "RadiusBottomLeft": "16", "RadiusBottomRight": "16", "RadiusTopLeft": "16", "RadiusTopRight": "16",
+        "Width": "Parent.Width - 96", "X": "48", "Y": "(Parent.Height - Self.Height) / 2"})
+    neues_control(st, p, "lblKaCodeTitel", "conKaCodeKarte", "Label@2.5.1", {
+        "Color": "clrPrimaer", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "40", "Size": "19",
+        "Text": 'If(varCodeOffen, "🔑 " & varCode.Title, "")', "Width": "Parent.Width - 40", "Wrap": "false", "X": "20", "Y": "14"})
+    neues_control(st, p, "lblKaCodeFrage", "conKaCodeKarte", "Label@2.5.1", {
+        "Color": "clrTextGrau", "Font": "Font.'Segoe UI'", "Height": "28", "Size": "13", "Text": '"zu: " & varCodeFrage',
+        "Width": "Parent.Width - 40", "Wrap": "false", "X": "20", "Y": "54"})
+    neues_control(st, p, "lblKaCodeWert", "conKaCodeKarte", "Label@2.5.1", {
+        "Align": "Align.Center", "Color": "clrText", "Font": "Font.'Segoe UI'", "FontWeight": "FontWeight.Semibold", "Height": "72", "Size": "34",
+        "Text": 'If(varCodeOffen && Trim(Coalesce(varCode.Code, "")) <> "", varCode.Code, "—")', "Width": "Parent.Width - 40", "X": "20", "Y": "96"})
+    neues_control(st, p, "lblKaCodeHinweis", "conKaCodeKarte", "Label@2.5.1", {
+        "Color": "clrTextGrau", "Font": "Font.'Segoe UI'", "Height": "84", "Size": "14",
+        "Text": 'If(varCodeOffen, Coalesce(varCode.Hinweis, ""), "")', "VerticalAlign": "VerticalAlign.Top",
+        "Width": "Parent.Width - 40", "X": "20", "Y": "180"})
+    neues_control(st, p, "btnKaCodeSchliessen", "conKaCodeKarte", "Classic/Button@2.2.0", {
+        "BorderThickness": "0", "Color": "Color.White", "Fill": "clrPrimaer", "Font": "Font.'Segoe UI'", "Height": "56",
+        "HoverFill": "ColorFade(clrPrimaer, -20%)", "OnSelect": "Set(varCodeOffen, false)", "PressedFill": "ColorFade(clrPrimaer, -35%)",
+        "RadiusBottomLeft": "10", "RadiusBottomRight": "10", "RadiusTopLeft": "10", "RadiusTopRight": "10",
+        "Size": "17", "Text": '"Schließen"', "Width": "200", "X": "Parent.Width - 220", "Y": "Parent.Height - 76"})
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1627,6 +1688,8 @@ def textbreite(text, size):
 # (Steuerelement, Text, Schriftgröße, verfügbare Breite in px, erlaubte Zeilen, Innenabstand links+rechts)
 # Breiten bei Tablet-Hochformat 768: Karte = 768 - 48 = 720, Fotofenster-Karte = 720
 TEXTE = [
+    ("lblKaCodeTitel", "🔑 Bedienteil Kältemaschine 1 (Infrastrukturraum)", 19, 768 - 96 - 40, 1, 0),
+    ("lblKaCodeHinweis", "Code nur für das Bedienteil. Nicht weitergeben. Bei Störung: Haustechnik anrufen (Durchwahl 123).", 14, 768 - 96 - 40, 3, 0),
     ("btnStartOffenWeiter", "Weiter ›", 14, 120, 1, 20),
     ("lblStartOffen", "⚠  Nicht abgeschlossen: Infrastrukturrundgang TGI vom 02.11.2026  (2/5)", 14, 768 - 380, 2, 0),
     ("lblStartOffen", "⚠  Nicht abgeschlossen: Haustechnik Rundgang Lohfelden vom 02.11.2026", 14, 768 - 260, 2, 0),

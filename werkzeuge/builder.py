@@ -41,12 +41,13 @@ NEU_SPALTEN = {
                        "Kritisch": "Ja/Nein", "KritischText": "Text", "Ansprechpartner": "Text", "Rueckfrage": "Ja/Nein", "RueckfrageText": "Text",
                        "TextIO": "Text", "TextNIO": "Text", "NichtMessbar": "Ja/Nein",
                        "AbwMax": "Zahl", "AbwProzent": "Ja/Nein", "NurSteigend": "Ja/Nein", "VergleichPunkt": "Zahl", "VergleichTol": "Zahl",
-                       "AnleitungID": "Zahl"},
+                       "AnleitungID": "Zahl", "ZugangscodeID": "Zahl"},
     "RG_Anleitungen": {"Title": "Text", "Anleitung": "Text", "Aktiv": "Ja/Nein"},
+    "RG_Zugangscodes": {"Title": "Text", "Code": "Text", "Hinweis": "Text", "Aktiv": "Ja/Nein"},
     "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
-QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen"]
+QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen", "RG_Zugangscodes"]
 
 # ---------------------------------------------------------------- App.Formulas und App.OnStart
 
@@ -96,7 +97,7 @@ ONSTART_VARS = [
     ("varZielF", "0"), ("varZielB", "0"), ("varZielK", "0"), ("varZielBAktiv", "false"), ("varKopieBehalteR", "false"),
     ("varKopieZusatz", '""'), ("varKopieFehler", "0"), ("varQuelleR", "0"), ("varQuelleF", "0"),
     ("varQuelleNurAktiv", "false"), ("varHeuteLaeuft", "false"), ("varPlanRgID", "0"),
-    ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varEntwurfOk", "true"), ("varAktivRest", "false"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
+    ("varPlanRg", "Defaults(RG_Rundgaenge)"), ("varCodeOffen", "false"), ("varZcID", "0"), ("varEntwurfOk", "true"), ("varAktivRest", "false"), ("varVorlageNeu", "Defaults(RG_Rundgaenge)"),
     ("varNioOffen", "false"), ("varKoID", "0"), ("varZaOffen", "false"), ("varAnID", "0"),
 ]
 ONSTART = ";\n".join("Set(%s, %s)" % kv for kv in ONSTART_VARS)
@@ -147,7 +148,7 @@ ORD = "RgReihenfolge * 1000000 + ID"
 
 NEUER_PUNKT = ('Aktiv: true, QuelleID: 0, Eingabetyp: {{Value: {typ}}}, Pflicht: {pfl}, Auswahlwerte: "", Einheit: "", Hinweis: "", '
                'FotoMoeglich: false, Foto: {{Value: "Aus"}}, KommentarPflicht: false, Grenzmodus: {{Value: "Mangel"}}, '
-               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}, TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0')
+               'BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: {abs}, TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0, ZugangscodeID: 0')
 
 
 def quelle_laden(s):
@@ -314,7 +315,7 @@ STUFE_KOPIE = '''If(varJob = "kopie",
                 With({q: Index(qs, i.Value)},
                     With({ziel: If(IsEmpty(colQK), varZielK, Coalesce(LookUp(colMapK, Alt = q.KategorieID).Neu, 0))},
                         {Alt: q.ID, BedAlt: Coalesce(q.BedingungPunkt, 0), BedWert: Coalesce(q.BedingungWert, ""), VglAlt: Coalesce(q.VergleichPunkt, 0), Ziel: ziel,
-                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, ""), TextIO: Coalesce(q.TextIO, ""), TextNIO: Coalesce(q.TextNIO, ""), NichtMessbar: Coalesce(q.NichtMessbar, false), AbwMax: q.AbwMax, AbwProzent: Coalesce(q.AbwProzent, false), NurSteigend: Coalesce(q.NurSteigend, false), VergleichPunkt: 0, VergleichTol: q.VergleichTol, AnleitungID: Coalesce(q.AnleitungID, 0)}).ID, 0))}
+                         Neu: If(ziel = 0, 0, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Left(q.Title & If(IsEmpty(colQK), varKopieZusatz, ""), 255), KategorieID: ziel, RundgangID: varZielR, Fassung: varZielF, RgReihenfolge: If(!IsEmpty(colQK) || varKopieBehalteR, q.RgReihenfolge, Coalesce(Max(Filter(colP, KategorieID = varZielK), RgReihenfolge), 0) + i.Value * 10), Aktiv: true, QuelleID: q.ID, Eingabetyp: {Value: Coalesce(q.Eingabetyp.Value, "IONIO")}, Pflicht: Coalesce(q.Pflicht, false), Auswahlwerte: q.Auswahlwerte, Einheit: q.Einheit, MinWert: q.MinWert, MaxWert: q.MaxWert, Hinweis: q.Hinweis, FotoMoeglich: Coalesce(q.FotoMoeglich, false), Foto: {Value: fnFotoWert(q.Foto.Value, Coalesce(q.FotoMoeglich, false))}, KommentarPflicht: Coalesce(q.KommentarPflicht, false), Grenzmodus: {Value: fnGrenzmodus(q.Grenzmodus.Value)}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: Coalesce(q.HinweisBildID, 0), Abschnitt: Coalesce(q.Abschnitt, ""), Kritisch: Coalesce(q.Kritisch, false), KritischText: Coalesce(q.KritischText, ""), Ansprechpartner: Coalesce(q.Ansprechpartner, ""), Rueckfrage: Coalesce(q.Rueckfrage, false), RueckfrageText: Coalesce(q.RueckfrageText, ""), TextIO: Coalesce(q.TextIO, ""), TextNIO: Coalesce(q.TextNIO, ""), NichtMessbar: Coalesce(q.NichtMessbar, false), AbwMax: q.AbwMax, AbwProzent: Coalesce(q.AbwProzent, false), NurSteigend: Coalesce(q.NurSteigend, false), VergleichPunkt: 0, VergleichTol: q.VergleichTol, AnleitungID: Coalesce(q.AnleitungID, 0), ZugangscodeID: Coalesce(q.ZugangscodeID, 0)}).ID, 0))}
                     )
                 )
             )
@@ -530,7 +531,7 @@ P_GEAENDERT = ('p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coales
                'Coalesce(p.TextIO, "") <> Coalesce(a.TextIO, "") || Coalesce(p.TextNIO, "") <> Coalesce(a.TextNIO, "") || Coalesce(p.NichtMessbar, false) <> Coalesce(a.NichtMessbar, false) || '
                'Coalesce(p.AbwMax, -999999) <> Coalesce(a.AbwMax, -999999) || Coalesce(p.AbwProzent, false) <> Coalesce(a.AbwProzent, false) || '
                'Coalesce(p.NurSteigend, false) <> Coalesce(a.NurSteigend, false) || Coalesce(p.VergleichTol, 0) <> Coalesce(a.VergleichTol, 0) || '
-               'Coalesce(LookUp(colP As v0, v0.ID = p.VergleichPunkt).QuelleID, 0) <> Coalesce(a.VergleichPunkt, 0) || Coalesce(p.AnleitungID, 0) <> Coalesce(a.AnleitungID, 0)')
+               'Coalesce(LookUp(colP As v0, v0.ID = p.VergleichPunkt).QuelleID, 0) <> Coalesce(a.VergleichPunkt, 0) || Coalesce(p.AnleitungID, 0) <> Coalesce(a.AnleitungID, 0) || Coalesce(p.ZugangscodeID, 0) <> Coalesce(a.ZugangscodeID, 0)')
 AKT_ITEMS = ('Ungroup(\n    Table(\n'
              '        {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},\n'
              '        {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (' + P_GEAENDERT + '))) As p, {Art: "geändert", Text: p.Title})},\n'
@@ -1151,6 +1152,20 @@ NIO_TOGGLE = ('If(!Coalesce(ThisItem.Allgemein, false),\n    With({ids: ' + NIO_
               + 'With({neu: If(Text(ThisItem.ID) in ids.Value, Concat(Filter(ids, Trim(Value) <> Text(ThisItem.ID)) As s, Trim(s.Value), ";"), '
               'Concat(ids As s2, Trim(s2.Value) & ";") & Text(ThisItem.ID))},\n            '
               + ind(PP('{Ansprechpartner: neu}'), 12) + '\n        )\n    )\n)')
+CODE_AKTIV = 'Sort(ShowColumns(Filter(RG_Zugangscodes, Aktiv = true), ID, Title), Title)'
+CODE_ITEMS = ANL_ITEMS.replace(ANL_AKTIV, CODE_AKTIV).replace("AnleitungID", "ZugangscodeID").replace("RG_Anleitungen", "RG_Zugangscodes").replace('"Anleitung #"', '"Code #"')
+CODE_DEFAULT = ANL_DEFAULT.replace(ANL_AKTIV, CODE_AKTIV).replace("AnleitungID", "ZugangscodeID").replace("RG_Anleitungen", "RG_Zugangscodes").replace('"Anleitung #"', '"Code #"')
+con_code = overlay("conPCodeFenster", "varCodeOffen", 620, 360, [
+    lbl("lblPCodeFrage", CUR + ".Title", "24", "56", "572", "28", size=14, color="clrTextGrau"),
+    lbl("lblPCodeT", '"Zugangscode (z. B. Bedien-Code einer Anlage)"', "24", "96", "572", "20", size=12, color="clrTextGrau"),
+    dd("ddPCode", CODE_ITEMS, "N", CODE_DEFAULT,
+       'If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(%s.ZugangscodeID, 0),\n    %s\n)' % (CUR, ind(PP('{ZugangscodeID: Self.Selected.ID}'), 4)),
+       "24", "116", "572", "40", '"Zugangscode"', DisplayMode='If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)'),
+    lbl("lblPCodeHinweis", '"Der Prüfer sieht den Code erst nach Antippen von 🔑. Er steht nie im Protokoll, im PDF oder in Mängeln. '
+        'Echte Passwörter (Netzwerk, Server, Admin) nicht eintragen – stattdessen im Hinweis „Code bei …“. Codes anlegen: Übersicht › Anleitungen › Zugangscodes."',
+        "24", "168", "572", "100", size=12, color="clrTextGrau", VerticalAlign="VerticalAlign.Top"),
+    btn("btnPCodeFertig", '"Fertig"', "436", "292", "160", "44", "Set(varCodeOffen, false)"),
+], '"Zugangscode"', "Set(varCodeOffen, false)")
 con_nio = overlay("conNio", "varNioOffen", 660, 640, [
     lbl("lblNioFrage", CUR + ".Title", "24", "56", "612", "28", size=14, color="clrTextGrau"),
     lbl("lblNioRueck", '"Rückfrage „Ist das wirklich so?“"', "24", "92", "300", "24", size=13, bold=True),
@@ -1295,7 +1310,10 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         lbl("lblPHinweis", '"Hinweis für den Prüfer"', "0", "124", "340", "20", size=12, color="clrTextGrau"),
         txt("txtPHinweis", 'Coalesce(%s.Hinweis, "")' % CUR,
             'If(Self.Text <> Coalesce(%s.Hinweis, ""),\n    %s\n)' % (CUR, ind(PP('{Hinweis: Self.Text}'), 4)),
-            "0", "144", "340", "44", '"optional, z. B. Wo steht das Thermometer?"', '"Hinweis"', multi=True, Size="13"),
+            "0", "144", "292", "44", '"optional, z. B. Wo steht das Thermometer?"', '"Hinweis"', multi=True, Size="13"),
+        btn("btnPCode", '"🔑"', "298", "144", "48", "44",
+            "If(!varIsLoading,\n    Refresh(RG_Zugangscodes);\n    Reset(ddPCode);\n    Set(varCodeOffen, true)\n)", art="sekundaer", size=13,
+            Fill='If(Coalesce(%s.ZugangscodeID, 0) > 0, clrPrimaerHell, clrKarte)' % CUR, PaddingLeft="2", PaddingRight="2"),
         lbl("lblPBild", '"Beispielbild"', "352", "124", "176", "20", size=12, color="clrTextGrau"),
         btn("btnPBild", 'If(Coalesce(%s.HinweisBildID, 0) > 0, "Bild ändern", "Bild wählen")' % CUR, "352", "144", "124", "44",
             "Set(varBildOffen, true)", art="sekundaer", size=13, DisplayMode=EDIT.replace("DisplayMode.View", "DisplayMode.Disabled")),
@@ -1376,7 +1394,8 @@ VS_REGELN = ('"• " & If(Coalesce(%(c)s.Pflicht, false), "Pflichtfrage", "freiw
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && !IsBlank(%(c)s.AbwMax), Char(10) & "• höchstens " & Text(%(c)s.AbwMax) & If(Coalesce(%(c)s.AbwProzent, false), " %%", "") & " Abweichung zum letzten Rundgang", "") & '
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.NurSteigend, false), Char(10) & "• Zählerstand: darf nicht kleiner werden", "") & '
              'If(%(c)s.Eingabetyp.Value = "ZAHL" && Coalesce(%(c)s.VergleichPunkt, 0) <> 0, Char(10) & "• Vergleich mit „" & LookUp(colP, ID = %(c)s.VergleichPunkt).Title & "“ (± " & Text(Coalesce(%(c)s.VergleichTol, 0)) & ")", "") & '
-             'If(Coalesce(%(c)s.AnleitungID, 0) > 0, Char(10) & "• ⓘ Anleitung „" & Coalesce(LookUp(RG_Anleitungen, ID = %(c)s.AnleitungID).Title, "?") & "“", "")') % {"c": CUR, "f": FOTO_IST}
+             'If(Coalesce(%(c)s.AnleitungID, 0) > 0, Char(10) & "• ⓘ Anleitung „" & Coalesce(LookUp(RG_Anleitungen, ID = %(c)s.AnleitungID).Title, "?") & "“", "") & '
+             'If(Coalesce(%(c)s.ZugangscodeID, 0) > 0, Char(10) & "• 🔑 Zugangscode „" & Coalesce(LookUp(RG_Zugangscodes, ID = %(c)s.ZugangscodeID).Title, "?") & "“ (erst nach Antippen sichtbar)", "")') % {"c": CUR, "f": FOTO_IST}
 
 vs_karte = con("conVsKarte", dict({"X": "16", "Y": "40", "Width": "Parent.Width - 32", "Height": "300", "Fill": "clrKarte", "BorderColor": "clrRahmen",
                                    "BorderThickness": "1", "Visible": "varAuswahlEbene = 3"}, **radius(8)), [
@@ -1632,7 +1651,7 @@ scr_editor = C("scrEditor", "Screen", {
         [ed_leiste, ed_leer, ed_b, ed_k, ed_p]),
     ed_rechts,
     tmr_arbeit,
-    con_akt, con_holen, con_mehr, con_bild, con_nio, con_za,
+    con_akt, con_holen, con_mehr, con_bild, con_nio, con_za, con_code,
     laden_overlay("conEdLaden", ausweg=True),
 ])
 
@@ -1851,6 +1870,7 @@ scr_anleitungen = C("scrAnleitungen", "Screen", {
     con("conAnKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
         btn("btnAnZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
         lbl("lblAnTitelKopf", '"Anleitungen"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
+        btn("btnAnCodes", '"🔑 Zugangscodes ›"', "Parent.Width - 236", "12", "220", "40", "If(!varIsLoading, Navigate(scrCodes, ScreenTransition.None))", art="kopf"),
     ]),
     lbl("lblAnHilfe", '"Längere Texte, die der Prüfer über ⓘ öffnet. Eine Anleitung kann bei vielen Prüfpunkten hängen. '
         'Zuordnen im Prüfpunkt unter „Anleitung“. Nicht mehr gebraucht: inaktiv stellen – der Prüfer sieht sie dann nicht mehr."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
@@ -1881,7 +1901,75 @@ scr_anleitungen = C("scrAnleitungen", "Screen", {
     laden_overlay("conAnLaden"),
 ])
 
-SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen]
+# ---------------------------------------------------------------- Bildschirm Zugangscodes (Paket 18)
+ZC_CUR = "LookUp(colZcAlle, ID = varZcID)"
+ZC_RESET = "Reset(txtZcTitel);\nReset(txtZcCode);\nReset(txtZcHinweis)"
+
+
+def zc_patch(felder):
+    return ("If(varZcID > 0 && !varIsLoading,\n"
+            "    Set(varPatchFehler, false);\n"
+            "    IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), " + felder + "), Set(varPatchFehler, true));\n"
+            "    If(varPatchFehler,\n"
+            "        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
+            "        Patch(colZcAlle, LookUp(colZcAlle, ID = varZcID), LookUp(RG_Zugangscodes, ID = varZcID))\n"
+            "    )\n"
+            ")")
+
+
+def zc_text(name, feld, y, hint, label, multi=False, h="40"):
+    return txt(name, 'Coalesce(%s.%s, "")' % (ZC_CUR, feld),
+               'If(Trim(Self.Text) <> Trim(Coalesce(%s.%s, "")),\n    %s\n)' % (ZC_CUR, feld, ind(zc_patch("{%s: Left(Trim(Self.Text), 255)}" % feld), 4)),
+               "0", y, "Parent.Width", h, hint, label, multi=multi, DisplayMode=BTN_DM)
+
+
+ZC_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
+          "    Set(varNeuID, IfError(Patch(RG_Zugangscodes, Defaults(RG_Zugangscodes), {Title: \"Neuer Code\", Code: \"\", Hinweis: \"\", Aktiv: true}).ID, 0));\n"
+          "    If(varNeuID = 0,\n"
+          "        Notify(\"Anlegen fehlgeschlagen. Bitte erneut versuchen.\", NotificationType.Error),\n"
+          "        Collect(colZcAlle, LookUp(RG_Zugangscodes, ID = varNeuID));\n"
+          "        Set(varZcID, varNeuID);\n"
+          "        " + ind(ZC_RESET, 8) + ";\n"
+          "        SetFocus(txtZcTitel)\n"
+          "    )\n"
+          ")")
+scr_codes = C("scrCodes", "Screen", {
+    "Fill": "clrHintergrund",
+    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Zugangscodes);\nClearCollect(colZcAlle, RG_Zugangscodes);\n"
+                 "Set(varZcID, Coalesce(First(Sort(colZcAlle, If(Coalesce(Aktiv, false), \"0\", \"1\") & Lower(Title))).ID, 0));\n" + ZC_RESET + ";\nSet(varIsLoading, false)",
+}, [
+    con("conZcKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
+        btn("btnZcZurueck", '"← Anleitungen"', "16", "12", "170", "40", "If(!varIsLoading, Navigate(scrAnleitungen, ScreenTransition.None))", art="kopf"),
+        lbl("lblZcTitelKopf", '"Zugangscodes"', "202", "0", "600", "64", size=20, color="Color.White", bold=True),
+    ]),
+    lbl("lblZcHilfe", '"Nur Bedien-Codes von Anlagen. Der Prüfer sieht sie erst nach Antippen von 🔑, nie im Protokoll. '
+        'Echte Passwörter nicht eintragen – dafür nur einen Hinweis wie „Code bei der IT“ (Feld Code leer lassen)."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
+    btn("btnZcNeu", '"+ Zugangscode"', "24", "124", "220", "44", ZC_NEU),
+    gal("galZc", 'Sort(colZcAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "180", "420", "Parent.Height - 196", 56, [
+        lbl("lblZcHinter", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4",
+            Fill="If(ThisItem.ID = varZcID, clrPrimaerHell, Color.White)"),
+        lbl("lblZcZeile", 'ThisItem.Title & If(Coalesce(ThisItem.Aktiv, false), "", "  · inaktiv")', "12", "0", "Parent.TemplateWidth - 24", "Parent.TemplateHeight - 4",
+            size=14, Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
+        btn("btnZcZeile", '""', "0", "0", "Parent.TemplateWidth", "Parent.TemplateHeight - 4", "Set(varZcID, ThisItem.ID);\n" + ZC_RESET, art="kopf",
+            Fill="RGBA(0, 0, 0, 0)", HoverFill="RGBA(23, 20, 150, 0.06)", PressedFill="RGBA(23, 20, 150, 0.12)", DisabledFill="RGBA(0, 0, 0, 0)", **radius(0)),
+    ], '"Zugangscodes"'),
+    lbl("lblZcLeer", '"Noch keine Zugangscodes. „+ Zugangscode“ legt einen an."', "24", "190", "420", "48", size=13, color="clrTextGrau",
+        Visible="IsEmpty(colZcAlle) && !varIsLoading"),
+    con("conZcForm", {"X": "468", "Y": "124", "Width": "Parent.Width - 492", "Height": "400", "Fill": "clrHintergrund", "Visible": "varZcID > 0"}, [
+        lbl("lblZcTitelT", '"Bezeichnung"', "0", "0", "400", "20", size=12, color="clrTextGrau"),
+        zc_text("txtZcTitel", "Title", "20", '"z. B. Bedienteil Kältemaschine 1"', '"Bezeichnung"'),
+        lbl("lblZcCodeT", '"Code"', "0", "72", "400", "20", size=12, color="clrTextGrau"),
+        zc_text("txtZcCode", "Code", "92", '"z. B. 1234 (leer lassen, wenn nur ein Hinweis)"', '"Code"'),
+        lbl("lblZcHinweisT", '"Hinweis (z. B. „Code bei der IT“)"', "0", "144", "400", "20", size=12, color="clrTextGrau"),
+        zc_text("txtZcHinweis", "Hinweis", "164", '"optional"', '"Hinweis"', multi=True, h="80"),
+        optionen("galZcAktiv", 'Table({W: "ja", N: "aktiv"}, {W: "nein", N: "inaktiv"})', 'If(Coalesce(%s.Aktiv, false), "ja", "nein")' % ZC_CUR,
+                 'If((ThisItem.W = "ja") <> Coalesce(%s.Aktiv, false),\n    %s\n)' % (ZC_CUR, ind(zc_patch('{Aktiv: ThisItem.W = "ja"}'), 4)),
+                 "0", "260", "300", 2, '"Status"', h=40, size=13, aktiv=BTN_DM),
+    ]),
+    laden_overlay("conZcLaden"),
+])
+
+SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen, scr_codes]
 
 
 def maske(f):
@@ -2120,7 +2208,7 @@ def pruefen(app_ref):
     p_spalten = ["Title", "Eingabetyp", "Pflicht", "Auswahlwerte", "Einheit", "MinWert", "MaxWert", "Hinweis", "FotoMoeglich", "Foto",
                  "KommentarPflicht", "Grenzmodus", "BedingungPunkt", "BedingungWert", "HinweisBildID", "Abschnitt",
                  "Kritisch", "KritischText", "Ansprechpartner", "Rueckfrage", "RueckfrageText", "TextIO", "TextNIO", "NichtMessbar",
-                 "AbwMax", "AbwProzent", "NurSteigend", "VergleichPunkt", "VergleichTol", "AnleitungID"]
+                 "AbwMax", "AbwProzent", "NurSteigend", "VergleichPunkt", "VergleichTol", "AnleitungID", "ZugangscodeID"]
     kopie = props.get("tmrArbeit.OnTimerEnd", "")
     m_p = re.search(r"Patch\(RG_Pruefpunkte, Defaults\(RG_Pruefpunkte\), \{(.*?)\}\)\.ID", kopie, re.S)
     m_b = re.search(r"Patch\(RG_Bereiche, Defaults\(RG_Bereiche\), \{(.*?)\}\)\.ID", kopie, re.S)
@@ -2277,7 +2365,8 @@ TEXTE = [
     ("ddPAnl", "Kompressor ablesen", 14, 256, 60, 1),
     ("lblPBed", "Keine Bedingung möglich: Andere Fragen hängen von dieser ab.", 12, 528, 0, 1),
     ("lblPGrenz", "Wert außerhalb der Grenzen ergibt", 12, 528, 0, 1), ("lblPWerte", "Antwortmöglichkeiten – eine pro Zeile", 12, 528, 0, 1),
-    ("btnPBild", "Bild ändern", 13, 124, 16, 1),
+    ("btnPBild", "Bild ändern", 13, 124, 16, 1), ("btnPCode", "🔑", 13, 48, 4, 1), ("btnAnCodes", "🔑 Zugangscodes ›", 14, 220, 20, 1),
+    ("btnZcZurueck", "← Anleitungen", 14, 170, 20, 1), ("ddPCode", "Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)", 14, 572, 60, 1),
     ("lblVsTitel", "Vorschau – so sieht es der Prüfer", 14, 394, 0, 1),
     ("lblPrTitel", "Prüfung: 12 Fehler, 3 Hinweise", 14, 394, 0, 1),
     ("btnHolenUebernehmen", "Kategorie übernehmen", 14, 260, 20, 1), ("btnAktJetzt", "Jetzt aktivieren", 14, 200, 20, 1),

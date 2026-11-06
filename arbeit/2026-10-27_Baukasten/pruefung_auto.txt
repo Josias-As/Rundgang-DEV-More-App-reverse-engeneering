@@ -1054,6 +1054,105 @@
   btnStartOffenWeiter.Visible      ok
   btnStartOffenWeiter.DisplayMode  ok
   btnStartOffenWeiter.OnSelect     ok
+== Paket 18: 2 Properties, neue Steuerelemente: btnKaCode, conKaCode, btnKaCodeSperre, conKaCodeKarte, lblKaCodeTitel, lblKaCodeFrage, lblKaCodeWert, lblKaCodeHinweis, btnKaCodeSchliessen
+  scrKategorie.OnVisible           ok
+  lblKaFrage.Width                 ok
+  btnKaCode.BorderColor            ok
+  btnKaCode.BorderThickness        ok
+  btnKaCode.Color                  ok
+  btnKaCode.Fill                   ok
+  btnKaCode.Font                   ok
+  btnKaCode.Height                 ok
+  btnKaCode.HoverColor             ok
+  btnKaCode.HoverFill              ok
+  btnKaCode.PressedColor           ok
+  btnKaCode.PressedFill            ok
+  btnKaCode.OnSelect               ok
+  btnKaCode.RadiusBottomLeft       ok
+  btnKaCode.RadiusBottomRight      ok
+  btnKaCode.RadiusTopLeft          ok
+  btnKaCode.RadiusTopRight         ok
+  btnKaCode.Size                   ok
+  btnKaCode.Text                   ok
+  btnKaCode.Visible                ok
+  btnKaCode.Width                  ok
+  btnKaCode.X                      ok
+  btnKaCode.Y                      ok
+  conKaCode.Fill                   ok
+  conKaCode.Height                 ok
+  conKaCode.Visible                ok
+  conKaCode.Width                  ok
+  btnKaCodeSperre.BorderThickness  ok
+  btnKaCodeSperre.Fill             ok
+  btnKaCodeSperre.Height           ok
+  btnKaCodeSperre.HoverFill        ok
+  btnKaCodeSperre.PressedFill      ok
+  btnKaCodeSperre.Text             ok
+  btnKaCodeSperre.Width            ok
+  conKaCodeKarte.Fill              ok
+  conKaCodeKarte.Height            ok
+  conKaCodeKarte.RadiusBottomLeft  ok
+  conKaCodeKarte.RadiusBottomRight ok
+  conKaCodeKarte.RadiusTopLeft     ok
+  conKaCodeKarte.RadiusTopRight    ok
+  conKaCodeKarte.Width             ok
+  conKaCodeKarte.X                 ok
+  conKaCodeKarte.Y                 ok
+  lblKaCodeTitel.Color             ok
+  lblKaCodeTitel.Font              ok
+  lblKaCodeTitel.FontWeight        ok
+  lblKaCodeTitel.Height            ok
+  lblKaCodeTitel.Size              ok
+  lblKaCodeTitel.Text              ok
+  lblKaCodeTitel.Width             ok
+  lblKaCodeTitel.Wrap              ok
+  lblKaCodeTitel.X                 ok
+  lblKaCodeTitel.Y                 ok
+  lblKaCodeFrage.Color             ok
+  lblKaCodeFrage.Font              ok
+  lblKaCodeFrage.Height            ok
+  lblKaCodeFrage.Size              ok
+  lblKaCodeFrage.Text              ok
+  lblKaCodeFrage.Width             ok
+  lblKaCodeFrage.Wrap              ok
+  lblKaCodeFrage.X                 ok
+  lblKaCodeFrage.Y                 ok
+  lblKaCodeWert.Align              ok
+  lblKaCodeWert.Color              ok
+  lblKaCodeWert.Font               ok
+  lblKaCodeWert.FontWeight         ok
+  lblKaCodeWert.Height             ok
+  lblKaCodeWert.Size               ok
+  lblKaCodeWert.Text               ok
+  lblKaCodeWert.Width              ok
+  lblKaCodeWert.X                  ok
+  lblKaCodeWert.Y                  ok
+  lblKaCodeHinweis.Color           ok
+  lblKaCodeHinweis.Font            ok
+  lblKaCodeHinweis.Height          ok
+  lblKaCodeHinweis.Size            ok
+  lblKaCodeHinweis.Text            ok
+  lblKaCodeHinweis.VerticalAlign   ok
+  lblKaCodeHinweis.Width           ok
+  lblKaCodeHinweis.X               ok
+  lblKaCodeHinweis.Y               ok
+  btnKaCodeSchliessen.BorderThickness ok
+  btnKaCodeSchliessen.Color        ok
+  btnKaCodeSchliessen.Fill         ok
+  btnKaCodeSchliessen.Font         ok
+  btnKaCodeSchliessen.Height       ok
+  btnKaCodeSchliessen.HoverFill    ok
+  btnKaCodeSchliessen.OnSelect     ok
+  btnKaCodeSchliessen.PressedFill  ok
+  btnKaCodeSchliessen.RadiusBottomLeft ok
+  btnKaCodeSchliessen.RadiusBottomRight ok
+  btnKaCodeSchliessen.RadiusTopLeft ok
+  btnKaCodeSchliessen.RadiusTopRight ok
+  btnKaCodeSchliessen.Size         ok
+  btnKaCodeSchliessen.Text         ok
+  btnKaCodeSchliessen.Width        ok
+  btnKaCodeSchliessen.X            ok
+  btnKaCodeSchliessen.Y            ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -1074,8 +1173,11 @@
   Paket 17: colAntworten hat in allen drei Zweigen dieselben 46 Felder
   Paket 13: colAntworten hat in allen drei Zweigen dieselben 47 Felder
   Paket 23: colAntworten hat in allen drei Zweigen dieselben 47 Felder
+  Paket 18: colAntworten hat in allen drei Zweigen dieselben 48 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
+  lblKaCodeTitel                615 px (+10 %) / 632 px, 1 Zeile(n) nötig, erlaubt 1  ok  '🔑 Bedienteil Kältemaschine 1 (Infrastrukturraum)'
+  lblKaCodeHinweis              885 px (+10 %) / 632 px, 2 Zeile(n) nötig, erlaubt 3  ok  'Code nur für das Bedienteil. Nicht weitergeben. Bei Störung: Haustechnik anrufen (Durchwahl 123).'
   btnStartOffenWeiter            91 px (+10 %) / 100 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Weiter ›'
   lblStartOffen                 679 px (+10 %) / 388 px, 2 Zeile(n) nötig, erlaubt 2  ok  '⚠  Nicht abgeschlossen: Infrastrukturrundgang TGI vom 02.11.2026  (2/5)'
   lblStartOffen                 689 px (+10 %) / 508 px, 2 Zeile(n) nötig, erlaubt 2  ok  '⚠  Nicht abgeschlossen: Haustechnik Rundgang Lohfelden vom 02.11.2026'

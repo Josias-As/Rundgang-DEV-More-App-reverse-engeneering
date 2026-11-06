@@ -1,0 +1,92 @@
+- conEdLaden:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(255, 255, 255, 0.7)
+      Height: =Parent.Height
+      Visible: =varIsLoading
+      Width: =Parent.Width
+    Children:
+      - btnEdLadenSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - lblEdLadenText:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =clrPrimaer
+            Font: =Font.'Segoe UI'
+            FontWeight: =FontWeight.Semibold
+            Height: =60
+            Size: =18
+            Text: =If(varLadeText = "", "Bitte warten …", varLadeText)
+            Width: =Parent.Width
+            X: =0
+            Y: =(Parent.Height - 60) / 2
+      - lblEdLadenHinweis:
+          Control: Label@2.5.1
+          Properties:
+            Align: =Align.Center
+            Color: =clrTextGrau
+            Font: =Font.'Segoe UI'
+            Height: =24
+            Size: =12
+            Text: ="Hängt das länger als eine Minute? Dann:"
+            Width: =Parent.Width
+            X: =0
+            Y: =(Parent.Height - 60) / 2 + 80
+      - btnEdLadenAusweg:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderColor: =clrPrimaer
+            BorderThickness: =1
+            Color: =clrPrimaer
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =clrGesperrtHell
+            DisplayMode: =DisplayMode.Edit
+            Fill: =clrKarte
+            Font: =Font.'Segoe UI'
+            Height: =40
+            HoverColor: =clrPrimaer
+            HoverFill: =clrPrimaerHell
+            OnSelect: |-
+              =Set(varJob, "");
+              Set(varArbeitStart, false);
+              Set(varIsLoading, false);
+              Navigate(scrListe, ScreenTransition.None)
+            PressedColor: =clrPrimaer
+            PressedFill: =clrPrimaerHell
+            RadiusBottomLeft: =6
+            RadiusBottomRight: =6
+            RadiusTopLeft: =6
+            RadiusTopRight: =6
+            Size: =13
+            Text: ="Zur Übersicht"
+            Width: =200
+            X: =(Parent.Width - 200) / 2
+            Y: =(Parent.Height - 60) / 2 + 108

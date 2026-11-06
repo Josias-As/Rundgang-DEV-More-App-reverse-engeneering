@@ -44,6 +44,8 @@ Set(varQuelleNurAktiv; false);;
 Set(varHeuteLaeuft; false);;
 Set(varPlanRgID; 0);;
 Set(varPlanRg; Defaults(RG_Rundgaenge));;
+Set(varCodeOffen; false);;
+Set(varZcID; 0);;
 Set(varEntwurfOk; true);;
 Set(varAktivRest; false);;
 Set(varVorlageNeu; Defaults(RG_Rundgaenge));;

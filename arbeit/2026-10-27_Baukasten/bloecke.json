@@ -167,6 +167,26 @@
    "RG_Rundgaenge",
    "Testrundgang",
    "Ja/Nein"
+  ],
+  [
+   "RG_Zugangscodes",
+   "(neue Liste: Title, Code, Hinweis, Aktiv)",
+   "Liste"
+  ],
+  [
+   "RG_Zugangscodes",
+   "Code",
+   "Spalte"
+  ],
+  [
+   "RG_Zugangscodes",
+   "Hinweis",
+   "Spalte"
+  ],
+  [
+   "RG_Pruefpunkte",
+   "ZugangscodeID",
+   "Zahl"
   ]
  ],
  "pakete": [
@@ -1185,6 +1205,34 @@
    ],
    "neu": [
     "btnStartOffenWeiter"
+   ]
+  },
+  {
+   "nr": 18,
+   "props": [
+    {
+     "key": "scrKategorie.OnVisible",
+     "schritt": "18.3",
+     "vorher": "Set(varIsLoading, true);\nSet(varZurueckFrage, false);\nSet(varAlleIOFrage, false);\nSet(varZeigeFehlend, false);\nSet(varFotoPP, 0);\nSet(varBildID, 0);\nSet(varInfoID, 0);\nSet(varRueckPP, 0);\nSet(varKritPP, 0);\nClear(colFotos);\nSet(varGeaendert, false);\nSet(varSchluesselK, \"D\" & varDurchID & \"-K\" & varKatID);\nSet(varNurLesen, varDurch.Status <> stInArbeit);\nRefresh(RG_KategorieErgebnisse);\nRefresh(RG_Anleitungen);\nConcurrent(\n    ClearCollect(colPP, Filter(RG_Pruefpunkte, KategorieID = varKatID && Aktiv = true)),\n    Set(varErgebnis, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)),\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true)),\n    ClearCollect(colAnlAktivApp, ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID))\n);\nIf(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP, !IsBlank(AbwMax) || Coalesce(NurSteigend, false))) > 0,\n    Set(varLetzteFuer, varDurchID);\n    Set(varLetzteRg, varDurch.RundgangID);\n    Set(varLetzteTest, varDurch.TestDatensatz);\n    Set(varLetzteTag, varDurch.TagText);\n    Refresh(RG_Durchfuehrungen);\n    ClearCollect(colLetzteKand, FirstN(Sort(Filter(RG_Durchfuehrungen, RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest), TagText, SortOrder.Descending), 20));\n    Set(varLetzteDurch, First(Sort(Filter(colLetzteKand, DateValue(TagText) < DateValue(varLetzteTag)), TagText, SortOrder.Descending)));\n    If(IsBlank(varLetzteDurch.ID),\n        Clear(colLetzte),\n        Set(varLetzteID, varLetzteDurch.ID);\n        ClearCollect(colLetzte, Filter(Ungroup(ForAll(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varLetzteID) As e, {T: ForAll(Table(ParseJSON(e.Antworten)) As j, {PP: Value(j.Value.PruefpunktID), Z: Value(j.Value.WertZahl)})}), T), !IsBlank(Z)))\n    )\n);\nSet(varGespeichertBeimOeffnen, varErgebnis.GespeichertAm);\nWith({t: If(IsBlank(varErgebnis.Antworten), Table(ParseJSON(\"[]\")), Table(ParseJSON(varErgebnis.Antworten)))},\n    If(varNurLesen && !IsEmpty(t),\n        ClearCollect(colAntworten,\n            ForAll(Sequence(CountRows(t)) As i,\n                With({a: Index(t, i.Value).Value},\n                    With({pp: LookUp(colPP, ID = Value(a.PruefpunktID))},\n                        {PruefpunktID: Value(a.PruefpunktID), Frage: Text(a.Frage), Typ: Text(a.Typ), Pflicht: false, Einheit: Coalesce(Text(a.Einheit), \"\"), MinWert: pp.MinWert, MaxWert: pp.MaxWert, Auswahl: Coalesce(Text(a.WertText), \"\"), Hinweis: \"\", Reihenfolge: i.Value,\n                         Bewertung: Coalesce(Text(a.Bewertung), \"\"), WertText: Coalesce(Text(a.WertText), \"\"), WertZahl: Value(a.WertZahl), Kommentar: Coalesce(Text(a.Kommentar), \"\"), Fotos: Coalesce(Text(a.Fotos), \"\"), FotoModus: fnFotoModus(pp.Foto.Value, Coalesce(pp.FotoMoeglich, false)), KommentarPflicht: false, Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), Warnung: Coalesce(IfError(Boolean(a.Warnung), false), false), BedID: 0, BedWert: \"\", Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet), false), false), BildID: Coalesce(pp.HinweisBildID, 0), Abschnitt: Trim(Coalesce(Text(a.Abschnitt), \"\")), AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(a.Kritisch), false), false), KritischText: \"\", Ansprechpartner: \"\", Rueckfrage: false, RueckfrageText: \"\", KritischOk: Coalesce(IfError(Boolean(a.KritischOk), false), false), KritischZeit: Coalesce(Text(a.KritischZeit), \"\"), KritischVon: Coalesce(Text(a.KritischVon), \"\"), TextIO: Coalesce(Text(a.TextIO), \"\"), TextNIO: Coalesce(Text(a.TextNIO), \"\"), NMErlaubt: false, KPflOrig: false, Letzter: Value(a.Letzter), LetzterTag: Coalesce(Text(a.LetzterTag), \"\"), AbwMax: Blank(), AbwProzent: false, NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(a.AbwText), \"\"), AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(pp.AnleitungID, 0))), 0, pp.AnleitungID), Inaktiv: false}\n                    )\n                )\n            )\n        ),\n        ClearCollect(colAntworten,\n            ForAll(Sort(colPP, RgReihenfolge) As p,\n                With({alt: LookUp(t As j, Value(j.Value.PruefpunktID) = p.ID)},\n                    {PruefpunktID: p.ID, Frage: p.Title, Typ: p.Eingabetyp.Value, Pflicht: p.Pflicht, Einheit: Coalesce(p.Einheit, \"\"), MinWert: p.MinWert, MaxWert: p.MaxWert, Auswahl: Coalesce(p.Auswahlwerte, \"\"), Hinweis: Coalesce(p.Hinweis, \"\"), Reihenfolge: p.RgReihenfolge,\n                     Bewertung: If(IsBlank(alt), \"\", p.Eingabetyp.Value = \"ZAHL\" && !IsBlank(alt.Value.WertZahl), fnZahlBewertung(Value(alt.Value.WertZahl), p.MinWert, p.MaxWert, fnGrenzmodus(p.Grenzmodus.Value)), Coalesce(Text(alt.Value.Bewertung), \"\")),\n                     WertText: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.WertText), \"\")),\n                     WertZahl: If(IsBlank(alt), Blank(), Value(alt.Value.WertZahl)),\n                     Kommentar: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.Kommentar), \"\")),\n                     Fotos: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.Fotos), \"\")),\n                     FotoModus: fnFotoModus(p.Foto.Value, Coalesce(p.FotoMoeglich, false)),\n                     KommentarPflicht: Coalesce(p.KommentarPflicht, false),\n                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n                     BedID: Coalesce(p.BedingungPunkt, 0),\n                     BedWert: Coalesce(p.BedingungWert, \"\"),\n                     Ausgeblendet: false,\n                     BildID: Coalesce(p.HinweisBildID, 0),\n                     Abschnitt: Trim(Coalesce(p.Abschnitt, \"\")),\n                     AbsKopf: false,\n                     Kritisch: Coalesce(p.Kritisch, false),\n                     KritischText: Coalesce(p.KritischText, \"\"),\n                     Ansprechpartner: Coalesce(p.Ansprechpartner, \"\"),\n                     Rueckfrage: Coalesce(p.Rueckfrage, false),\n                     RueckfrageText: Coalesce(p.RueckfrageText, \"\"),\n                     KritischOk: If(IsBlank(alt), false, Coalesce(IfError(Boolean(alt.Value.KritischOk), false), false)),\n                     KritischZeit: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischZeit), \"\")),\n                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n                     TextIO: Trim(Coalesce(p.TextIO, \"\")),\n                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n                     KPflOrig: Coalesce(p.KommentarPflicht, false),\n                     Letzter: If(p.Eingabetyp.Value = \"ZAHL\" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false)), Coalesce(LookUp(colLetzte, PP = p.ID).Z, LookUp(colLetzte, PP = Coalesce(p.QuelleID, -1)).Z)),\n                     LetzterTag: If(IsBlank(varLetzteDurch.TagText), \"\", Text(DateValue(varLetzteDurch.TagText), \"dd.mm.\")),\n                     AbwMax: p.AbwMax,\n                     AbwProzent: Coalesce(p.AbwProzent, false),\n                     NurSteigend: Coalesce(p.NurSteigend, false),\n                     VglID: Coalesce(p.VergleichPunkt, 0),\n                     VglTol: Coalesce(p.VergleichTol, 0),\n                     AbwText: \"\",\n                     AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(p.AnleitungID, 0))), 0, p.AnleitungID),\n                     Warnung: false,\n                     Inaktiv: false}\n                )\n            )\n        );\n        Collect(colAntworten,\n            ForAll(Filter(t As j2, IsBlank(LookUp(colPP, ID = Value(j2.Value.PruefpunktID)))) As o,\n                {PruefpunktID: Value(o.Value.PruefpunktID), Frage: Text(o.Value.Frage), Typ: Text(o.Value.Typ), Pflicht: false, Einheit: Coalesce(Text(o.Value.Einheit), \"\"), MinWert: Blank(), MaxWert: Blank(), Auswahl: \"\", Hinweis: \"\", Reihenfolge: 100000 + Value(o.Value.PruefpunktID),\n                 Bewertung: Coalesce(Text(o.Value.Bewertung), \"\"), WertText: Coalesce(Text(o.Value.WertText), \"\"), WertZahl: Value(o.Value.WertZahl), Kommentar: Coalesce(Text(o.Value.Kommentar), \"\"), Fotos: Coalesce(Text(o.Value.Fotos), \"\"), FotoModus: \"Aus\", KommentarPflicht: false, Grenzmodus: \"Mangel\", Warnung: Coalesce(IfError(Boolean(o.Value.Warnung), false), false), BedID: 0, BedWert: \"\", Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet), false), false), BildID: 0, Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt), \"\")), AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(o.Value.Kritisch), false), false), KritischText: \"\", Ansprechpartner: \"\", Rueckfrage: false, RueckfrageText: \"\", KritischOk: Coalesce(IfError(Boolean(o.Value.KritischOk), false), false), KritischZeit: Coalesce(Text(o.Value.KritischZeit), \"\"), KritischVon: Coalesce(Text(o.Value.KritischVon), \"\"), TextIO: Coalesce(Text(o.Value.TextIO), \"\"), TextNIO: Coalesce(Text(o.Value.TextNIO), \"\"), NMErlaubt: false, KPflOrig: false, Letzter: Value(o.Value.Letzter), LetzterTag: Coalesce(Text(o.Value.LetzterTag), \"\"), AbwMax: Blank(), AbwProzent: false, NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(o.Value.AbwText), \"\"), AnlID: 0, Inaktiv: true}\n            )\n        )\n    )\n);\nIf(!varNurLesen, ClearCollect(colVglTmp, ForAll(Filter(colAntworten As a0, !a0.Inaktiv && a0.Typ = \"ZAHL\" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a,\n        With({w: LookUp(colAntworten As o, o.PruefpunktID = a.VglID)},\n            {PP: a.PruefpunktID,\n             Abw: fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend),\n             Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol),\n             Text: If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), If(a.NurSteigend && a.WertZahl < a.Letzter, \"kleiner als beim letzten Mal\", \"starke Abweichung zum letzten Mal\"), \"\") & If(a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol), If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), \"; \", \"\") & \"weicht von „\" & w.Frage & \"“ ab (\" & Text(w.WertZahl) & \")\", \"\"),\n             KPfl: a.KPflOrig}\n        )\n    ));\n    ForAll(colVglTmp As v, Patch(colAntworten, LookUp(colAntworten, PruefpunktID = v.PP), {KommentarPflicht: v.KPfl || v.Abw || v.Vgl, AbwText: v.Text})));\nClearCollect(colAbsTmp, ShowColumns(Filter(colAntworten, !Inaktiv && !Ausgeblendet && Abschnitt <> \"\"), PruefpunktID, Reihenfolge, Abschnitt, BedID));\nForAll(colAbsTmp As t,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = t.PruefpunktID),\n        {AbsKopf: With({g: Filter(colAbsTmp As u, Lower(u.Abschnitt) = Lower(t.Abschnitt))},\n            If(IsEmpty(Filter(g As u1, u1.BedID = 0)), t.Reihenfolge * 1000000 + t.PruefpunktID = Min(g, Reihenfolge * 1000000 + PruefpunktID), t.BedID = 0 && t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(g As u2, u2.BedID = 0), Reihenfolge * 1000000 + PruefpunktID)))}\n    )\n);\nSet(varSprungRec, First(Sort(Filter(colAntworten As a, !a.Inaktiv && If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl)))), Reihenfolge)));\nReset(galKaPruefpunkte);\nSet(varIsLoading, false)",
+     "nachher": "Set(varIsLoading, true);\nSet(varZurueckFrage, false);\nSet(varAlleIOFrage, false);\nSet(varZeigeFehlend, false);\nSet(varFotoPP, 0);\nSet(varBildID, 0);\nSet(varInfoID, 0);\nSet(varCodeOffen, false);\nSet(varRueckPP, 0);\nSet(varKritPP, 0);\nClear(colFotos);\nSet(varGeaendert, false);\nSet(varSchluesselK, \"D\" & varDurchID & \"-K\" & varKatID);\nSet(varNurLesen, varDurch.Status <> stInArbeit);\nRefresh(RG_KategorieErgebnisse);\nRefresh(RG_Anleitungen);\nConcurrent(\n    ClearCollect(colPP, Filter(RG_Pruefpunkte, KategorieID = varKatID && Aktiv = true)),\n    Set(varErgebnis, LookUp(RG_KategorieErgebnisse, Title = varSchluesselK)),\n    ClearCollect(colKontakte, Filter(RG_Ansprechpartner, Aktiv = true)),\n    ClearCollect(colAnlAktivApp, ShowColumns(Filter(RG_Anleitungen, Aktiv = true), ID))\n);\nIf(!varNurLesen && varLetzteFuer <> varDurchID && CountRows(Filter(colPP, !IsBlank(AbwMax) || Coalesce(NurSteigend, false))) > 0,\n    Set(varLetzteFuer, varDurchID);\n    Set(varLetzteRg, varDurch.RundgangID);\n    Set(varLetzteTest, varDurch.TestDatensatz);\n    Set(varLetzteTag, varDurch.TagText);\n    Refresh(RG_Durchfuehrungen);\n    ClearCollect(colLetzteKand, FirstN(Sort(Filter(RG_Durchfuehrungen, RundgangID = varLetzteRg && Status = stAbgeschlossen && TestDatensatz = varLetzteTest), TagText, SortOrder.Descending), 20));\n    Set(varLetzteDurch, First(Sort(Filter(colLetzteKand, DateValue(TagText) < DateValue(varLetzteTag)), TagText, SortOrder.Descending)));\n    If(IsBlank(varLetzteDurch.ID),\n        Clear(colLetzte),\n        Set(varLetzteID, varLetzteDurch.ID);\n        ClearCollect(colLetzte, Filter(Ungroup(ForAll(Filter(RG_KategorieErgebnisse, DurchfuehrungID = varLetzteID) As e, {T: ForAll(Table(ParseJSON(e.Antworten)) As j, {PP: Value(j.Value.PruefpunktID), Z: Value(j.Value.WertZahl)})}), T), !IsBlank(Z)))\n    )\n);\nSet(varGespeichertBeimOeffnen, varErgebnis.GespeichertAm);\nWith({t: If(IsBlank(varErgebnis.Antworten), Table(ParseJSON(\"[]\")), Table(ParseJSON(varErgebnis.Antworten)))},\n    If(varNurLesen && !IsEmpty(t),\n        ClearCollect(colAntworten,\n            ForAll(Sequence(CountRows(t)) As i,\n                With({a: Index(t, i.Value).Value},\n                    With({pp: LookUp(colPP, ID = Value(a.PruefpunktID))},\n                        {PruefpunktID: Value(a.PruefpunktID), Frage: Text(a.Frage), Typ: Text(a.Typ), Pflicht: false, Einheit: Coalesce(Text(a.Einheit), \"\"), MinWert: pp.MinWert, MaxWert: pp.MaxWert, Auswahl: Coalesce(Text(a.WertText), \"\"), Hinweis: \"\", Reihenfolge: i.Value,\n                         Bewertung: Coalesce(Text(a.Bewertung), \"\"), WertText: Coalesce(Text(a.WertText), \"\"), WertZahl: Value(a.WertZahl), Kommentar: Coalesce(Text(a.Kommentar), \"\"), Fotos: Coalesce(Text(a.Fotos), \"\"), FotoModus: fnFotoModus(pp.Foto.Value, Coalesce(pp.FotoMoeglich, false)), KommentarPflicht: false, Grenzmodus: fnGrenzmodus(pp.Grenzmodus.Value), Warnung: Coalesce(IfError(Boolean(a.Warnung), false), false), BedID: 0, BedWert: \"\", Ausgeblendet: Coalesce(IfError(Boolean(a.Ausgeblendet), false), false), BildID: Coalesce(pp.HinweisBildID, 0), Abschnitt: Trim(Coalesce(Text(a.Abschnitt), \"\")), AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(a.Kritisch), false), false), KritischText: \"\", Ansprechpartner: \"\", Rueckfrage: false, RueckfrageText: \"\", KritischOk: Coalesce(IfError(Boolean(a.KritischOk), false), false), KritischZeit: Coalesce(Text(a.KritischZeit), \"\"), KritischVon: Coalesce(Text(a.KritischVon), \"\"), TextIO: Coalesce(Text(a.TextIO), \"\"), TextNIO: Coalesce(Text(a.TextNIO), \"\"), NMErlaubt: false, KPflOrig: false, Letzter: Value(a.Letzter), LetzterTag: Coalesce(Text(a.LetzterTag), \"\"), AbwMax: Blank(), AbwProzent: false, NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(a.AbwText), \"\"), AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(pp.AnleitungID, 0))), 0, pp.AnleitungID), CodeID: Coalesce(pp.ZugangscodeID, 0), Inaktiv: false}\n                    )\n                )\n            )\n        ),\n        ClearCollect(colAntworten,\n            ForAll(Sort(colPP, RgReihenfolge) As p,\n                With({alt: LookUp(t As j, Value(j.Value.PruefpunktID) = p.ID)},\n                    {PruefpunktID: p.ID, Frage: p.Title, Typ: p.Eingabetyp.Value, Pflicht: p.Pflicht, Einheit: Coalesce(p.Einheit, \"\"), MinWert: p.MinWert, MaxWert: p.MaxWert, Auswahl: Coalesce(p.Auswahlwerte, \"\"), Hinweis: Coalesce(p.Hinweis, \"\"), Reihenfolge: p.RgReihenfolge,\n                     Bewertung: If(IsBlank(alt), \"\", p.Eingabetyp.Value = \"ZAHL\" && !IsBlank(alt.Value.WertZahl), fnZahlBewertung(Value(alt.Value.WertZahl), p.MinWert, p.MaxWert, fnGrenzmodus(p.Grenzmodus.Value)), Coalesce(Text(alt.Value.Bewertung), \"\")),\n                     WertText: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.WertText), \"\")),\n                     WertZahl: If(IsBlank(alt), Blank(), Value(alt.Value.WertZahl)),\n                     Kommentar: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.Kommentar), \"\")),\n                     Fotos: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.Fotos), \"\")),\n                     FotoModus: fnFotoModus(p.Foto.Value, Coalesce(p.FotoMoeglich, false)),\n                     KommentarPflicht: Coalesce(p.KommentarPflicht, false),\n                     Grenzmodus: fnGrenzmodus(p.Grenzmodus.Value),\n                     BedID: Coalesce(p.BedingungPunkt, 0),\n                     BedWert: Coalesce(p.BedingungWert, \"\"),\n                     Ausgeblendet: false,\n                     BildID: Coalesce(p.HinweisBildID, 0),\n                     Abschnitt: Trim(Coalesce(p.Abschnitt, \"\")),\n                     AbsKopf: false,\n                     Kritisch: Coalesce(p.Kritisch, false),\n                     KritischText: Coalesce(p.KritischText, \"\"),\n                     Ansprechpartner: Coalesce(p.Ansprechpartner, \"\"),\n                     Rueckfrage: Coalesce(p.Rueckfrage, false),\n                     RueckfrageText: Coalesce(p.RueckfrageText, \"\"),\n                     KritischOk: If(IsBlank(alt), false, Coalesce(IfError(Boolean(alt.Value.KritischOk), false), false)),\n                     KritischZeit: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischZeit), \"\")),\n                     KritischVon: If(IsBlank(alt), \"\", Coalesce(Text(alt.Value.KritischVon), \"\")),\n                     TextIO: Trim(Coalesce(p.TextIO, \"\")),\n                     TextNIO: Trim(Coalesce(p.TextNIO, \"\")),\n                     NMErlaubt: Coalesce(p.NichtMessbar, false),\n                     KPflOrig: Coalesce(p.KommentarPflicht, false),\n                     Letzter: If(p.Eingabetyp.Value = \"ZAHL\" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false)), Coalesce(LookUp(colLetzte, PP = p.ID).Z, LookUp(colLetzte, PP = Coalesce(p.QuelleID, -1)).Z)),\n                     LetzterTag: If(IsBlank(varLetzteDurch.TagText), \"\", Text(DateValue(varLetzteDurch.TagText), \"dd.mm.\")),\n                     AbwMax: p.AbwMax,\n                     AbwProzent: Coalesce(p.AbwProzent, false),\n                     NurSteigend: Coalesce(p.NurSteigend, false),\n                     VglID: Coalesce(p.VergleichPunkt, 0),\n                     VglTol: Coalesce(p.VergleichTol, 0),\n                     AbwText: \"\",\n                     AnlID: If(IsBlank(LookUp(colAnlAktivApp, ID = Coalesce(p.AnleitungID, 0))), 0, p.AnleitungID),\n                     CodeID: Coalesce(p.ZugangscodeID, 0),\n                     Warnung: false,\n                     Inaktiv: false}\n                )\n            )\n        );\n        Collect(colAntworten,\n            ForAll(Filter(t As j2, IsBlank(LookUp(colPP, ID = Value(j2.Value.PruefpunktID)))) As o,\n                {PruefpunktID: Value(o.Value.PruefpunktID), Frage: Text(o.Value.Frage), Typ: Text(o.Value.Typ), Pflicht: false, Einheit: Coalesce(Text(o.Value.Einheit), \"\"), MinWert: Blank(), MaxWert: Blank(), Auswahl: \"\", Hinweis: \"\", Reihenfolge: 100000 + Value(o.Value.PruefpunktID),\n                 Bewertung: Coalesce(Text(o.Value.Bewertung), \"\"), WertText: Coalesce(Text(o.Value.WertText), \"\"), WertZahl: Value(o.Value.WertZahl), Kommentar: Coalesce(Text(o.Value.Kommentar), \"\"), Fotos: Coalesce(Text(o.Value.Fotos), \"\"), FotoModus: \"Aus\", KommentarPflicht: false, Grenzmodus: \"Mangel\", Warnung: Coalesce(IfError(Boolean(o.Value.Warnung), false), false), BedID: 0, BedWert: \"\", Ausgeblendet: Coalesce(IfError(Boolean(o.Value.Ausgeblendet), false), false), BildID: 0, Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt), \"\")), AbsKopf: false, Kritisch: Coalesce(IfError(Boolean(o.Value.Kritisch), false), false), KritischText: \"\", Ansprechpartner: \"\", Rueckfrage: false, RueckfrageText: \"\", KritischOk: Coalesce(IfError(Boolean(o.Value.KritischOk), false), false), KritischZeit: Coalesce(Text(o.Value.KritischZeit), \"\"), KritischVon: Coalesce(Text(o.Value.KritischVon), \"\"), TextIO: Coalesce(Text(o.Value.TextIO), \"\"), TextNIO: Coalesce(Text(o.Value.TextNIO), \"\"), NMErlaubt: false, KPflOrig: false, Letzter: Value(o.Value.Letzter), LetzterTag: Coalesce(Text(o.Value.LetzterTag), \"\"), AbwMax: Blank(), AbwProzent: false, NurSteigend: false, VglID: 0, VglTol: 0, AbwText: Coalesce(Text(o.Value.AbwText), \"\"), AnlID: 0, CodeID: 0, Inaktiv: true}\n            )\n        )\n    )\n);\nIf(!varNurLesen, ClearCollect(colVglTmp, ForAll(Filter(colAntworten As a0, !a0.Inaktiv && a0.Typ = \"ZAHL\" && (a0.VglID <> 0 || !IsBlank(a0.Letzter))) As a,\n        With({w: LookUp(colAntworten As o, o.PruefpunktID = a.VglID)},\n            {PP: a.PruefpunktID,\n             Abw: fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend),\n             Vgl: a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol),\n             Text: If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), If(a.NurSteigend && a.WertZahl < a.Letzter, \"kleiner als beim letzten Mal\", \"starke Abweichung zum letzten Mal\"), \"\") & If(a.VglID <> 0 && fnVergleich(a.WertZahl, w.WertZahl, a.VglTol), If(fnAbweichung(a.WertZahl, a.Letzter, a.AbwMax, a.AbwProzent, a.NurSteigend), \"; \", \"\") & \"weicht von „\" & w.Frage & \"“ ab (\" & Text(w.WertZahl) & \")\", \"\"),\n             KPfl: a.KPflOrig}\n        )\n    ));\n    ForAll(colVglTmp As v, Patch(colAntworten, LookUp(colAntworten, PruefpunktID = v.PP), {KommentarPflicht: v.KPfl || v.Abw || v.Vgl, AbwText: v.Text})));\nClearCollect(colAbsTmp, ShowColumns(Filter(colAntworten, !Inaktiv && !Ausgeblendet && Abschnitt <> \"\"), PruefpunktID, Reihenfolge, Abschnitt, BedID));\nForAll(colAbsTmp As t,\n    Patch(colAntworten, LookUp(colAntworten, PruefpunktID = t.PruefpunktID),\n        {AbsKopf: With({g: Filter(colAbsTmp As u, Lower(u.Abschnitt) = Lower(t.Abschnitt))},\n            If(IsEmpty(Filter(g As u1, u1.BedID = 0)), t.Reihenfolge * 1000000 + t.PruefpunktID = Min(g, Reihenfolge * 1000000 + PruefpunktID), t.BedID = 0 && t.Reihenfolge * 1000000 + t.PruefpunktID = Min(Filter(g As u2, u2.BedID = 0), Reihenfolge * 1000000 + PruefpunktID)))}\n    )\n);\nSet(varSprungRec, First(Sort(Filter(colAntworten As a, !a.Inaktiv && If(varNurLesen, !a.Ausgeblendet, With({b: LookUp(colAntworten As b0, b0.PruefpunktID = a.BedID)}, fnSichtbar(a.BedID, a.BedWert, !IsBlank(b), b.BedID, b.Inaktiv, b.Typ, b.Auswahl, b.Bewertung, b.WertText, b.WertZahl)))), Reihenfolge)));\nReset(galKaPruefpunkte);\nSet(varIsLoading, false)"
+    },
+    {
+     "key": "lblKaFrage.Width",
+     "schritt": "18.4",
+     "vorher": "Parent.Width - 40 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 64, 0)",
+     "nachher": "Parent.Width - 40 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 64, 0) - If(ThisItem.CodeID > 0, 48, 0)"
+    }
+   ],
+   "neu": [
+    "btnKaCode",
+    "conKaCode",
+    "btnKaCodeSperre",
+    "conKaCodeKarte",
+    "lblKaCodeTitel",
+    "lblKaCodeFrage",
+    "lblKaCodeWert",
+    "lblKaCodeHinweis",
+    "btnKaCodeSchliessen"
    ]
   }
  ],
@@ -2507,6 +2555,156 @@
     "Visible": "CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false))) > 1",
     "DisplayMode": "If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)",
     "OnSelect": "With({n: CountRows(Filter(colOffenAlt, DateValue(TagText) < varHeute && !Coalesce(TestDatensatz, false)))},\n    Set(varOffenNr, If(Coalesce(varOffenNr, 1) >= n, 1, Coalesce(varOffenNr, 1) + 1))\n)"
+   }
+  },
+  "btnKaCode": {
+   "eltern": "conKaKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderColor": "clrPrimaer",
+    "BorderThickness": "1",
+    "Color": "clrPrimaer",
+    "Fill": "clrKarte",
+    "Font": "Font.'Segoe UI'",
+    "Height": "40",
+    "HoverColor": "clrPrimaer",
+    "HoverFill": "clrPrimaerHell",
+    "PressedColor": "clrPrimaer",
+    "PressedFill": "clrPrimaerHell",
+    "OnSelect": "Set(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));\nIf(IsBlank(varCode.ID) || !Coalesce(varCode.Aktiv, false),\n    Notify(\"Für diesen Prüfpunkt ist kein Code hinterlegt.\", NotificationType.Warning),\n    Set(varCodeFrage, ThisItem.Frage);\n    Set(varCodeOffen, true)\n)",
+    "RadiusBottomLeft": "20",
+    "RadiusBottomRight": "20",
+    "RadiusTopLeft": "20",
+    "RadiusTopRight": "20",
+    "Size": "15",
+    "Text": "\"🔑\"",
+    "Visible": "ThisItem.CodeID > 0",
+    "Width": "40",
+    "X": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 48, 0)",
+    "Y": "7"
+   }
+  },
+  "conKaCode": {
+   "eltern": "scrKategorie",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "RGBA(0, 0, 0, 0.45)",
+    "Height": "Parent.Height",
+    "Visible": "varCodeOffen",
+    "Width": "Parent.Width"
+   }
+  },
+  "btnKaCodeSperre": {
+   "eltern": "conKaCode",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Fill": "RGBA(0, 0, 0, 0)",
+    "Height": "Parent.Height",
+    "HoverFill": "RGBA(0, 0, 0, 0)",
+    "PressedFill": "RGBA(0, 0, 0, 0)",
+    "Text": "\"\"",
+    "Width": "Parent.Width"
+   }
+  },
+  "conKaCodeKarte": {
+   "eltern": "conKaCode",
+   "typ": "GroupContainer@1.5.0",
+   "props": {
+    "Fill": "clrKarte",
+    "Height": "360",
+    "RadiusBottomLeft": "16",
+    "RadiusBottomRight": "16",
+    "RadiusTopLeft": "16",
+    "RadiusTopRight": "16",
+    "Width": "Parent.Width - 96",
+    "X": "48",
+    "Y": "(Parent.Height - Self.Height) / 2"
+   }
+  },
+  "lblKaCodeTitel": {
+   "eltern": "conKaCodeKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Color": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "40",
+    "Size": "19",
+    "Text": "If(varCodeOffen, \"🔑 \" & varCode.Title, \"\")",
+    "Width": "Parent.Width - 40",
+    "Wrap": "false",
+    "X": "20",
+    "Y": "14"
+   }
+  },
+  "lblKaCodeFrage": {
+   "eltern": "conKaCodeKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Color": "clrTextGrau",
+    "Font": "Font.'Segoe UI'",
+    "Height": "28",
+    "Size": "13",
+    "Text": "\"zu: \" & varCodeFrage",
+    "Width": "Parent.Width - 40",
+    "Wrap": "false",
+    "X": "20",
+    "Y": "54"
+   }
+  },
+  "lblKaCodeWert": {
+   "eltern": "conKaCodeKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Align": "Align.Center",
+    "Color": "clrText",
+    "Font": "Font.'Segoe UI'",
+    "FontWeight": "FontWeight.Semibold",
+    "Height": "72",
+    "Size": "34",
+    "Text": "If(varCodeOffen && Trim(Coalesce(varCode.Code, \"\")) <> \"\", varCode.Code, \"—\")",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "96"
+   }
+  },
+  "lblKaCodeHinweis": {
+   "eltern": "conKaCodeKarte",
+   "typ": "Label@2.5.1",
+   "props": {
+    "Color": "clrTextGrau",
+    "Font": "Font.'Segoe UI'",
+    "Height": "84",
+    "Size": "14",
+    "Text": "If(varCodeOffen, Coalesce(varCode.Hinweis, \"\"), \"\")",
+    "VerticalAlign": "VerticalAlign.Top",
+    "Width": "Parent.Width - 40",
+    "X": "20",
+    "Y": "180"
+   }
+  },
+  "btnKaCodeSchliessen": {
+   "eltern": "conKaCodeKarte",
+   "typ": "Classic/Button@2.2.0",
+   "props": {
+    "BorderThickness": "0",
+    "Color": "Color.White",
+    "Fill": "clrPrimaer",
+    "Font": "Font.'Segoe UI'",
+    "Height": "56",
+    "HoverFill": "ColorFade(clrPrimaer, -20%)",
+    "OnSelect": "Set(varCodeOffen, false)",
+    "PressedFill": "ColorFade(clrPrimaer, -35%)",
+    "RadiusBottomLeft": "10",
+    "RadiusBottomRight": "10",
+    "RadiusTopLeft": "10",
+    "RadiusTopRight": "10",
+    "Size": "17",
+    "Text": "\"Schließen\"",
+    "Width": "200",
+    "X": "Parent.Width - 220",
+    "Y": "Parent.Height - 76"
    }
   }
  }

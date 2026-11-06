@@ -556,7 +556,7 @@ Screens:
                                   false,
                                   varCtxK = 0,
                                   Notify("Links zuerst eine Kategorie antippen.", NotificationType.Warning),
-                                  Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: If(varAuswahlEbene = 3 && LookUp(colP, ID = varAuswahlID).KategorieID = varCtxK, Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, ""), ""), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0}).ID, 0));
+                                  Set(varNeuID, IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: "Neue Frage", KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0) + 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: "IONIO"}, Pflicht: true, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: If(varAuswahlEbene = 3 && LookUp(colP, ID = varAuswahlID).KategorieID = varCtxK, Coalesce(LookUp(colP, ID = varAuswahlID).Abschnitt, ""), ""), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0, ZugangscodeID: 0}).ID, 0));
                                   If(varNeuID = 0,
                                       Notify("Anlegen fehlgeschlagen. Bitte erneut versuchen.", NotificationType.Error),
                                       Collect(colP, LookUp(RG_Pruefpunkte, ID = varNeuID));
@@ -2237,8 +2237,42 @@ Screens:
                                     )
                                 )
                               Size: =13
-                              Width: =340
+                              Width: =292
                               X: =0
+                              Y: =144
+                        - btnPCode:
+                            Control: Classic/Button@2.2.0
+                            Properties:
+                              BorderColor: =clrPrimaer
+                              BorderThickness: =1
+                              Color: =clrPrimaer
+                              DisabledBorderColor: =clrGesperrtHell
+                              DisabledColor: =clrGesperrt
+                              DisabledFill: =clrGesperrtHell
+                              DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                              Fill: =If(Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0) > 0, clrPrimaerHell, clrKarte)
+                              Font: =Font.'Segoe UI'
+                              Height: =44
+                              HoverColor: =clrPrimaer
+                              HoverFill: =clrPrimaerHell
+                              OnSelect: |-
+                                =If(!varIsLoading,
+                                    Refresh(RG_Zugangscodes);
+                                    Reset(ddPCode);
+                                    Set(varCodeOffen, true)
+                                )
+                              PaddingLeft: =2
+                              PaddingRight: =2
+                              PressedColor: =clrPrimaer
+                              PressedFill: =clrPrimaerHell
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =13
+                              Text: ="🔑"
+                              Width: =48
+                              X: =298
                               Y: =144
                         - lblPBild:
                             Control: Label@2.5.1
@@ -2895,15 +2929,7 @@ Screens:
                       Properties:
                         AccessibleLabel: ="Änderungen"
                         Height: =220
-                        Items: |-
-                          =Ungroup(
-                              Table(
-                                  {T: ForAll(Filter(colP As p, IsBlank(LookUp(colAltP As a, a.ID = p.QuelleID))) As p, {Art: "neu", Text: p.Title})},
-                                  {T: ForAll(Filter(colP As p, With({a: LookUp(colAltP As a0, a0.ID = p.QuelleID)}, !IsBlank(a) && (p.Title <> a.Title || Coalesce(p.Eingabetyp.Value, "") <> Coalesce(a.Eingabetyp.Value, "") || Coalesce(p.Pflicht, false) <> Coalesce(a.Pflicht, false) || Coalesce(p.Auswahlwerte, "") <> Coalesce(a.Auswahlwerte, "") || Coalesce(p.Einheit, "") <> Coalesce(a.Einheit, "") || Coalesce(p.MinWert, -999999) <> Coalesce(a.MinWert, -999999) || Coalesce(p.MaxWert, -999999) <> Coalesce(a.MaxWert, -999999) || Coalesce(p.Hinweis, "") <> Coalesce(a.Hinweis, "") || fnFotoWert(p.Foto.Value, Coalesce(p.FotoMoeglich, false)) <> fnFotoWert(a.Foto.Value, Coalesce(a.FotoMoeglich, false)) || Coalesce(p.KommentarPflicht, false) <> Coalesce(a.KommentarPflicht, false) || fnGrenzmodus(p.Grenzmodus.Value) <> fnGrenzmodus(a.Grenzmodus.Value) || Coalesce(p.BedingungWert, "") <> Coalesce(a.BedingungWert, "") || Coalesce(LookUp(colP As b0, b0.ID = p.BedingungPunkt).QuelleID, 0) <> Coalesce(a.BedingungPunkt, 0) || Coalesce(p.HinweisBildID, 0) <> Coalesce(a.HinweisBildID, 0) || Coalesce(LookUp(colK As k0, k0.ID = p.KategorieID).QuelleID, 0) <> a.KategorieID || Trim(Coalesce(p.Abschnitt, "")) <> Trim(Coalesce(a.Abschnitt, "")) || Coalesce(p.Kritisch, false) <> Coalesce(a.Kritisch, false) || Coalesce(p.KritischText, "") <> Coalesce(a.KritischText, "") || Coalesce(p.Ansprechpartner, "") <> Coalesce(a.Ansprechpartner, "") || Coalesce(p.Rueckfrage, false) <> Coalesce(a.Rueckfrage, false) || Coalesce(p.RueckfrageText, "") <> Coalesce(a.RueckfrageText, "") || Coalesce(p.TextIO, "") <> Coalesce(a.TextIO, "") || Coalesce(p.TextNIO, "") <> Coalesce(a.TextNIO, "") || Coalesce(p.NichtMessbar, false) <> Coalesce(a.NichtMessbar, false) || Coalesce(p.AbwMax, -999999) <> Coalesce(a.AbwMax, -999999) || Coalesce(p.AbwProzent, false) <> Coalesce(a.AbwProzent, false) || Coalesce(p.NurSteigend, false) <> Coalesce(a.NurSteigend, false) || Coalesce(p.VergleichTol, 0) <> Coalesce(a.VergleichTol, 0) || Coalesce(LookUp(colP As v0, v0.ID = p.VergleichPunkt).QuelleID, 0) <> Coalesce(a.VergleichPunkt, 0) || Coalesce(p.AnleitungID, 0) <> Coalesce(a.AnleitungID, 0)))) As p, {Art: "geändert", Text: p.Title})},
-                                  {T: ForAll(Filter(colAltP As a, IsBlank(LookUp(colP As p, p.QuelleID = a.ID))) As a, {Art: "entfernt", Text: a.Title})}
-                              ),
-                              T
-                          )
+                        Items: =false
                         ShowScrollbar: =true
                         TemplatePadding: =0
                         TemplateSize: =30
@@ -3681,7 +3707,7 @@ Screens:
                                   ClearCollect(colMehrErg,
                                       With({basis: Coalesce(Max(Filter(colP, KategorieID = varCtxK), RgReihenfolge), 0)},
                                           ForAll(Sequence(CountRows(colMehr)) As i,
-                                              {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: Left(Trim(txtMehrAbschnitt.Text), 255), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0}).ID, 0)}
+                                              {Neu: IfError(Patch(RG_Pruefpunkte, Defaults(RG_Pruefpunkte), {Title: Index(colMehr, i.Value).F, KategorieID: varCtxK, RundgangID: varRgID, Fassung: varFassung, RgReihenfolge: basis + i.Value * 10, Aktiv: true, QuelleID: 0, Eingabetyp: {Value: varMehrTyp}, Pflicht: varMehrPflicht, Auswahlwerte: "", Einheit: "", Hinweis: "", FotoMoeglich: false, Foto: {Value: "Aus"}, KommentarPflicht: false, Grenzmodus: {Value: "Mangel"}, BedingungPunkt: 0, BedingungWert: "", HinweisBildID: 0, Abschnitt: Left(Trim(txtMehrAbschnitt.Text), 255), TextIO: "", TextNIO: "", NichtMessbar: false, AbwProzent: false, NurSteigend: false, VergleichPunkt: 0, VergleichTol: 0, AnleitungID: 0, ZugangscodeID: 0}).ID, 0)}
                                           )
                                       )
                                   );
@@ -4887,6 +4913,204 @@ Screens:
                         HoverColor: =clrPrimaer
                         HoverFill: =clrPrimaerHell
                         OnSelect: =Set(varZaOffen, false)
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =16
+                        Text: ="✕"
+                        Width: =40
+                        X: =560
+                        Y: =16
+      - conPCodeFenster:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0.45)
+            Height: =Parent.Height
+            Visible: =varCodeOffen
+            Width: =Parent.Width
+          Children:
+            - btnPCodeFensterSperre:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =RGBA(0, 0, 0, 0)
+                  DisplayMode: =DisplayMode.Edit
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Font: =Font.'Segoe UI'
+                  Height: =Parent.Height
+                  HoverColor: =Color.White
+                  HoverFill: =RGBA(0, 0, 0, 0)
+                  OnSelect: =false
+                  PressedColor: =Color.White
+                  PressedFill: =RGBA(0, 0, 0, 0)
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Size: =14
+                  Text: =""
+                  Width: =Parent.Width
+                  X: =0
+                  Y: =0
+            - conPCodeFensterKarte:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderThickness: =0
+                  Fill: =clrKarte
+                  Height: =360
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  Width: =620
+                  X: =(Parent.Width - Self.Width) / 2
+                  Y: =(Parent.Height - Self.Height) / 2
+                Children:
+                  - lblPCodeFensterTitel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrText
+                        Font: =Font.'Segoe UI'
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        Size: =18
+                        Text: ="Zugangscode"
+                        Width: =572
+                        X: =24
+                        Y: =16
+                  - lblPCodeFrage:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =28
+                        Size: =14
+                        Text: =LookUp(colP, ID = varAuswahlID).Title
+                        Width: =572
+                        X: =24
+                        Y: =56
+                  - lblPCodeT:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =20
+                        Size: =12
+                        Text: ="Zugangscode (z. B. Bedien-Code einer Anlage)"
+                        Width: =572
+                        X: =24
+                        Y: =96
+                  - ddPCode:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        AccessibleLabel: ="Zugangscode"
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        ChevronBackground: =clrPrimaer
+                        ChevronFill: =Color.White
+                        ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                        ChevronHoverFill: =Color.White
+                        Color: =clrText
+                        Default: |-
+                          =With({akt: Sort(ShowColumns(Filter(RG_Zugangscodes, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0)}, If(cur = 0, "— keine —", IsBlank(LookUp(akt As a2, a2.ID = cur)), Coalesce(LookUp(RG_Zugangscodes, ID = cur).Title, "Code #" & cur) & " (inaktiv oder gelöscht)", With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))
+                        DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverFill: =clrPrimaerHell
+                        Items: |-
+                          =With({akt: Sort(ShowColumns(Filter(RG_Zugangscodes, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0)}, Ungroup(Table({T: Table({ID: 0, N: "— keine —"})}, {T: ForAll(akt As n, {ID: n.ID, N: n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", "")})}, {T: Filter(Table({ID: cur, N: Coalesce(LookUp(RG_Zugangscodes, ID = cur).Title, "Code #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a2.ID = cur)))}), T))
+                        Items.Value: =N
+                        OnChange: |-
+                          =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0),
+                              If(varSchreibbar && varAuswahlEbene = 3,
+                                  Refresh(RG_Rundgaenge);
+                                  Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                                  If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                                  If(varEntwurfOk,
+                                      Set(varPatchFehler, false);
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {ZugangscodeID: Self.Selected.ID}), Set(varPatchFehler, true));
+                                      If(varPatchFehler,
+                                          Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                          Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                          Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                      )
+                                  )
+                              )
+                          )
+                        PaddingLeft: =10
+                        PressedColor: =Color.White
+                        PressedFill: =clrPrimaer
+                        SelectionColor: =Color.White
+                        SelectionFill: =clrPrimaer
+                        Size: =14
+                        Width: =572
+                        X: =24
+                        Y: =116
+                  - lblPCodeHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =clrTextGrau
+                        Font: =Font.'Segoe UI'
+                        Height: =100
+                        Size: =12
+                        Text: |-
+                          ="Der Prüfer sieht den Code erst nach Antippen von 🔑. Er steht nie im Protokoll, im PDF oder in Mängeln. Echte Passwörter (Netzwerk, Server, Admin) nicht eintragen – stattdessen im Hinweis „Code bei …“. Codes anlegen: Übersicht › Anleitungen › Zugangscodes."
+                        VerticalAlign: =VerticalAlign.Top
+                        Width: =572
+                        X: =24
+                        Y: =168
+                  - btnPCodeFertig:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderThickness: =0
+                        Color: =Color.White
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrPrimaer
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =Color.White
+                        HoverFill: =ColorFade(clrPrimaer, -20%)
+                        OnSelect: =Set(varCodeOffen, false)
+                        PressedColor: =Color.White
+                        PressedFill: =ColorFade(clrPrimaer, -35%)
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =14
+                        Text: ="Fertig"
+                        Width: =160
+                        X: =436
+                        Y: =292
+                  - btnPCodeFensterZu:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =clrKarte
+                        Font: =Font.'Segoe UI'
+                        Height: =40
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: =Set(varCodeOffen, false)
                         PressedColor: =clrPrimaer
                         PressedFill: =clrPrimaerHell
                         RadiusBottomLeft: =6

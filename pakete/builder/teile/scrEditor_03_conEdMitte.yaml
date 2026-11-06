@@ -1558,8 +1558,42 @@
                               )
                           )
                         Size: =13
-                        Width: =340
+                        Width: =292
                         X: =0
+                        Y: =144
+                  - btnPCode:
+                      Control: Classic/Button@2.2.0
+                      Properties:
+                        BorderColor: =clrPrimaer
+                        BorderThickness: =1
+                        Color: =clrPrimaer
+                        DisabledBorderColor: =clrGesperrtHell
+                        DisabledColor: =clrGesperrt
+                        DisabledFill: =clrGesperrtHell
+                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                        Fill: =If(Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0) > 0, clrPrimaerHell, clrKarte)
+                        Font: =Font.'Segoe UI'
+                        Height: =44
+                        HoverColor: =clrPrimaer
+                        HoverFill: =clrPrimaerHell
+                        OnSelect: |-
+                          =If(!varIsLoading,
+                              Refresh(RG_Zugangscodes);
+                              Reset(ddPCode);
+                              Set(varCodeOffen, true)
+                          )
+                        PaddingLeft: =2
+                        PaddingRight: =2
+                        PressedColor: =clrPrimaer
+                        PressedFill: =clrPrimaerHell
+                        RadiusBottomLeft: =6
+                        RadiusBottomRight: =6
+                        RadiusTopLeft: =6
+                        RadiusTopRight: =6
+                        Size: =13
+                        Text: ="🔑"
+                        Width: =48
+                        X: =298
                         Y: =144
                   - lblPBild:
                       Control: Label@2.5.1

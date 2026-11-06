@@ -1,0 +1,198 @@
+- conPCodeFenster:
+    Control: GroupContainer@1.5.0
+    Variant: ManualLayout
+    Properties:
+      BorderThickness: =0
+      Fill: =RGBA(0, 0, 0, 0.45)
+      Height: =Parent.Height
+      Visible: =varCodeOffen
+      Width: =Parent.Width
+    Children:
+      - btnPCodeFensterSperre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            BorderThickness: =0
+            Color: =Color.White
+            DisabledBorderColor: =clrGesperrtHell
+            DisabledColor: =clrGesperrt
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            DisplayMode: =DisplayMode.Edit
+            Fill: =RGBA(0, 0, 0, 0)
+            Font: =Font.'Segoe UI'
+            Height: =Parent.Height
+            HoverColor: =Color.White
+            HoverFill: =RGBA(0, 0, 0, 0)
+            OnSelect: =false
+            PressedColor: =Color.White
+            PressedFill: =RGBA(0, 0, 0, 0)
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Size: =14
+            Text: =""
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - conPCodeFensterKarte:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            BorderThickness: =0
+            Fill: =clrKarte
+            Height: =360
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            Width: =620
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =(Parent.Height - Self.Height) / 2
+          Children:
+            - lblPCodeFensterTitel:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrText
+                  Font: =Font.'Segoe UI'
+                  FontWeight: =FontWeight.Semibold
+                  Height: =40
+                  Size: =18
+                  Text: ="Zugangscode"
+                  Width: =572
+                  X: =24
+                  Y: =16
+            - lblPCodeFrage:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =28
+                  Size: =14
+                  Text: =LookUp(colP, ID = varAuswahlID).Title
+                  Width: =572
+                  X: =24
+                  Y: =56
+            - lblPCodeT:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =20
+                  Size: =12
+                  Text: ="Zugangscode (z. B. Bedien-Code einer Anlage)"
+                  Width: =572
+                  X: =24
+                  Y: =96
+            - ddPCode:
+                Control: Classic/DropDown@2.3.1
+                Properties:
+                  AccessibleLabel: ="Zugangscode"
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  ChevronBackground: =clrPrimaer
+                  ChevronFill: =Color.White
+                  ChevronHoverBackground: =ColorFade(clrPrimaer, -20%)
+                  ChevronHoverFill: =Color.White
+                  Color: =clrText
+                  Default: |-
+                    =With({akt: Sort(ShowColumns(Filter(RG_Zugangscodes, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0)}, If(cur = 0, "— keine —", IsBlank(LookUp(akt As a2, a2.ID = cur)), Coalesce(LookUp(RG_Zugangscodes, ID = cur).Title, "Code #" & cur) & " (inaktiv oder gelöscht)", With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))
+                  DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverFill: =clrPrimaerHell
+                  Items: |-
+                    =With({akt: Sort(ShowColumns(Filter(RG_Zugangscodes, Aktiv = true), ID, Title), Title), cur: Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0)}, Ungroup(Table({T: Table({ID: 0, N: "— keine —"})}, {T: ForAll(akt As n, {ID: n.ID, N: n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", "")})}, {T: Filter(Table({ID: cur, N: Coalesce(LookUp(RG_Zugangscodes, ID = cur).Title, "Code #" & cur) & " (inaktiv oder gelöscht)"}), cur <> 0 && IsBlank(LookUp(akt As a2, a2.ID = cur)))}), T))
+                  Items.Value: =N
+                  OnChange: |-
+                    =If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0),
+                        If(varSchreibbar && varAuswahlEbene = 3,
+                            Refresh(RG_Rundgaenge);
+                            Set(varEntwurfOk, varIstVorlage || Coalesce(LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung);
+                            If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
+                            If(varEntwurfOk,
+                                Set(varPatchFehler, false);
+                                IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {ZugangscodeID: Self.Selected.ID}), Set(varPatchFehler, true));
+                                If(varPatchFehler,
+                                    Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
+                                    Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
+                                    Set(varGespeichertText, "Gespeichert " & Text(Now(), "hh:mm:ss"))
+                                )
+                            )
+                        )
+                    )
+                  PaddingLeft: =10
+                  PressedColor: =Color.White
+                  PressedFill: =clrPrimaer
+                  SelectionColor: =Color.White
+                  SelectionFill: =clrPrimaer
+                  Size: =14
+                  Width: =572
+                  X: =24
+                  Y: =116
+            - lblPCodeHinweis:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =clrTextGrau
+                  Font: =Font.'Segoe UI'
+                  Height: =100
+                  Size: =12
+                  Text: |-
+                    ="Der Prüfer sieht den Code erst nach Antippen von 🔑. Er steht nie im Protokoll, im PDF oder in Mängeln. Echte Passwörter (Netzwerk, Server, Admin) nicht eintragen – stattdessen im Hinweis „Code bei …“. Codes anlegen: Übersicht › Anleitungen › Zugangscodes."
+                  VerticalAlign: =VerticalAlign.Top
+                  Width: =572
+                  X: =24
+                  Y: =168
+            - btnPCodeFertig:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderThickness: =0
+                  Color: =Color.White
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrPrimaer
+                  Font: =Font.'Segoe UI'
+                  Height: =44
+                  HoverColor: =Color.White
+                  HoverFill: =ColorFade(clrPrimaer, -20%)
+                  OnSelect: =Set(varCodeOffen, false)
+                  PressedColor: =Color.White
+                  PressedFill: =ColorFade(clrPrimaer, -35%)
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =14
+                  Text: ="Fertig"
+                  Width: =160
+                  X: =436
+                  Y: =292
+            - btnPCodeFensterZu:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =clrKarte
+                  Font: =Font.'Segoe UI'
+                  Height: =40
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: =Set(varCodeOffen, false)
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =16
+                  Text: ="✕"
+                  Width: =40
+                  X: =560
+                  Y: =16
