@@ -1306,10 +1306,11 @@
                         Font: =Font.'Segoe UI'
                         Height: =20
                         Size: =12
-                        Text: ="Anleitung (ⓘ beim Prüfer)"
+                        Text: |-
+                          ="Info ⓘ: Anleitung (optional)"
                         Width: =256
-                        X: =272
-                        Y: =0
+                        X: =0
+                        Y: =124
                   - ddPAnl:
                       Control: Classic/DropDown@2.3.1
                       Properties:
@@ -1355,8 +1356,8 @@
                         SelectionFill: =clrPrimaer
                         Size: =14
                         Width: =256
-                        X: =272
-                        Y: =20
+                        X: =0
+                        Y: =148
                   - ddPFoto:
                       Control: Classic/DropDown@2.3.1
                       Properties:
@@ -1522,9 +1523,9 @@
                         Height: =20
                         Size: =12
                         Text: ="Hinweis für den Prüfer"
-                        Width: =340
-                        X: =0
-                        Y: =124
+                        Width: =256
+                        X: =272
+                        Y: =0
                   - txtPHinweis:
                       Control: Classic/TextInput@2.3.2
                       Properties:
@@ -1536,7 +1537,7 @@
                         Fill: =clrKarte
                         FocusedBorderColor: =clrPrimaer
                         Font: =Font.'Segoe UI'
-                        Height: =44
+                        Height: =36
                         HintText: ="optional, z. B. Wo steht das Thermometer?"
                         HoverBorderColor: =clrPrimaer
                         Mode: =TextMode.MultiLine
@@ -1558,9 +1559,9 @@
                               )
                           )
                         Size: =13
-                        Width: =292
-                        X: =0
-                        Y: =144
+                        Width: =202
+                        X: =272
+                        Y: =20
                   - btnPCode:
                       Control: Classic/Button@2.2.0
                       Properties:
@@ -1573,7 +1574,7 @@
                         DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
                         Fill: =If(Coalesce(LookUp(colP, ID = varAuswahlID).ZugangscodeID, 0) > 0, clrPrimaerHell, clrKarte)
                         Font: =Font.'Segoe UI'
-                        Height: =44
+                        Height: =36
                         HoverColor: =clrPrimaer
                         HoverFill: =clrPrimaerHell
                         OnSelect: |-
@@ -1593,8 +1594,8 @@
                         Size: =13
                         Text: ="🔑"
                         Width: =48
-                        X: =298
-                        Y: =144
+                        X: =480
+                        Y: =20
                   - lblPBild:
                       Control: Label@2.5.1
                       Properties:
@@ -1602,9 +1603,10 @@
                         Font: =Font.'Segoe UI'
                         Height: =20
                         Size: =12
-                        Text: ="Beispielbild"
-                        Width: =176
-                        X: =352
+                        Text: |-
+                          ="Info ⓘ: Beispielbild (optional)"
+                        Width: =256
+                        X: =272
                         Y: =124
                   - btnPBild:
                       Control: Classic/Button@2.2.0
@@ -1630,8 +1632,8 @@
                         RadiusTopRight: =6
                         Size: =13
                         Text: =If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, "Bild ändern", "Bild wählen")
-                        Width: =124
-                        X: =352
+                        Width: =204
+                        X: =272
                         Y: =144
                   - imgPBild:
                       Control: Image@2.2.3

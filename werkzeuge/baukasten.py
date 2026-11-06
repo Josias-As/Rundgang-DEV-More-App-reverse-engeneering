@@ -93,7 +93,7 @@ def standard_ersetzen(stand, paket, schritt, key, standard, neu):
     """Property steht nicht im Export (Studio lässt Standardwerte weg): Vorher = Standardwert."""
     if key in stand.props:
         raise Abbruch("Property ist nicht Standard: " + key)
-    if key.split(".")[0] not in stand.app.typ:
+    if key.split(".")[0] not in stand.app.typ and key.split(".")[0] not in stand.neue_controls:
         raise Abbruch("Steuerelement fehlt: " + key)
     stand.props[key] = neu
     paket["props"].append({"key": key, "schritt": schritt, "vorher": standard, "nachher": neu, "standard": True})
@@ -1609,7 +1609,29 @@ def paket11(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11]
+# ---------------------------------------------------------------- Paket 24 (ein Info-Knopf ⓘ für Anleitung und/oder Beispielbild)
+INFO_DA = "(ThisItem.AnlID > 0 || ThisItem.BildID > 0)"
+
+
+def paket24(st):
+    p = {"nr": 24, "props": [], "neu": []}
+    ganz(st, p, "24.1", "btnKaInfo.Visible", INFO_DA)
+    ganz(st, p, "24.1", "btnKaInfo.X", "Parent.Width - 60")
+    ganz(st, p, "24.1", "btnKaInfo.OnSelect",
+         "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\n"
+         "Set(varInfo, If(ThisItem.AnlID > 0, LookUp(RG_Anleitungen, ID = ThisItem.AnlID)));\n"
+         "If(IsBlank(varInfo.ID) && ThisItem.BildID = 0,\n    Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning),\n    Set(varInfoID, 1)\n)")
+    ganz(st, p, "24.1", "btnKaBild.Visible", "false")
+    ganz(st, p, "24.1", "btnKaCode.X", "Parent.Width - 60 - If(" + INFO_DA + ", 48, 0)")
+    ganz(st, p, "24.1", "lblKaFrage.Width", "Parent.Width - 40 - If(" + INFO_DA + ", 64, 0) - If(ThisItem.CodeID > 0, 48, 0)")
+    ganz(st, p, "24.2", "lblKaInfoTitel.Text", 'If(IsBlank(varInfo.ID), "ⓘ Beispielbild", "ⓘ " & varInfo.Title)')
+    ganz(st, p, "24.2", "lblKaInfoText.Height", "If(IsBlank(varInfo.ID), 0, varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)")
+    ganz(st, p, "24.2", "imgKaInfo.Y", "lblKaInfoText.Y + lblKaInfoText.Height + If(lblKaInfoText.Height > 0, 8, 0)")
+    ganz(st, p, "24.2", "imgKaInfo.Height", "Max(Parent.Height - 92 - Self.Y, 0)")
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11, paket24]
 
 
 # ---------------------------------------------------------------- Prüfungen

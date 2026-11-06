@@ -1377,6 +1377,72 @@
     "btnRuUAbbrechen",
     "btnRuUOk"
    ]
+  },
+  {
+   "nr": 24,
+   "props": [
+    {
+     "key": "btnKaInfo.Visible",
+     "schritt": "24.1",
+     "vorher": "ThisItem.AnlID > 0",
+     "nachher": "(ThisItem.AnlID > 0 || ThisItem.BildID > 0)"
+    },
+    {
+     "key": "btnKaInfo.X",
+     "schritt": "24.1",
+     "vorher": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0)",
+     "nachher": "Parent.Width - 60"
+    },
+    {
+     "key": "btnKaInfo.OnSelect",
+     "schritt": "24.1",
+     "vorher": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, LookUp(RG_Anleitungen, ID = ThisItem.AnlID));\nIf(IsBlank(varInfo.ID), Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning), Set(varInfoID, ThisItem.AnlID))",
+     "nachher": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, If(ThisItem.AnlID > 0, LookUp(RG_Anleitungen, ID = ThisItem.AnlID)));\nIf(IsBlank(varInfo.ID) && ThisItem.BildID = 0,\n    Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning),\n    Set(varInfoID, 1)\n)"
+    },
+    {
+     "key": "btnKaBild.Visible",
+     "schritt": "24.1",
+     "vorher": "ThisItem.BildID > 0",
+     "nachher": "false"
+    },
+    {
+     "key": "btnKaCode.X",
+     "schritt": "24.1",
+     "vorher": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 48, 0)",
+     "nachher": "Parent.Width - 60 - If((ThisItem.AnlID > 0 || ThisItem.BildID > 0), 48, 0)"
+    },
+    {
+     "key": "lblKaFrage.Width",
+     "schritt": "24.1",
+     "vorher": "Parent.Width - 40 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 64, 0) - If(ThisItem.CodeID > 0, 48, 0)",
+     "nachher": "Parent.Width - 40 - If((ThisItem.AnlID > 0 || ThisItem.BildID > 0), 64, 0) - If(ThisItem.CodeID > 0, 48, 0)"
+    },
+    {
+     "key": "lblKaInfoTitel.Text",
+     "schritt": "24.2",
+     "vorher": "\"ⓘ \" & varInfo.Title",
+     "nachher": "If(IsBlank(varInfo.ID), \"ⓘ Beispielbild\", \"ⓘ \" & varInfo.Title)"
+    },
+    {
+     "key": "lblKaInfoText.Height",
+     "schritt": "24.2",
+     "vorher": "If(varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)",
+     "nachher": "If(IsBlank(varInfo.ID), 0, varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)"
+    },
+    {
+     "key": "imgKaInfo.Y",
+     "schritt": "24.2",
+     "vorher": "96 + (Parent.Height - 180) * 0.55",
+     "nachher": "lblKaInfoText.Y + lblKaInfoText.Height + If(lblKaInfoText.Height > 0, 8, 0)"
+    },
+    {
+     "key": "imgKaInfo.Height",
+     "schritt": "24.2",
+     "vorher": "(Parent.Height - 180) * 0.45 - 8",
+     "nachher": "Max(Parent.Height - 92 - Self.Y, 0)"
+    }
+   ],
+   "neu": []
   }
  ],
  "neue_controls": {
@@ -1545,7 +1611,7 @@
     "RadiusTopRight": "8",
     "Size": "14",
     "Text": "\"Bild\"",
-    "Visible": "ThisItem.BildID > 0",
+    "Visible": "false",
     "Width": "64",
     "X": "Parent.Width - 84",
     "Y": "10"
@@ -2534,16 +2600,16 @@
     "HoverFill": "clrPrimaerHell",
     "PressedColor": "clrPrimaer",
     "PressedFill": "clrPrimaerHell",
-    "OnSelect": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, LookUp(RG_Anleitungen, ID = ThisItem.AnlID));\nIf(IsBlank(varInfo.ID), Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning), Set(varInfoID, ThisItem.AnlID))",
+    "OnSelect": "Set(varInfoFrage, ThisItem.Frage);\nSet(varInfoBild, ThisItem.BildID);\nSet(varInfo, If(ThisItem.AnlID > 0, LookUp(RG_Anleitungen, ID = ThisItem.AnlID)));\nIf(IsBlank(varInfo.ID) && ThisItem.BildID = 0,\n    Notify(\"Die Anleitung wurde nicht gefunden.\", NotificationType.Warning),\n    Set(varInfoID, 1)\n)",
     "RadiusBottomLeft": "20",
     "RadiusBottomRight": "20",
     "RadiusTopLeft": "20",
     "RadiusTopRight": "20",
     "Size": "16",
     "Text": "\"ⓘ\"",
-    "Visible": "ThisItem.AnlID > 0",
+    "Visible": "(ThisItem.AnlID > 0 || ThisItem.BildID > 0)",
     "Width": "40",
-    "X": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0)",
+    "X": "Parent.Width - 60",
     "Y": "7"
    }
   },
@@ -2594,7 +2660,7 @@
     "FontWeight": "FontWeight.Semibold",
     "Height": "40",
     "Size": "19",
-    "Text": "\"ⓘ \" & varInfo.Title",
+    "Text": "If(IsBlank(varInfo.ID), \"ⓘ Beispielbild\", \"ⓘ \" & varInfo.Title)",
     "Width": "Parent.Width - 40",
     "Wrap": "false",
     "X": "20",
@@ -2622,7 +2688,7 @@
    "props": {
     "Color": "clrText",
     "Font": "Font.'Segoe UI'",
-    "Height": "If(varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)",
+    "Height": "If(IsBlank(varInfo.ID), 0, varInfoBild > 0, (Parent.Height - 180) * 0.55, Parent.Height - 180)",
     "Overflow": "Overflow.Scroll",
     "Size": "16",
     "Text": "Coalesce(varInfo.Anleitung, \"\")",
@@ -2637,13 +2703,13 @@
    "typ": "Image@2.2.3",
    "props": {
     "AccessibleLabel": "\"Beispielbild zu \" & varInfoFrage",
-    "Height": "(Parent.Height - 180) * 0.45 - 8",
+    "Height": "Max(Parent.Height - 92 - Self.Y, 0)",
     "Image": "If(varInfoID > 0 && varInfoBild > 0, LookUp(RG_Hinweisbilder, ID = varInfoBild).Thumbnail.Large)",
     "ImagePosition": "ImagePosition.Fit",
     "Visible": "varInfoBild > 0",
     "Width": "Parent.Width - 40",
     "X": "20",
-    "Y": "96 + (Parent.Height - 180) * 0.55"
+    "Y": "lblKaInfoText.Y + lblKaInfoText.Height + If(lblKaInfoText.Height > 0, 8, 0)"
    }
   },
   "btnKaInfoSchliessen": {
@@ -2723,7 +2789,7 @@
     "Text": "\"🔑\"",
     "Visible": "ThisItem.CodeID > 0",
     "Width": "40",
-    "X": "Parent.Width - 60 - If(ThisItem.BildID > 0, 80, 0) - If(ThisItem.AnlID > 0, 48, 0)",
+    "X": "Parent.Width - 60 - If((ThisItem.AnlID > 0 || ThisItem.BildID > 0), 48, 0)",
     "Y": "7"
    }
   },
