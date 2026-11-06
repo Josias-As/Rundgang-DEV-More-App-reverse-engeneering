@@ -5,6 +5,17 @@ Ein neuer Einsetz-Chat soll **diese Datei zuerst lesen**, dann `CLAUDE.md`, dann
 
 Kennzeichnung: **belegt** = durch Export-Abgleich oder SharePoint-Abfrage geprüft · **laut Josias** = von Josias gemeldet, nicht per Export geprüft.
 
+
+## 0. NACHTRAG 06.11. später (zuerst lesen)
+
+- **Paket 23 komplett eingefügt** (laut Josias): Teil A (DEV) geprüft – btnStartOffenWeiter da, btnRgAktion nutzt Testrundgang, conStartOffen filtert Testläufe; Banner zeigt nur noch Lauf 19 (Haustechnik). Teil B (Builder) ausgegeben, Josias hat „next“ geschrieben (App-Prüfung Builder nicht ausdrücklich gemeldet).
+- Spalten-Skript Paket 23: FERTIG – Testrundgang = Ja für 1, 3, 4; Haustechnik (2) nicht.
+- **Haustechnik Rundgang (ID 2): echt, aber noch nicht final** → im Builder unter Plan auf „✓ Testrundgang“ setzen bis Inbetriebnahme. Offener Lauf 19 zählt als echt (bleibt im Banner) – Josias wurde angeboten, ihn per Skript auf TestDatensatz = Ja + Abgeschlossen zu setzen (Antwort offen).
+- Testläufe 18, 20, 21, 22: Josias will abschließen/löschen → Skript (setzt Status Abgeschlossen + EndeZeit, nur wenn TestDatensatz = true) ausgegeben; FERTIG-Meldung offen.
+- **Paket 18 begonnen:** SharePoint-Skript skripte/paket18_sharepoint.js (Liste RG_Zugangscodes + Testcode „ZZ Test Bedienfeld Kältemaschine“ 1234, Spalte ZugangscodeID) + A2.1/A2.2 (btnKaCode, conKaCode) ausgegeben. Weiter mit A3.1 (scrKategorie.OnVisible), A3.2, dann Teil B.
+- **Neu im Repo: Paket 24** (ein Info-Knopf ⓘ für Anleitung und Bild, Wunsch Josias). Kette: 23 → 18 → 11 → **24**.
+- Entscheidungen Josias: B2–B5 aus TESTLAUF später einzeln durchgehen. Feste Reihenfolge/Sperre: nicht bauen. Flow-Rückmeldungen (Foto-Upload, Archiv-PDF, Mängel-Mail, Unterschrift) nur später und nur wenn nicht aufwendig. Prüfpunkte verschieben gibt es schon (↑↓, Feld Kategorie, Feld Bereich) – Josias ggf. fragen, ob „an bestimmte Stelle verschieben“ gewünscht ist.
+
 ---
 
 ## 1. Wo wir stehen (06.11.2026, Nachmittag)
