@@ -11,7 +11,7 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
 - **Kopfdaten:** Je Rundgang im Builder unter **Plan** unten Standort, Adresse, Auftraggeber (optional). Protokollkopf: Rundgang, Standort · Adresse, Auftraggeber, Datum mit KW, Prüfer.
 - **Builder:** Prüferliste unter Übersicht › Ansprechpartner › **👤 Prüfer** (Liste, aktiv/inaktiv, Personensuche aus dem Firmenverzeichnis).
 - Umfang: App 9 Properties + 21 neue Steuerelemente (davon die Stifteingabe über das Menü); Builder 1 Properties + `btnKoPruefer`, `lblPlAdresseT`, `lblPlAuftragT`, `lblPlKopfT`, `lblPlStandortT`, `scrPruefer`, `txtPlAdresse`, `txtPlAuftrag`, `txtPlStandort`. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet.**
-- **UNSICHER (Vorab-Tests):** U1 `OnSelect` der Stifteingabe beim Zeichnen; U2 Flow `aRG_Foto_hochladen` nimmt `penRuUnterschrift.Image` wie ein Foto an; U3 das Bild (Daten-URL) erscheint im Archiv-PDF; U4 Länge der Daten-URL in `UnterschriftBild` (mehrzeiliger Text) – bei Fehler „Schreibfehler“ beim Abschluss.
+- **UNSICHER (Vorab-Tests):** U1 `OnSelect` der Stifteingabe beim Zeichnen; U2 Flow `aRG_Foto_hochladen` nimmt `penRuUnterschrift.Image` wie ein Foto an; U3 das Bild (Daten-URL) erscheint im Archiv-PDF; U4 das Bild passt in `RG_Unterschriften.Bild` (mehrzeiliger Text) – bei Fehler „Schreibfehler“ beim Abschluss. Alle vier stehen in der Testtabelle (V1–V4).
 
 ## Teil A – Rundgang DEV
 
@@ -19,10 +19,13 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
 
 - Neue Liste **`RG_Pruefer`**: `Title` (vorhanden, = Name), `Email` (Eine Textzeile), `Aktiv` (Ja/Nein, Standard Ja).
 - `RG_Rundgaenge`: neue Spalten **`Standort`**, **`Adresse`**, **`Auftraggeber`** (je Eine Textzeile).
-- `RG_Durchfuehrungen`: neue Spalten **`UnterschriftBild`** (Mehrere Textzeilen, **nur Text**, keine Längenbegrenzung), **`UnterschriftUrl`** (Mehrere Textzeilen, nur Text), **`UnterschriftName`** (Eine Textzeile), **`UnterschriftZeit`** (Datum und Uhrzeit), **`Geraetekonto`** (Eine Textzeile).
-- Rundgang DEV: Daten → `RG_Rundgaenge` und `RG_Durchfuehrungen` → ⋯ → Aktualisieren; Daten hinzufügen → SharePoint → IMS+ → `RG_Pruefer`; Daten hinzufügen → **„Office 365-Benutzer“** (Connector `Office365Users`).
+- Neue Liste **`RG_Unterschriften`**: `Title` (vorhanden), `DurchfuehrungID` (Zahl), `Bild` (Mehrere Textzeilen, **nur Text**). Eigene Liste, damit das große Bild nicht bei jeder Abfrage der Durchführungen mitgeladen wird.
+- `RG_Durchfuehrungen`: neue Spalten **`UnterschriftUrl`** (Mehrere Textzeilen, nur Text), **`UnterschriftName`** (Eine Textzeile), **`UnterschriftZeit`** (Datum und Uhrzeit), **`Geraetekonto`** (Eine Textzeile).
+- Rundgang DEV: Daten → `RG_Rundgaenge` und `RG_Durchfuehrungen` → ⋯ → Aktualisieren; Daten hinzufügen → SharePoint → IMS+ → `RG_Pruefer` und `RG_Unterschriften`; Daten hinzufügen → **„Office 365-Benutzer“** (Connector `Office365Users`).
 - **Für IT/Michael (vor dem Test):** Das gemeinsame Gerätekonto braucht eine Power-Apps-Lizenz, Zugriff auf beide Apps, Schreibrechte auf IMS+ (alle RG-Listen und `RG_Fotos`) und muss den Connector **Office 365-Benutzer** verwenden dürfen (DLP-Richtlinie der Umgebung: Office 365 Users in derselben Gruppe wie SharePoint). Beim ersten Start fragt die App einmal nach der Zustimmung für den Connector – mit dem Gerätekonto bestätigen.
 - **Wichtig:** `varIstAdmin` (Admin-Funktionen) hängt weiter am angemeldeten Konto (`User()`), also am Gerätekonto. Soll das Gerätekonto keine Admin-Rechte haben, nicht in `cfgAdmins` eintragen.
+
+**Kurzzeitig rot (erwartet):** Nach A2.1/A2.2 sind `colPrueferAlle`, `varPruefer` und `penRuUnterschrift` noch unbekannt. Das verschwindet mit der Stifteingabe (Ende A2.2), A3.1 (`App.OnStart`) und A3.2 (`scrStart.OnVisible`). Erst danach die App-Prüfung ansehen.
 
 ### A2.1 – neues Steuerelement `conPwWahl`
 
@@ -68,7 +71,7 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
         Properties:
           AccessibleLabel: ="Prüfer"
           Height: =420
-          Items: =Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false)), Lower(Title))
+          Items: =Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false) && Trim(Coalesce(Email, "")) <> ""), Lower(Title))
           ShowScrollbar: =true
           TemplatePadding: =0
           TemplateSize: =68
@@ -189,7 +192,8 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
                 =If(!varIsLoading && Now() >= varSperreBis,
                     Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds));
                     Set(varPruefer, {Name: ThisItem.DisplayName, Email: Lower(ThisItem.Mail)});
-                    If(IsBlank(LookUp(colPrueferAlle, Lower(Email) = Lower(ThisItem.Mail))),
+                    Refresh(RG_Pruefer);
+                    If(IsBlank(LookUp(RG_Pruefer, Email = Lower(ThisItem.Mail)).ID),
                         IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: Lower(ThisItem.Mail), Aktiv: true}), Notify("In die Prüferliste konnte nicht gespeichert werden – du prüfst trotzdem unter diesem Namen.", NotificationType.Warning));
                         Refresh(RG_Pruefer);
                         ClearCollect(colPrueferAlle, RG_Pruefer)
@@ -307,7 +311,7 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
               Font: =Font.'Segoe UI'
               Height: =28
               Size: =14
-              Text: =varPruefer.Name & "  ·  " & Text(Now(), "dd.mm.yyyy hh:mm")
+              Text: =varPruefer.Name & "  ·  " & Text(Today(), "dd.mm.yyyy")
               Width: =Parent.Width - 40
               X: =20
               Y: =428
@@ -386,6 +390,7 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket11), `werkzeuge/bui
                     Set(varUnterschriftBild, With({j: JSON(penRuUnterschrift.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)));
                     Set(varUnterschriftUrl, "");
                     Set(varAbschlussFrage, true);
+                    Set(varSperreBis, Now());
                     Select(btnRuAbschluss)
                 )
               PressedColor: =Color.White
@@ -757,7 +762,9 @@ Set(varGeaendert; true)
 
 ```
 If(!varIsLoading && Now() >= varSperreBis;
-    If(!varAbschlussFrage;
+    If(!varAbschlussFrage && Coalesce(varPruefer.Email; "") = "";
+        Notify("Kein Prüfer gewählt. Bitte auf der Startseite oben rechts den Prüfer wählen."; NotificationType.Warning);
+        !varAbschlussFrage;
         Set(varUnterschriftDa; false);;
         Reset(penRuUnterschrift);;
         Set(varUnterschriftOffen; true);;
@@ -830,7 +837,10 @@ If(!varIsLoading && Now() >= varSperreBis;
                         With({datei: "Unterschrift-D" & varDurchID & "-" & Text(Now(); "yyyymmdd-hhmmss") & ".png"; ordner: fnArchivOrdner(varDurch.TagText; varDurch.TestDatensatz) & "/" & varDurch.Title};
                             Set(varUnterschriftUrl; If(IsError(aRG_Foto_hochladen.Run({contentBytes: penRuUnterschrift.Image; name: datei}; datei; ordner; varDurchID; 0; varDurch.TestDatensatz)); ""; fnSpUrl("RG_Fotos"; ordner & "/" & datei)))
                         );;
-                        IfError(Patch(RG_Durchfuehrungen; LookUp(RG_Durchfuehrungen; ID = varDurchID); {Status: stAbgeschlossen; EndeZeit: Now(); AnzahlNIO: CountRows(colMaengelSoll); UnterschriftBild: varUnterschriftBild; UnterschriftUrl: varUnterschriftUrl; UnterschriftName: varPruefer.Name; UnterschriftZeit: Now()}); Set(varPatchFehler; true));;
+                        IfError(Patch(RG_Durchfuehrungen; LookUp(RG_Durchfuehrungen; ID = varDurchID); {Status: stAbgeschlossen; EndeZeit: Now(); AnzahlNIO: CountRows(colMaengelSoll); UnterschriftUrl: varUnterschriftUrl; UnterschriftName: varPruefer.Name; UnterschriftZeit: Now()}); Set(varPatchFehler; true));;
+                        If(!varPatchFehler && IsBlank(LookUp(RG_Unterschriften; DurchfuehrungID = varDurchID).ID);
+                            IfError(Patch(RG_Unterschriften; Defaults(RG_Unterschriften); {Title: "D" & varDurchID; DurchfuehrungID: varDurchID; Bild: varUnterschriftBild}); Set(varPatchFehler; true))
+                        );;
                         Refresh(RG_Durchfuehrungen);;
                         Set(varDurch; LookUp(RG_Durchfuehrungen; ID = varDurchID));;
                         If(varDurch.Status = stAbgeschlossen;
@@ -846,6 +856,7 @@ If(!varIsLoading && Now() >= varSperreBis;
                 )
             )
         );;
+        Set(varUnterschriftOffen; false);;
         Set(varSperreBis; DateAdd(Now(); 2; TimeUnit.Seconds));;
         Set(varIsLoading; false)
     )
@@ -853,7 +864,11 @@ If(!varIsLoading && Now() >= varSperreBis;
 ```
 
 ```diff
+-    If(!varAbschlussFrage;
 -        Set(varAbschlussFrage; true);;
++    If(!varAbschlussFrage && Coalesce(varPruefer.Email; "") = "";
++        Notify("Kein Prüfer gewählt. Bitte auf der Startseite oben rechts den Prüfer wählen."; NotificationType.Warning);
++        !varAbschlussFrage;
 +        Set(varUnterschriftDa; false);;
 +        Reset(penRuUnterschrift);;
 +        Set(varUnterschriftOffen; true);;
@@ -864,14 +879,18 @@ If(!varIsLoading && Now() >= varSperreBis;
 + Set(varUnterschriftUrl; If(IsError(aRG_Foto_hochladen.Run({contentBytes: penRuUnterschrift.Image; name: datei}; datei; ordner; varDurchID; 0; varDurch.T …
 +                        );;
 + IfError(Patch(RG_Durchfuehrungen; LookUp(RG_Durchfuehrungen; ID = varDurchID); {Status: stAbgeschlossen; EndeZeit: Now(); AnzahlNIO: CountRows(colMaengelSol …
++                        If(!varPatchFehler && IsBlank(LookUp(RG_Unterschriften; DurchfuehrungID = varDurchID).ID);
++                            IfError(Patch(RG_Unterschriften; Defaults(RG_Unterschriften); {Title: "D" & varDurchID; DurchfuehrungID: varDurchID; Bild: varUnterschriftBild}); Set(varPatchFehler; true))
++                        );;
 -                            Notify("Rundgang abgeschlossen · " & CountRows(colMaengelSoll) & " Mängel erfasst. Protokoll wird archiviert …"; NotificationType.Success);;
 + Notify("Rundgang abgeschlossen · " & CountRows(colMaengelSoll) & " Mängel erfasst. Protokoll wird archiviert …" & If(varUnterschriftUrl = ""; " (Untersc …
 +                                Set(varUnterschriftOffen; false);;
 +                                Set(varPruefer; {Name: ""; Email: ""});;
 +                                Set(varPrWahl; true);;
++        Set(varUnterschriftOffen; false);;
 ```
 
-**Kurz erklärt:** Erstes Tippen öffnet die Unterschrift (statt „Wirklich abschließen?“). Nach der Unterschrift läuft der bisherige Abschluss; zusätzlich: Unterschrift als PNG in `RG_Fotos` (Testablage wie Fotos), Bild und Link an der Durchführung, `FestgestelltVon` = gewählte Person. Danach ist kein Prüfer mehr gewählt.
+**Kurz erklärt:** Erstes Tippen öffnet die Unterschrift (statt „Wirklich abschließen?“). Nach der Unterschrift läuft der bisherige Abschluss; zusätzlich: Unterschrift als PNG in `RG_Fotos` (Testablage wie Fotos), Bild in `RG_Unterschriften`, Link/Name/Zeit an der Durchführung, `FestgestelltVon` = gewählte Person. Danach ist kein Prüfer mehr gewählt. Ohne Prüfer: Meldung statt Unterschrift. Nach einem Fehler schließt das Fenster (neu unterschreiben).
 
 **Nachprüfen:** endet auf `)`
 
@@ -907,7 +926,7 @@ With({d: varDurch; r: LookUp(RG_Rundgaenge; ID = varDurch.RundgangID)};
             )
         ) & "</table>"
     ) &
-    If(Coalesce(d.UnterschriftBild; "") = ""; ""; "<div style='margin-top:22px'><img src='" & d.UnterschriftBild & "' style='height:90px'>" &
+    If(IsBlank(d.UnterschriftZeit); ""; "<div style='margin-top:22px'>" & With({u: LookUp(RG_Unterschriften; DurchfuehrungID = d.ID).Bild}; If(Coalesce(u; "") = ""; ""; "<img src='" & u & "' style='height:90px'>")) &
         "<div style='border-top:1px solid #1B1B1F;width:300px;padding-top:4px;font-size:12px'>" & fnHtml(Coalesce(d.UnterschriftName; d.PrueferName)) & " · " & Text(d.UnterschriftZeit; "dd.mm.yyyy hh:mm") & "</div></div>") &
     If(IsBlank(d.ProtokollUrl); ""; "<p style='font-size:12px'>Archiv-PDF: <a href='" & d.ProtokollUrl & "'>" & fnHtml(d.Title) & ".pdf</a></p>") &
     "<p style='color:#5F6370;font-size:12px;margin-top:18px'>Erstellt mit der Rundgang-App · " & Text(varProtokollZeit; "dd.mm.yyyy hh:mm") & If(d.TestDatensatz; " · TESTDATEN"; "") & "</p></div>"
@@ -919,7 +938,7 @@ With({d: varDurch; r: LookUp(RG_Rundgaenge; ID = varDurch.RundgangID)};
 +With({d: varDurch; r: LookUp(RG_Rundgaenge; ID = varDurch.RundgangID)};
 + If(Trim(Coalesce(r.Standort; "") & Coalesce(r.Adresse; "")) = ""; ""; "<div>" & fnHtml(Trim(Coalesce(r.Standort; "") & If(Coalesce(r.Standort; "") <> "" && Coalesce(r.Adres …
 +        If(Trim(Coalesce(r.Auftraggeber; "")) = ""; ""; "<div>Auftraggeber: " & fnHtml(r.Auftraggeber) & "</div>") &
-+    If(Coalesce(d.UnterschriftBild; "") = ""; ""; "<div style='margin-top:22px'><img src='" & d.UnterschriftBild & "' style='height:90px'>" &
++    If(IsBlank(d.UnterschriftZeit); ""; "<div style='margin-top:22px'>" & With({u: LookUp(RG_Unterschriften; DurchfuehrungID = d.ID).Bild}; If(Coalesce(u; "") = ""; ""; "<img src='" & u & "' style='height:90px'>")) &
 +        "<div style='border-top:1px solid #1B1B1F;width:300px;padding-top:4px;font-size:12px'>" & fnHtml(Coalesce(d.UnterschriftName; d.PrueferName)) & " · " & Text(d.UnterschriftZeit; "dd.mm.yyyy hh:mm") & "</div></div>") &
 ```
 
@@ -1459,6 +1478,10 @@ Parent.Height - 300
 
 | # | Schritt | erwartet |
 |---|---|---|
+| V1 | Vorab: auf der Stifteingabe zeichnen (Vorschau) | `varUnterschriftDa` = true |
+| V2 | Vorab: T6 durchführen | PNG liegt im Ordner des Laufs; im Flow-Verlauf kein Fehler, keine Foto-Zeile mit Prüfpunkt 0, die stört |
+| V3 | Vorab: Archiv-PDF des Laufs aus T6 öffnen | Unterschrift sichtbar |
+| V4 | Vorab: lange Unterschrift über das ganze Feld | Abschluss ohne Schreibfehler, Zeile in `RG_Unterschriften` |
 | T1 | App neu starten | Vollbild „Wer prüft?“; ohne Auswahl geht nichts |
 | T2 | „Andere Person suchen“: 3 Buchstaben eines Kollegen | Treffer mit Abteilung; antippen → Startseite, oben „Name · wechseln ›“; Kollege steht jetzt in `RG_Pruefer` |
 | T3 | Name oben antippen → anderen wählen | Wechsel ohne Neustart |
@@ -1468,7 +1491,10 @@ Parent.Height - 300
 | T7 | Zurück zur Startseite | „Wer prüft?“ erscheint wieder |
 | T8 | Builder › Plan: Standort/Adresse/Auftraggeber eintragen | Protokollkopf zeigt sie (neu geöffnetes Protokoll) |
 | T9 | Builder › Ansprechpartner › 👤 Prüfer: Person suchen, „+“; Eintrag inaktiv | erscheint/verschwindet in der App-Auswahl (nach Neustart der Startseite) |
-| T10 | Archiv-PDF des Laufs öffnen | Unterschrift sichtbar (U3) |
+| T10 | Fehlerfall: Flow ausschalten, abschließen | Abschluss klappt, Meldung „Unterschrift-Datei nicht hochgeladen“, Unterschrift im Protokoll |
+| T11 | „Unterschreiben und abschließen“ zweimal schnell tippen | nur ein Abschluss |
+| T12 | Mitten im Lauf Prüfer wechseln, Kategorie speichern | neue Kategorie mit neuem Prüfer, ältere behalten ihren |
+| T13 | Nach Abschluss: Startseite, „Weiter ›“ im roten Hinweis | erst „Wer prüft?“, der Hinweis liegt darunter |
 
 ## Rückweg
 

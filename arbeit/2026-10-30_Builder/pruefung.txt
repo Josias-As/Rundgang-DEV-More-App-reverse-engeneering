@@ -352,12 +352,16 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnAnAktiv.OnSelect            LookUp(RG_Anleitungen, ID = varAnID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
   btnAnAktiv.OnSelect            LookUp(RG_Anleitungen, ID = varAnID))
   btnZcNeu.OnSelect              LookUp(RG_Zugangscodes, ID = varNeuID))
+  txtZcTitel.OnChange            LookUp(RG_Zugangscodes, ID = varZcID).ID),
   txtZcTitel.OnChange            LookUp(RG_Zugangscodes, ID = varZcID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtZcTitel.OnChange            LookUp(RG_Zugangscodes, ID = varZcID))
+  txtZcCode.OnChange             LookUp(RG_Zugangscodes, ID = varZcID).ID),
   txtZcCode.OnChange             LookUp(RG_Zugangscodes, ID = varZcID), {Code: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
   txtZcCode.OnChange             LookUp(RG_Zugangscodes, ID = varZcID))
-  txtZcHinweis.OnChange          LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true))
+  txtZcHinweis.OnChange          LookUp(RG_Zugangscodes, ID = varZcID).ID),
+  txtZcHinweis.OnChange          LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Trim(Self.Text)}), Set(varPatchFehler, true))
   txtZcHinweis.OnChange          LookUp(RG_Zugangscodes, ID = varZcID))
+  btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID).ID),
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID))
   btnPfAktiv.OnSelect            LookUp(RG_Pruefer, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))

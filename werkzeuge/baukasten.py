@@ -1408,7 +1408,7 @@ def paket18(st):
     neues_control(st, p, "btnKaCode", "conKaKarte", "Classic/Button@2.2.0", {
         "BorderColor": "clrPrimaer", "BorderThickness": "1", "Color": "clrPrimaer", "Fill": "clrKarte", "Font": "Font.'Segoe UI'",
         "Height": "40", "HoverColor": "clrPrimaer", "HoverFill": "clrPrimaerHell", "PressedColor": "clrPrimaer", "PressedFill": "clrPrimaerHell",
-        "OnSelect": "Set(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));\n"
+        "OnSelect": "Refresh(RG_Zugangscodes);\nSet(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));\n"
                     "If(IsBlank(varCode.ID) || !Coalesce(varCode.Aktiv, false),\n"
                     "    Notify(\"Für diesen Prüfpunkt ist kein Code hinterlegt.\", NotificationType.Warning),\n"
                     "    Set(varCodeFrage, ThisItem.Frage);\n    Set(varCodeOffen, true)\n)",
@@ -1452,7 +1452,8 @@ PR_WAEHLEN = ("If(!varIsLoading && Now() >= varSperreBis,\n"
               "    Set(varPruefer, {Name: %s, Email: Lower(%s)});\n%s"
               "    Reset(txtPwSuche);\n"
               "    Set(varPrWahl, false)\n)")
-PR_NEU = ("    If(IsBlank(LookUp(colPrueferAlle, Lower(Email) = Lower(ThisItem.Mail))),\n"
+PR_NEU = ("    Refresh(RG_Pruefer);\n"
+          "    If(IsBlank(LookUp(RG_Pruefer, Email = Lower(ThisItem.Mail)).ID),\n"
           "        IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: Lower(ThisItem.Mail), Aktiv: true}), Notify(\"In die Prüferliste konnte nicht gespeichert werden – du prüfst trotzdem unter diesem Namen.\", NotificationType.Warning));\n"
           "        Refresh(RG_Pruefer);\n"
           "        ClearCollect(colPrueferAlle, RG_Pruefer)\n"
@@ -1465,7 +1466,11 @@ def paket11(st):
     st.sp.append(("RG_Pruefer", "Email", "Spalte"))
     for sp_, typ in (("Standort", "Text"), ("Adresse", "Text"), ("Auftraggeber", "Text")):
         st.sp.append(("RG_Rundgaenge", sp_, typ))
-    for sp_, typ in (("UnterschriftBild", "Text (mehrzeilig, nur Text)"), ("UnterschriftUrl", "Text (mehrzeilig)"),
+    st.sp.append(("RG_Unterschriften", "(neue Liste: Title, DurchfuehrungID, Bild)", "Liste"))
+    st.sp.append(("RG_Unterschriften", "DurchfuehrungID", "Spalte"))
+    st.sp.append(("RG_Unterschriften", "Bild", "Spalte"))
+    st.neue_quellen.add("RG_Unterschriften")
+    for sp_, typ in (("UnterschriftUrl", "Text (mehrzeilig)"),
                      ("UnterschriftName", "Text"), ("UnterschriftZeit", "Datum+Uhrzeit"), ("Geraetekonto", "Text")):
         st.sp.append(("RG_Durchfuehrungen", sp_, typ))
     st.neue_quellen.add("RG_Pruefer")
@@ -1491,7 +1496,8 @@ def paket11(st):
     # Abschluss mit Unterschrift
     def abschluss(t):
         t = rep(t, "    If(!varAbschlussFrage,\n        Set(varAbschlussFrage, true);\n        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),",
-                "    If(!varAbschlussFrage,\n        Set(varUnterschriftDa, false);\n        Reset(penRuUnterschrift);\n        Set(varUnterschriftOffen, true);\n"
+                "    If(!varAbschlussFrage && " + PR_LEER + ",\n        Notify(\"Kein Prüfer gewählt. Bitte auf der Startseite oben rechts den Prüfer wählen.\", NotificationType.Warning),\n"
+        "        !varAbschlussFrage,\n        Set(varUnterschriftDa, false);\n        Reset(penRuUnterschrift);\n        Set(varUnterschriftOffen, true);\n"
                 "        Set(varSperreBis, DateAdd(Now(), 1, TimeUnit.Seconds)),")
         t = rep(t, "FestgestelltVon: User().Email,", "FestgestelltVon: varPruefer.Email,")
         t = rep(t, "                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll)}), Set(varPatchFehler, true));\n",
@@ -1499,14 +1505,19 @@ def paket11(st):
                 "                            Set(varUnterschriftUrl, If(IsError(aRG_Foto_hochladen.Run({contentBytes: penRuUnterschrift.Image, name: datei}, datei, ordner, varDurchID, 0, varDurch.TestDatensatz)), \"\", fnSpUrl(\"RG_Fotos\", ordner & \"/\" & datei)))\n"
                 "                        );\n"
                 "                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll), "
-                "UnterschriftBild: varUnterschriftBild, UnterschriftUrl: varUnterschriftUrl, UnterschriftName: varPruefer.Name, UnterschriftZeit: Now()}), Set(varPatchFehler, true));\n")
+                "UnterschriftUrl: varUnterschriftUrl, UnterschriftName: varPruefer.Name, UnterschriftZeit: Now()}), Set(varPatchFehler, true));\n"
+                "                        If(!varPatchFehler && IsBlank(LookUp(RG_Unterschriften, DurchfuehrungID = varDurchID).ID),\n"
+                "                            IfError(Patch(RG_Unterschriften, Defaults(RG_Unterschriften), {Title: \"D\" & varDurchID, DurchfuehrungID: varDurchID, Bild: varUnterschriftBild}), Set(varPatchFehler, true))\n"
+                "                        );\n")
         t = rep(t, "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\", NotificationType.Success);\n",
                 "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\" & If(varUnterschriftUrl = \"\", \" (Unterschrift-Datei nicht hochgeladen, steht aber im Protokoll.)\", \"\"), NotificationType.Success);\n"
                 "                                Set(varUnterschriftOffen, false);\n"
                 "                                Set(varPruefer, {Name: \"\", Email: \"\"});\n"
                 "                                Set(varPrWahl, true);\n")
         return t
-    aendern(st, p, "11.6", "btnRuAbschluss.OnSelect", abschluss)
+    aendern(st, p, "11.6", "btnRuAbschluss.OnSelect", lambda t: rep(abschluss(t),
+            "        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n    )\n)",
+            "        Set(varUnterschriftOffen, false);\n        Set(varSperreBis, DateAdd(Now(), 2, TimeUnit.Seconds));\n        Set(varIsLoading, false)\n    )\n)"))
 
     # Protokoll: Kopf + Unterschrift
     def protokoll(t):
@@ -1516,7 +1527,7 @@ def paket11(st):
                 "        If(Trim(Coalesce(r.Auftraggeber, \"\")) = \"\", \"\", \"<div>Auftraggeber: \" & fnHtml(r.Auftraggeber) & \"</div>\") &\n"
                 "        \"<div>\" & fnTagAnzeige(DateValue(d.TagText)) & \" · Prüfer: \" & fnHtml(d.PrueferName) & \"</div>\" &\n")
         t = rep(t, "    If(IsBlank(d.ProtokollUrl), \"\",",
-                "    If(Coalesce(d.UnterschriftBild, \"\") = \"\", \"\", \"<div style='margin-top:22px'><img src='\" & d.UnterschriftBild & \"' style='height:90px'>\" &\n"
+                "    If(IsBlank(d.UnterschriftZeit), \"\", \"<div style='margin-top:22px'>\" & With({u: LookUp(RG_Unterschriften, DurchfuehrungID = d.ID).Bild}, If(Coalesce(u, \"\") = \"\", \"\", \"<img src='\" & u & \"' style='height:90px'>\")) &\n"
                 "        \"<div style='border-top:1px solid #1B1B1F;width:300px;padding-top:4px;font-size:12px'>\" & fnHtml(Coalesce(d.UnterschriftName, d.PrueferName)) & \" · \" & Text(d.UnterschriftZeit, \"dd.mm.yyyy hh:mm\") & \"</div></div>\") &\n"
                 "    If(IsBlank(d.ProtokollUrl), \"\",")
         return t
@@ -1531,7 +1542,7 @@ def paket11(st):
         Color="clrTextGrau", Height="48", Size="14", VerticalAlign="VerticalAlign.Top",
         Text='"Bitte deinen Namen antippen. Nach dem Abschließen eines Rundgangs wird neu gefragt."', Width="Parent.Width - 48", X="24", Y="84"))
     neues_control(st, p, "galPwListe", "conPwWahl", "Gallery@2.15.0", {
-        "AccessibleLabel": '"Prüfer"', "Height": "420", "Items": "Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false)), Lower(Title))",
+        "AccessibleLabel": '"Prüfer"', "Height": "420", "Items": "Sort(Filter(colPrueferAlle, Coalesce(Aktiv, false) && Trim(Coalesce(Email, \"\")) <> \"\"), Lower(Title))",
         "ShowScrollbar": "true", "TemplatePadding": "0", "TemplateSize": "68", "Width": "Parent.Width", "X": "0", "Y": "140"})
     neues_control(st, p, "btnPwName", "galPwListe", "Classic/Button@2.2.0", _knopf(
         "sekundaer", Align="Align.Left", Height="Parent.TemplateHeight - 12", PaddingLeft="20", Size="18",
@@ -1579,7 +1590,7 @@ def paket11(st):
         "BorderColor": "clrRahmen", "BorderThickness": "1", "Color": "clrText", "Fill": "Color.White", "Height": "300",
         "OnSelect": "Set(varUnterschriftDa, true)", "Width": "Parent.Width - 40", "X": "20", "Y": "116"})
     neues_control(st, p, "lblRuUName", "conRuUKarte", "Label@2.5.1", _label(
-        Height="28", Size="14", Text='varPruefer.Name & "  ·  " & Text(Now(), "dd.mm.yyyy hh:mm")', Width="Parent.Width - 40", X="20", Y="428"))
+        Height="28", Size="14", Text='varPruefer.Name & "  ·  " & Text(Today(), "dd.mm.yyyy")', Width="Parent.Width - 40", X="20", Y="428"))
     neues_control(st, p, "btnRuULoeschen", "conRuUKarte", "Classic/Button@2.2.0", _knopf(
         "sekundaer", Height="52", Size="15", Text='"Löschen"', Width="140", X="20", Y="Parent.Height - 76",
         OnSelect="Reset(penRuUnterschrift);\nSet(varUnterschriftDa, false)"))
@@ -1593,6 +1604,7 @@ def paket11(st):
                   "    Set(varUnterschriftBild, With({j: JSON(penRuUnterschrift.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)));\n"
                   "    Set(varUnterschriftUrl, \"\");\n"
                   "    Set(varAbschlussFrage, true);\n"
+                  "    Set(varSperreBis, Now());\n"
                   "    Select(btnRuAbschluss)\n)")))
     return p
 

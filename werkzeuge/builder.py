@@ -1927,7 +1927,7 @@ ZC_RESET = "Reset(txtZcTitel);\nReset(txtZcCode);\nReset(txtZcHinweis)"
 
 
 def zc_patch(felder):
-    return ("If(varZcID > 0 && !varIsLoading,\n"
+    return ("If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),\n"
             "    Set(varPatchFehler, false);\n"
             "    IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), " + felder + "), Set(varPatchFehler, true));\n"
             "    If(varPatchFehler,\n"
@@ -1938,8 +1938,9 @@ def zc_patch(felder):
 
 
 def zc_text(name, feld, y, hint, label, multi=False, h="40"):
+    wert = "Trim(Self.Text)" if multi else "Left(Trim(Self.Text), 255)"
     return txt(name, 'Coalesce(%s.%s, "")' % (ZC_CUR, feld),
-               'If(Trim(Self.Text) <> Trim(Coalesce(%s.%s, "")),\n    %s\n)' % (ZC_CUR, feld, ind(zc_patch("{%s: Left(Trim(Self.Text), 255)}" % feld), 4)),
+               'If(Trim(Self.Text) <> Trim(Coalesce(%s.%s, "")),\n    %s\n)' % (ZC_CUR, feld, ind(zc_patch("{%s: %s}" % (feld, wert)), 4)),
                "0", y, "Parent.Width", h, hint, label, multi=multi, DisplayMode=BTN_DM)
 
 

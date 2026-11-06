@@ -19,6 +19,8 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket18), `werkzeuge/bui
 - `RG_Pruefpunkte`: neue Spalte **`ZugangscodeID`** (Zahl, Standard 0).
 - Rundgang DEV: Daten → `RG_Pruefpunkte` → ⋯ → Aktualisieren, dann Daten hinzufügen → SharePoint → IMS+ → `RG_Zugangscodes`.
 
+**Kurzzeitig rot (erwartet):** `btnKaCode` nennt `ThisItem.CodeID`, das erst A3.1 (`scrKategorie.OnVisible`) anlegt.
+
 ### A2.1 – neues Steuerelement `btnKaCode`
 
 **Wo hin:** in der Strukturansicht **`conKaKarte`** markieren → Strg+V.
@@ -36,7 +38,8 @@ Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket18), `werkzeuge/bui
       HoverColor: =clrPrimaer
       HoverFill: =clrPrimaerHell
       OnSelect: |-
-        =Set(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));
+        =Refresh(RG_Zugangscodes);
+        Set(varCode, LookUp(RG_Zugangscodes, ID = ThisItem.CodeID));
         If(IsBlank(varCode.ID) || !Coalesce(varCode.Aktiv, false),
             Notify("Für diesen Prüfpunkt ist kein Code hinterlegt.", NotificationType.Warning),
             Set(varCodeFrage, ThisItem.Frage);
@@ -849,7 +852,7 @@ Screens:
                   HoverBorderColor: =clrPrimaer
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Title, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
                             IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
@@ -889,7 +892,7 @@ Screens:
                   HoverBorderColor: =clrPrimaer
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Code, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
                             IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Code: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
@@ -930,9 +933,9 @@ Screens:
                   Mode: =TextMode.MultiLine
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Hinweis, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
-                            IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Trim(Self.Text)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
                                 Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
                                 Patch(colZcAlle, LookUp(colZcAlle, ID = varZcID), LookUp(RG_Zugangscodes, ID = varZcID))
@@ -976,7 +979,7 @@ Screens:
                         HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colZcAlle, ID = varZcID).Aktiv, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                         OnSelect: |-
                           =If((ThisItem.W = "ja") <> Coalesce(LookUp(colZcAlle, ID = varZcID).Aktiv, false),
-                              If(varZcID > 0 && !varIsLoading,
+                              If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                                   Set(varPatchFehler, false);
                                   IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true));
                                   If(varPatchFehler,
@@ -1593,6 +1596,8 @@ Set(varIsLoading; false)
 | T5 | Kategorie speichern, Protokoll ansehen | Code steht nirgends (auch nicht im JSON `Antworten` der Liste) |
 | T6 | Code im Builder inaktiv stellen → App 🔑 | „kein Code hinterlegt“ |
 | T7 | Code ohne Wert, nur Hinweis „Code bei der IT“ | Fenster zeigt „—“ und den Hinweis |
+| T8 | Code in SharePoint löschen → App 🔑 | „kein Code hinterlegt“; Builder-Auswahl zeigt „… (inaktiv oder gelöscht)“ |
+| T9 | Prüfpunkt mit Bild + ⓘ + 🔑 | drei Knöpfe nebeneinander, Frage gekürzt, nichts überlappt |
 
 ## Rückweg
 

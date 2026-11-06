@@ -229,7 +229,7 @@ Screens:
                   HoverBorderColor: =clrPrimaer
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Title, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
                             IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Title: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
@@ -269,7 +269,7 @@ Screens:
                   HoverBorderColor: =clrPrimaer
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Code, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
                             IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Code: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
@@ -310,9 +310,9 @@ Screens:
                   Mode: =TextMode.MultiLine
                   OnChange: |-
                     =If(Trim(Self.Text) <> Trim(Coalesce(LookUp(colZcAlle, ID = varZcID).Hinweis, "")),
-                        If(varZcID > 0 && !varIsLoading,
+                        If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                             Set(varPatchFehler, false);
-                            IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Left(Trim(Self.Text), 255)}), Set(varPatchFehler, true));
+                            IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Hinweis: Trim(Self.Text)}), Set(varPatchFehler, true));
                             If(varPatchFehler,
                                 Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
                                 Patch(colZcAlle, LookUp(colZcAlle, ID = varZcID), LookUp(RG_Zugangscodes, ID = varZcID))
@@ -356,7 +356,7 @@ Screens:
                         HoverFill: =If(ThisItem.W = If(Coalesce(LookUp(colZcAlle, ID = varZcID).Aktiv, false), "ja", "nein"), ColorFade(clrPrimaer, -20%), clrPrimaerHell)
                         OnSelect: |-
                           =If((ThisItem.W = "ja") <> Coalesce(LookUp(colZcAlle, ID = varZcID).Aktiv, false),
-                              If(varZcID > 0 && !varIsLoading,
+                              If(varZcID > 0 && !varIsLoading && !IsBlank(LookUp(RG_Zugangscodes, ID = varZcID).ID),
                                   Set(varPatchFehler, false);
                                   IfError(Patch(RG_Zugangscodes, LookUp(RG_Zugangscodes, ID = varZcID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true));
                                   If(varPatchFehler,

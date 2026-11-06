@@ -26,7 +26,7 @@ SP = ["- Neue Liste **`RG_Zugangscodes`**: `Title` (vorhanden, = Bezeichnung), `
 
 
 def main():
-    za, na, neu_a, anh_a = g.app_teil(18, ERKL_APP, SP)
+    za, na, neu_a, anh_a = g.app_teil(18, ERKL_APP, SP, zusatz_vor=["**Kurzzeitig rot (erwartet):** `btnKaCode` nennt `ThisItem.CodeID`, das erst A3.1 (`scrKategorie.OnVisible`) anlegt.", ""])
     zb, keys_b, neu_b, anh_b = g.builder_teil("builder_nach_p23.json", "builder_nach_p18.json", ERKL_B,
                                                ["Liste und Spalte aus A1 (nur einmal anlegen). Builder: `RG_Pruefpunkte` aktualisieren, `RG_Zugangscodes` hinzufügen."])
     z = ["# Paket 18 – Zugangscodes (Bedien-Codes, erst nach Antippen sichtbar)", "",
@@ -46,7 +46,9 @@ def main():
          "| T4 | 🔑 antippen | Fenster mit „1234“ und Hinweis, Schließen |",
          "| T5 | Kategorie speichern, Protokoll ansehen | Code steht nirgends (auch nicht im JSON `Antworten` der Liste) |",
          "| T6 | Code im Builder inaktiv stellen → App 🔑 | „kein Code hinterlegt“ |",
-         "| T7 | Code ohne Wert, nur Hinweis „Code bei der IT“ | Fenster zeigt „—“ und den Hinweis |", "",
+         "| T7 | Code ohne Wert, nur Hinweis „Code bei der IT“ | Fenster zeigt „—“ und den Hinweis |",
+         "| T8 | Code in SharePoint löschen → App 🔑 | „kein Code hinterlegt“; Builder-Auswahl zeigt „… (inaktiv oder gelöscht)“ |",
+         "| T9 | Prüfpunkt mit Bild + ⓘ + 🔑 | drei Knöpfe nebeneinander, Frage gekürzt, nichts überlappt |", "",
          "## Rückweg", "", "Vorher-Fassungen einsetzen; neue Steuerelemente löschen. Liste/Spalte dürfen bleiben.", "",
          "## Anhang – Vorher-Fassungen", ""] + anh_a + anh_b
     open(os.path.join(doc_app89.AUS, "PAKET_18_ZUGANGSCODES.md"), "w", encoding="utf-8").write("\n".join(z) + "\n")

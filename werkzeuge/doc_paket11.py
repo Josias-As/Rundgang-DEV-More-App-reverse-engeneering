@@ -19,7 +19,7 @@ ERKL_APP = {
     "btnRgAktion.OnSelect": "Ohne gewählten Prüfer öffnet sich die Auswahl. Sonst wie bisher, aber Prüfer = gewählte Person; das Gerätekonto wird in `Geraetekonto` mitgeschrieben.",
     "btnKaSpeichern.OnSelect": "Prüfer der Kategorie = gewählte Person (statt `User()`).",
     "btnKaKritOk.OnSelect": "„Bescheid gegeben“ mit dem Namen der gewählten Person.",
-    "btnRuAbschluss.OnSelect": "Erstes Tippen öffnet die Unterschrift (statt „Wirklich abschließen?“). Nach der Unterschrift läuft der bisherige Abschluss; zusätzlich: Unterschrift als PNG in `RG_Fotos` (Testablage wie Fotos), Bild und Link an der Durchführung, `FestgestelltVon` = gewählte Person. Danach ist kein Prüfer mehr gewählt.",
+    "btnRuAbschluss.OnSelect": "Erstes Tippen öffnet die Unterschrift (statt „Wirklich abschließen?“). Nach der Unterschrift läuft der bisherige Abschluss; zusätzlich: Unterschrift als PNG in `RG_Fotos` (Testablage wie Fotos), Bild in `RG_Unterschriften`, Link/Name/Zeit an der Durchführung, `FestgestelltVon` = gewählte Person. Danach ist kein Prüfer mehr gewählt. Ohne Prüfer: Meldung statt Unterschrift. Nach einem Fehler schließt das Fenster (neu unterschreiben).",
     "htmProtokoll.HtmlText": "Kopf: Standort · Adresse, Auftraggeber (wenn gepflegt), dann wie bisher Datum mit KW und Prüfer. Unten: Unterschrift mit Name, Datum, Uhrzeit (auch im Archiv-PDF).",
 }
 ERKL_B = {
@@ -27,9 +27,10 @@ ERKL_B = {
 }
 SP = ["- Neue Liste **`RG_Pruefer`**: `Title` (vorhanden, = Name), `Email` (Eine Textzeile), `Aktiv` (Ja/Nein, Standard Ja).",
       "- `RG_Rundgaenge`: neue Spalten **`Standort`**, **`Adresse`**, **`Auftraggeber`** (je Eine Textzeile).",
-      "- `RG_Durchfuehrungen`: neue Spalten **`UnterschriftBild`** (Mehrere Textzeilen, **nur Text**, keine Längenbegrenzung), **`UnterschriftUrl`** (Mehrere Textzeilen, nur Text), "
+      "- Neue Liste **`RG_Unterschriften`**: `Title` (vorhanden), `DurchfuehrungID` (Zahl), `Bild` (Mehrere Textzeilen, **nur Text**). Eigene Liste, damit das große Bild nicht bei jeder Abfrage der Durchführungen mitgeladen wird.",
+      "- `RG_Durchfuehrungen`: neue Spalten **`UnterschriftUrl`** (Mehrere Textzeilen, nur Text), "
       "**`UnterschriftName`** (Eine Textzeile), **`UnterschriftZeit`** (Datum und Uhrzeit), **`Geraetekonto`** (Eine Textzeile).",
-      "- Rundgang DEV: Daten → `RG_Rundgaenge` und `RG_Durchfuehrungen` → ⋯ → Aktualisieren; Daten hinzufügen → SharePoint → IMS+ → `RG_Pruefer`; "
+      "- Rundgang DEV: Daten → `RG_Rundgaenge` und `RG_Durchfuehrungen` → ⋯ → Aktualisieren; Daten hinzufügen → SharePoint → IMS+ → `RG_Pruefer` und `RG_Unterschriften`; "
       "Daten hinzufügen → **„Office 365-Benutzer“** (Connector `Office365Users`).",
       "- **Für IT/Michael (vor dem Test):** Das gemeinsame Gerätekonto braucht eine Power-Apps-Lizenz, Zugriff auf beide Apps, Schreibrechte auf IMS+ "
       "(alle RG-Listen und `RG_Fotos`) und muss den Connector **Office 365-Benutzer** verwenden dürfen (DLP-Richtlinie der Umgebung: Office 365 Users in derselben Gruppe wie SharePoint). "
@@ -46,7 +47,9 @@ PEN_SCHRITT += ["", "**Vorab-Test (Pflicht, U1):** In der Vorschau auf der Stift
 
 
 def main():
-    za, na, neu_a, anh_a = g.app_teil(11, ERKL_APP, SP, ohne=[PEN], nach={"conRuUnterschrift": PEN_SCHRITT})
+    ROT = ["**Kurzzeitig rot (erwartet):** Nach A2.1/A2.2 sind `colPrueferAlle`, `varPruefer` und `penRuUnterschrift` noch unbekannt. "
+           "Das verschwindet mit der Stifteingabe (Ende A2.2), A3.1 (`App.OnStart`) und A3.2 (`scrStart.OnVisible`). Erst danach die App-Prüfung ansehen.", ""]
+    za, na, neu_a, anh_a = g.app_teil(11, ERKL_APP, SP, zusatz_vor=ROT, ohne=[PEN], nach={"conRuUnterschrift": PEN_SCHRITT})
     zb, keys_b, neu_b, anh_b = g.builder_teil("builder_nach_p18.json", None, ERKL_B,
                                                ["Spalten und Liste aus A1 (nur einmal anlegen). Builder: `RG_Rundgaenge` aktualisieren, `RG_Pruefer` und **Office 365-Benutzer** hinzufügen."])
     z = ["# Paket 11 – Prüfer wählen, Unterschrift, Kopfdaten", "",
@@ -63,9 +66,13 @@ def main():
          "- Umfang: App %d Properties + %d neue Steuerelemente (davon die Stifteingabe über das Menü); Builder %d Properties + %s. Generatoren 0 Fehler, Mutation 12/12 und 13/13, Textbreiten geprüft. **Nicht in Studio getestet.**"
          % (na, len(BL["neue_controls"]) and len([q for q in BL["pakete"] if q["nr"] == 11][0]["neu"]), len(keys_b), ", ".join("`%s`" % x for x in neu_b)),
          "- **UNSICHER (Vorab-Tests):** U1 `OnSelect` der Stifteingabe beim Zeichnen; U2 Flow `aRG_Foto_hochladen` nimmt `penRuUnterschrift.Image` wie ein Foto an; "
-         "U3 das Bild (Daten-URL) erscheint im Archiv-PDF; U4 Länge der Daten-URL in `UnterschriftBild` (mehrzeiliger Text) – bei Fehler „Schreibfehler“ beim Abschluss.", ""] + za + zb + [
+         "U3 das Bild (Daten-URL) erscheint im Archiv-PDF; U4 das Bild passt in `RG_Unterschriften.Bild` (mehrzeiliger Text) – bei Fehler „Schreibfehler“ beim Abschluss. Alle vier stehen in der Testtabelle (V1–V4).", ""] + za + zb + [
          "## Test", "",
          "| # | Schritt | erwartet |", "|---|---|---|",
+         "| V1 | Vorab: auf der Stifteingabe zeichnen (Vorschau) | `varUnterschriftDa` = true |",
+         "| V2 | Vorab: T6 durchführen | PNG liegt im Ordner des Laufs; im Flow-Verlauf kein Fehler, keine Foto-Zeile mit Prüfpunkt 0, die stört |",
+         "| V3 | Vorab: Archiv-PDF des Laufs aus T6 öffnen | Unterschrift sichtbar |",
+         "| V4 | Vorab: lange Unterschrift über das ganze Feld | Abschluss ohne Schreibfehler, Zeile in `RG_Unterschriften` |",
          "| T1 | App neu starten | Vollbild „Wer prüft?“; ohne Auswahl geht nichts |",
          "| T2 | „Andere Person suchen“: 3 Buchstaben eines Kollegen | Treffer mit Abteilung; antippen → Startseite, oben „Name · wechseln ›“; Kollege steht jetzt in `RG_Pruefer` |",
          "| T3 | Name oben antippen → anderen wählen | Wechsel ohne Neustart |",
@@ -75,7 +82,10 @@ def main():
          "| T7 | Zurück zur Startseite | „Wer prüft?“ erscheint wieder |",
          "| T8 | Builder › Plan: Standort/Adresse/Auftraggeber eintragen | Protokollkopf zeigt sie (neu geöffnetes Protokoll) |",
          "| T9 | Builder › Ansprechpartner › 👤 Prüfer: Person suchen, „+“; Eintrag inaktiv | erscheint/verschwindet in der App-Auswahl (nach Neustart der Startseite) |",
-         "| T10 | Archiv-PDF des Laufs öffnen | Unterschrift sichtbar (U3) |", "",
+         "| T10 | Fehlerfall: Flow ausschalten, abschließen | Abschluss klappt, Meldung „Unterschrift-Datei nicht hochgeladen“, Unterschrift im Protokoll |",
+         "| T11 | „Unterschreiben und abschließen“ zweimal schnell tippen | nur ein Abschluss |",
+         "| T12 | Mitten im Lauf Prüfer wechseln, Kategorie speichern | neue Kategorie mit neuem Prüfer, ältere behalten ihren |",
+         "| T13 | Nach Abschluss: Startseite, „Weiter ›“ im roten Hinweis | erst „Wer prüft?“, der Hinweis liegt darunter |", "",
          "## Rückweg", "", "Vorher-Fassungen einsetzen; neue Steuerelemente und Bildschirm löschen. Listen/Spalten dürfen bleiben.", "",
          "## Anhang – Vorher-Fassungen", ""] + anh_a + anh_b
     open(os.path.join(doc_app89.AUS, "PAKET_11_PRUEFER_UNTERSCHRIFT.md"), "w", encoding="utf-8").write("\n".join(z) + "\n")
