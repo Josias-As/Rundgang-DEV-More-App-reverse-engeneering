@@ -106,6 +106,7 @@ Aufräumen später (nur mit Josias' Ja): obige Rundgänge inaktiv, Testläufe/Er
 ---
 
 ## 5. Offen / Fragen
+- **Ideen Josias 06.11. (für später, an Engineering, erst nach den alten Paketen):**  - Archiv: Schalter „Testläufe“ ist doppelt, wenn „alle Rundgänge“ gewählt ist (Testläufe sind über den Rundgang ohnehin erkennbar) → vor Go-live vereinfachen/entfernen.  - Knopf „Rundgang zurücksetzen“ (im Archiv oder in der Rundgang-App), nur mit Code. Code im Builder änderbar; im Builder selbst kein Code zum Ändern, aber das Zurücksetzen dort braucht den Code.- **Paket 18 Test:** Lauf 23 per Skript abgeschlossen (Test). Neuer Lauf 25 (Tag 05.11.) hat Fassung 3 (Kat 66–72) → 🔑 bei „Öltemperatur Kompressor“ zu prüfen. Archiv zeigte Lauf 23 erst nach „Suchen“ (Liste wird beim Zurückkommen nicht neu geladen).- **Fixes beim Einsetzen P18/P23:** Formel war auf scrKategorie.Width statt lblKaFrage.Width; lblStartOffen-Formel war in btnStartOffen.Width (zurück auf 196 / X Parent.Width - 220).
 
 - Paket 23 Teil A Rückmeldung, dann Teil B; danach 18, dann 11 (Paket 11: Vorab-Test V1 direkt nach Einfügen der Stifteingabe, V2–V4 nach komplettem Paket mit einem Testlauf).
 - Für echten Einsatz von Paket 11: IT/Michael – Gerätekonto, Lizenz, Rechte IMS+, Connector „Office 365-Benutzer“ (DLP). Testen geht mit Josias' eigenem Konto.
