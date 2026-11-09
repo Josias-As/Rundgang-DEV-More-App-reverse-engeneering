@@ -12,6 +12,8 @@ Ab jetzt wird wieder mit dem Analyse-Chat gebaut. Dieses Dokument enthält alles
 | 11 Prüfer/Unterschrift/Kopfdaten | drin, mit Abweichungen (Abschnitt 3) | drin, mit Abweichungen | V1 ok; T1–T13, V2–V4 offen |
 | **24 Info-Knopf ⓘ** | **fehlt** | **fehlt** | – |
 
+Weitere offene Arbeit (Fehlerliste, Flows, Ideen) siehe Abschnitt 6.
+
 Fehlerzahl zuletzt: Builder 0, Rundgang DEV 0 (vor den Korrekturen A18/A20, deren Einbau ist unbestätigt).
 
 ## 2. Neue Entscheidung von Josias (09.11.): kein Gerätekonto, keine Prüferauswahl
@@ -60,13 +62,27 @@ Alle Formeln in deutscher Formelleiste (`;` / `;;`).
 - Funktionsrundgang: Fassung 3 aktiv (🔑 Code ID 1 bei „Öltemperatur Kompressor“, Prüfpunkt 403), Entwurf Fassung 4 offen. Lauf 25 (05.11.) hat Fassung 3.
 - Haustechnik Rundgang ist **nicht** als Testrundgang markiert.
 
-## 6. Offen / Ideen für später (Josias)
-- **Paket 24** (Info-Knopf ⓘ) – Voraussetzung war „23, 18, 11 in beiden Apps“; nach dem P11-Rückbau neu prüfen.
-- Archiv: Schalter „Testläufe“ doppelt bei „alle Rundgänge“ → vor Go-live vereinfachen.
-- Knopf „Rundgang zurücksetzen“ mit Code (Code im Builder änderbar; Zurücksetzen auch im Builder nur mit Code).
-- Builder-Übersicht: „· Testrundgang“ bei langen Plan-Texten vermutlich abgeschnitten.
-- TESTLAUF-Punkte A3, A5, A9, A12, A13; D1 (Komma auf dem Tablet); Flow-Rückmeldungen (Foto, Archiv-PDF, Mängel-Mail, Unterschrift).
-- MoreApp-Vergleich: Herkunft der Bilder 10–16 („Produktionshalle“) weiter offen.
+## 6. Was noch nicht gebaut ist (alles, nicht nur Paket 24)
+
+Die Anforderungen A–L aus `arbeit/2026-11-02_Neue_Anforderungen/ANALYSE_Neue_Anforderungen.md` sind alle als Pakete gebaut und eingesetzt. Offen ist:
+
+| # | Was | Quelle | wartet seit | Vorschlag |
+|---|---|---|---|---|
+| 1 | **Rückbau Prüferauswahl** (P11 Teil A) | Entscheidung 09.11. | neu | zuerst |
+| 2 | **Paket 24** Info-Knopf ⓘ | freigegeben 06.11., nicht eingesetzt | 06.11. | gegen Stand nach Rückbau prüfen, dann einsetzen |
+| 3 | **Fehler „Beheben vor Echtbetrieb“** A3, A5, A9, A12, A13 (dazu A10, A14) | `TESTLAUF_2026-11-06.md` | 06.11. | **ein Fix-Paket**, vor den echten Rundgängen. A3 ist kritisch (Kategorie ohne aktive Prüfpunkte ⇒ Lauf nie abschließbar) |
+| 4 | **Entscheidungen B1–B5** mit Josias | `TESTLAUF_2026-11-06.md` | 06.11. | B1: Hinweistext-Skript gegeben, Lauf unbestätigt. B4 will Josias genauer durchgehen. B5 („Wirklich abschließen?“ verfällt nie) ist durch die Unterschrift überholt, falls die bleibt |
+| 5 | **D1** Komma/Punkt bei Zahlen | TESTLAUF | 06.11. | am Tablet testen (7,5 / 7.5), sonst Fix |
+| 6 | **C1–C27** Aufräumen | TESTLAUF | 06.11. | Aufräum-Paket, niedrig |
+| 7 | **Flows rückmelden** (Foto-Upload, Archiv-PDF, Mängel-Mail, Unterschrift-Upload) | `pakete/BAUKASTEN_UEBERSICHT.md` (Vorschlag, nicht gebaut) | 27.10. | eigenes Paket; Flow-Änderung im Konto von Josias |
+| 8 | Archiv: Schalter „Testläufe“ doppelt bei „alle Rundgänge“ | Josias 06.11. | 06.11. | vor Go-live |
+| 9 | Knopf „Rundgang zurücksetzen“ mit Code (Code im Builder änderbar; Zurücksetzen auch im Builder nur mit Code) | Josias 06.11. | 06.11. | nach den Fehlern |
+| 10 | Eigene Bilder in Anleitungen (heute nur Text + Beispielbild des Prüfpunkts) | Wunsch, nicht bestellt | 06.11. | mit Josias klären; ggf. mit Paket 24 zusammen denken |
+| 11 | Builder-Übersicht: „· Testrundgang“ bei langen Plan-Texten abgeschnitten | Beobachtung 06.11. | 06.11. | klein, ins Aufräum-Paket |
+| 12 | Echte Rundgänge anlegen (Haustechnik, Infrastruktur, Legionellen, Gefahrstoffschränke) | `arbeit/2026-11-03_MoreApp_Vergleich/` | 03.11. | Infos fehlen: Herkunft Bilder 10–16, Grenzwerte, Formularbilder der anderen drei |
+| 13 | Export-Abgleich beider Apps gegen die Paketkette | Einsetz-Chat | – | nach dem Rückbau, vor Paket 24 |
+
+Verworfen/erledigt: feste Reihenfolge (Josias: nein), Prüfpunkte verschieben (gibt es schon: ↑↓, Kategorie-/Bereichsfeld).
 
 ## 7. Arbeitsweise, die sich bewährt hat
 - Antwortformat beim Einsetzen: App oben, je Block „Farbmarker + Steuerelement · Property“, reine Kopierblöcke, **darunter ein diff-Block** mit vollen Zeilen (🟦 Formel, 🟩 YAML, 🟧 SP-Skript, 🟨 Daten, 🟥 Prüfen).
