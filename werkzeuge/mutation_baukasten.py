@@ -19,6 +19,9 @@ MUTATIONEN = [
     ("FotoMoeglich außerhalb OnVisible", "btnKaFoto.Visible", 'ThisItem.FotoModus <> "Aus"', "ThisItem.FotoMoeglich"),
     ("Paket 9: Feld KritischOk fehlt im Bearbeiten-Zweig", "scrKategorie.OnVisible", "                     KritischOk: If(IsBlank(alt), false, Coalesce(IfError(Boolean(alt.Value.KritischOk), false), false)),\n", ""),
     ("Paket 9: fnFehlt ohne 13. Argument", "lblKaFehlendAnzahl.Text", ", a.MaxWert, a.Kritisch && !a.KritischOk)", ", a.MaxWert)"),
+    ("A17: IfError(Patch, Set) als Zweig eines If", "btnRuAbschluss.OnSelect",
+     "If(IsError(Patch(RG_Unterschriften, Defaults(RG_Unterschriften), {Title: \"D\" & varDurchID, DurchfuehrungID: varDurchID, Bild: varUnterschriftBild})), Set(varPatchFehler, true))",
+     "IfError(Patch(RG_Unterschriften, Defaults(RG_Unterschriften), {Title: \"D\" & varDurchID, DurchfuehrungID: varDurchID, Bild: varUnterschriftBild}), Set(varPatchFehler, true))"),
     ("Paket 8: Abschnitt fehlt im Zweig für deaktivierte Punkte", "scrKategorie.OnVisible", 'Abschnitt: Trim(Coalesce(Text(o.Value.Abschnitt), "")), ', ""),
 ]
 

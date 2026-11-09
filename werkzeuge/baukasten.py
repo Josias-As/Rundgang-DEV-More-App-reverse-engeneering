@@ -1507,7 +1507,7 @@ def paket11(st):
                 "                        IfError(Patch(RG_Durchfuehrungen, LookUp(RG_Durchfuehrungen, ID = varDurchID), {Status: stAbgeschlossen, EndeZeit: Now(), AnzahlNIO: CountRows(colMaengelSoll), "
                 "UnterschriftUrl: varUnterschriftUrl, UnterschriftName: varPruefer.Name, UnterschriftZeit: Now()}), Set(varPatchFehler, true));\n"
                 "                        If(!varPatchFehler && IsBlank(LookUp(RG_Unterschriften, DurchfuehrungID = varDurchID).ID),\n"
-                "                            IfError(Patch(RG_Unterschriften, Defaults(RG_Unterschriften), {Title: \"D\" & varDurchID, DurchfuehrungID: varDurchID, Bild: varUnterschriftBild}), Set(varPatchFehler, true))\n"
+                "                            If(IsError(Patch(RG_Unterschriften, Defaults(RG_Unterschriften), {Title: \"D\" & varDurchID, DurchfuehrungID: varDurchID, Bild: varUnterschriftBild})), Set(varPatchFehler, true))\n"
                 "                        );\n")
         t = rep(t, "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\", NotificationType.Success);\n",
                 "                            Notify(\"Rundgang abgeschlossen · \" & CountRows(colMaengelSoll) & \" Mängel erfasst. Protokoll wird archiviert …\" & If(varUnterschriftUrl = \"\", \" (Unterschrift-Datei nicht hochgeladen, steht aber im Protokoll.)\", \"\"), NotificationType.Success);\n"
@@ -1631,7 +1631,62 @@ def paket24(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11, paket24]
+# ---------------------------------------------------------------- Paket 25 (Rückbau Prüferauswahl aus Paket 11: wieder User(), Unterschrift + Kopfdaten bleiben)
+
+def _nachfahren(st, name):
+    el = {n: e for n, (e, _) in st.neue_controls.items()}
+    erg, neu = {name}, True
+    while neu:
+        neu = {n for n, e in el.items() if e in erg and n not in erg}
+        erg |= neu
+    return erg
+
+
+def paket25(st):
+    p = {"nr": 25, "props": [], "neu": [], "geloescht": ["conPwWahl"]}
+    aendern(st, p, "25.2", "App.OnStart", lambda t: rep(t, 'Set(varPruefer, {Name: "", Email: ""});\nSet(varPrWahl, true);\n', ""))
+    aendern(st, p, "25.2", "scrStart.OnVisible", lambda t: rep(t, ",\n    ClearCollect(colPrueferAlle, RG_Pruefer)\n);", "\n);"))
+    ganz(st, p, "25.3", "lblStartNutzer.Text", 'User().FullName & If(cfgTestmodus, "  ·  TESTMODUS", "")')
+    ganz(st, p, "25.3", "lblStartNutzer.OnSelect", "false")
+
+    def start(t):
+        kopf = "If(" + PR_LEER + ",\n    Set(varPrWahl, true),\n"
+        if not t.startswith(kopf) or not t.endswith("\n)"):
+            raise Abbruch("Anker btnRgAktion: Prüfer-Hülle nicht gefunden")
+        innen = t[len(kopf):-2]
+        innen = "\n".join(z[4:] if z.startswith("    ") else z for z in innen.split("\n"))
+        return rep(innen, "PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name, Geraetekonto: User().Email,",
+                   "PrueferEmail: User().Email, PrueferName: User().FullName,")
+    aendern(st, p, "25.4", "btnRgAktion.OnSelect", start)
+    aendern(st, p, "25.4", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "PrueferEmail: varPruefer.Email, PrueferName: varPruefer.Name,", "PrueferEmail: User().Email, PrueferName: User().FullName,"))
+    aendern(st, p, "25.4", "btnKaKritOk.OnSelect", lambda t: rep(t, "KritischVon: varPruefer.Name", "KritischVon: User().FullName"))
+
+    def abschluss(t):
+        t = rep(t, "    If(!varAbschlussFrage && " + PR_LEER + ",\n        Notify(\"Kein Prüfer gewählt. Bitte auf der Startseite oben rechts den Prüfer wählen.\", NotificationType.Warning),\n"
+                "        !varAbschlussFrage,\n", "    If(!varAbschlussFrage,\n")
+        t = rep(t, "FestgestelltVon: varPruefer.Email,", "FestgestelltVon: User().Email,")
+        t = rep(t, "UnterschriftName: varPruefer.Name,", "UnterschriftName: User().FullName,")
+        t = rep(t, "                                Set(varPruefer, {Name: \"\", Email: \"\"});\n                                Set(varPrWahl, true);\n", "")
+        return t
+    aendern(st, p, "25.5", "btnRuAbschluss.OnSelect", abschluss)
+    aendern(st, p, "25.5", "lblRuUText.Text", lambda t: rep(t, "varPruefer.Name", "User().FullName"))
+    aendern(st, p, "25.5", "lblRuUName.Text", lambda t: rep(t, "varPruefer.Name", "User().FullName"))
+    # nichts darf mehr auf die Prüferauswahl verweisen
+    weg = set()
+    for n in p["geloescht"]:
+        weg |= _nachfahren(st, n)
+    for k, v in st.props.items():
+        if k.split(".")[0] in weg:
+            continue
+        for wort in ("varPruefer", "varPrWahl", "colPrueferAlle", "RG_Pruefer", "Office365Users", "Office365-Benutzer") + tuple(sorted(weg)):
+            if re.search(r"(?<![\w'])" + re.escape(wort) + r"(?![\w'])", rg.ohne_kommentare(v)):
+                raise Abbruch("Rückbau unvollständig: %s verweist noch auf %s" % (k, wort))
+    p["geloescht_alle"] = sorted(weg)
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11, paket25, paket24]
 
 
 # ---------------------------------------------------------------- Prüfungen
@@ -1691,6 +1746,53 @@ def namen_der_app(stand):
             "felder": felder, "aliase": aliase, "quellen": quellen, "spalten": spalten, "controls": controls}
 
 
+def maske(f):
+    """Gleich lange Kopie der Formel, Text in Anführungszeichen durch _ ersetzt."""
+    out, i, n = [], 0, len(f)
+    while i < n:
+        if f[i] == '"':
+            j = i + 1
+            while j < n:
+                if f[j] == '"':
+                    if j + 1 < n and f[j + 1] == '"':
+                        j += 2
+                        continue
+                    break
+                j += 1
+            out.append('"' + "_" * (j - i - 1) + '"')
+            i = j + 1
+        else:
+            out.append(f[i])
+            i += 1
+    return "".join(out)
+
+
+def iferror_als_wert(f):
+    """IfError(X, Set(...)) als Wert (Zweig eines If, Argument), nicht als Glied einer Kette.
+    Studio (02.11., App-Prüfung): ErrBadType Record/Table vs. Boolean. Liefert (Anfang, Komma, Ende)."""
+    s = maske(f)
+    erg = []
+    for m in re.finditer(r"\bIfError\(", s):
+        tiefe, komma, j = 0, None, m.end() - 1
+        for j in range(m.end() - 1, len(s)):
+            ch = s[j]
+            if ch in "({[":
+                tiefe += 1
+            elif ch in ")}]":
+                tiefe -= 1
+                if tiefe == 0:
+                    break
+            elif ch == "," and tiefe == 1 and komma is None:
+                komma = j
+        k = j + 1
+        while k < len(s) and s[k] in " \n\t":
+            k += 1
+        if (s[k] if k < len(s) else "") != ";" and komma and s[komma + 1:j].strip().startswith("Set("):
+            erg.append((m.start(), komma, j))
+    return erg
+
+
+
 def pruefe(stand, pakete):
     zeilen = []
     fehler = 0
@@ -1698,6 +1800,10 @@ def pruefe(stand, pakete):
     bekannt = set().union(*n.values()) | BUILTINS
     for p in pakete:
         zeilen.append("== Paket %d: %d Properties, neue Steuerelemente: %s" % (p["nr"], len(p["props"]), ", ".join(p["neu"]) or "-"))
+        for c in p["props"]:
+            if iferror_als_wert(c["nachher"]):
+                zeilen.append("  FEHLER %s: IfError(…, Set(…)) als Wert (Zweig eines If) – Studio meldet Typfehler (A17)" % c["key"])
+                fehler += 1
         eintraege = [(c["key"], c["nachher"]) for c in p["props"]]
         for name in p["neu"]:
             for k, v in stand.props.items():

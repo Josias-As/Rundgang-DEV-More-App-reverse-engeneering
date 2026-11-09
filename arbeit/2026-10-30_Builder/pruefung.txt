@@ -1,12 +1,11 @@
-Rundgang-Builder: 7 Bildschirme, 395 Steuerelemente, 5514 Properties, 55 Variablen, 17 Funktionen
-Patch-Felder geprüft: 331
+Rundgang-Builder: 6 Bildschirme, 379 Steuerelemente, 5295 Properties, 55 Variablen, 17 Funktionen
+Patch-Felder geprüft: 326
 YAML scrListe: 613 Properties zeichengleich zurückgelesen
 YAML scrEditor: 3273 Properties zeichengleich zurückgelesen
 YAML scrPlan: 475 Properties zeichengleich zurückgelesen
-YAML scrKontakte: 396 Properties zeichengleich zurückgelesen
+YAML scrKontakte: 373 Properties zeichengleich zurückgelesen
 YAML scrAnleitungen: 279 Properties zeichengleich zurückgelesen
 YAML scrCodes: 280 Properties zeichengleich zurückgelesen
-YAML scrPruefer: 196 Properties zeichengleich zurückgelesen
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnLiNeu                166 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '+ Neuer Rundgang'
@@ -364,8 +363,5 @@ Abfragen auf SharePoint (Delegation nachlesen):
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID).ID),
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID), {Aktiv: ThisItem.W = "ja"}), Set(varPatchFehler, true))
   btnZcAktiv.OnSelect            LookUp(RG_Zugangscodes, ID = varZcID))
-  btnPfAktiv.OnSelect            LookUp(RG_Pruefer, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true))
-  btnPfAktiv.OnSelect            LookUp(RG_Pruefer, ID = ThisItem.ID))
-  btnPfNeu.OnSelect              LookUp(RG_Pruefer, ID = alt.ID), {Aktiv: true})), Set(varPatchFehler, true))
 
 Fehler gesamt: 0

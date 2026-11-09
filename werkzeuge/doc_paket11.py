@@ -37,7 +37,7 @@ SP = ["- Neue Liste **`RG_Pruefer`**: `Title` (vorhanden, = Name), `Email` (Eine
       "Beim ersten Start fragt die App einmal nach der Zustimmung für den Connector – mit dem Gerätekonto bestätigen.",
       "- **Wichtig:** `varIstAdmin` (Admin-Funktionen) hängt weiter am angemeldeten Konto (`User()`), also am Gerätekonto. Soll das Gerätekonto keine Admin-Rechte haben, nicht in `cfgAdmins` eintragen."]
 PEN_SCHRITT = [
-    "**Stifteingabe (über das Menü, ohne YAML):** In der Strukturansicht `conRuUKarte` markieren → **Einfügen → Eingabe → Stifteingabe**. Es muss **in** `conRuUKarte` landen. "
+    "**Stifteingabe (über das Menü, ohne YAML):** In der Strukturansicht `conRuUKarte` markieren → **Einfügen → im Suchfeld „Stift“ → die Stifteingabe unter „Klassisch“** (nicht die moderne unter „Eingabe“: sie hat kein `OnSelect`/`Image`, A15). Es muss **in** `conRuUKarte` landen. "
     "Umbenennen in **`penRuUnterschrift`**. Dann diese Properties setzen (Formelleiste, ganze Property):", ""]
 for k in ("X", "Y", "Width", "Height", "OnSelect", "Fill", "Color", "BorderColor", "BorderThickness"):
     if k in PEN_P:

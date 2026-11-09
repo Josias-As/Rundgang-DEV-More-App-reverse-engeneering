@@ -1437,6 +1437,17 @@
   btnRuUOk.Y                       ok
   btnRuUOk.DisplayMode             ok
   btnRuUOk.OnSelect                ok
+== Paket 25: 10 Properties, neue Steuerelemente: -
+  App.OnStart                      ok
+  scrStart.OnVisible               ok
+  lblStartNutzer.Text              ok
+  lblStartNutzer.OnSelect          ok
+  btnRgAktion.OnSelect             ok
+  btnKaSpeichern.OnSelect          ok
+  btnKaKritOk.OnSelect             ok
+  btnRuAbschluss.OnSelect          ok
+  lblRuUText.Text                  ok
+  lblRuUName.Text                  ok
 == Paket 24: 10 Properties, neue Steuerelemente: -
   btnKaInfo.Visible                ok
   btnKaInfo.X                      ok
@@ -1470,6 +1481,7 @@
   Paket 23: colAntworten hat in allen drei Zweigen dieselben 47 Felder
   Paket 18: colAntworten hat in allen drei Zweigen dieselben 48 Felder
   Paket 11: colAntworten hat in allen drei Zweigen dieselben 48 Felder
+  Paket 25: colAntworten hat in allen drei Zweigen dieselben 48 Felder
   Paket 24: colAntworten hat in allen drei Zweigen dieselben 48 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):

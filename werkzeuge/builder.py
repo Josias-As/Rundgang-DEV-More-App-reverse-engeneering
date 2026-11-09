@@ -44,11 +44,10 @@ NEU_SPALTEN = {
                        "AnleitungID": "Zahl", "ZugangscodeID": "Zahl"},
     "RG_Anleitungen": {"Title": "Text", "Anleitung": "Text", "Aktiv": "Ja/Nein"},
     "RG_Zugangscodes": {"Title": "Text", "Code": "Text", "Hinweis": "Text", "Aktiv": "Ja/Nein"},
-    "RG_Pruefer": {"Title": "Text", "Email": "Text", "Aktiv": "Ja/Nein"},
     "RG_Ansprechpartner": {"Title": "Text", "Kontakt": "Text", "Telefon": "Text", "Hinweis": "Text", "Allgemein": "Ja/Nein", "Aktiv": "Ja/Nein"},
 }
 AUSWAHL_SPALTEN = {"Eingabetyp", "Foto", "Grenzmodus"}
-QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen", "RG_Zugangscodes", "RG_Pruefer"]
+QUELLEN = ["RG_Rundgaenge", "RG_Bereiche", "RG_Kategorien", "RG_Pruefpunkte", "RG_Plan", "RG_Durchfuehrungen", "RG_Hinweisbilder", "RG_Ansprechpartner", "RG_Anleitungen", "RG_Zugangscodes"]
 
 # ---------------------------------------------------------------- App.Formulas und App.OnStart
 
@@ -1815,7 +1814,6 @@ scr_kontakte = C("scrKontakte", "Screen", {
     con("conKoKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
         btn("btnKoZurueck", '"← Übersicht"', "16", "12", "140", "40", "If(!varIsLoading, Navigate(scrListe, ScreenTransition.None))", art="kopf"),
         lbl("lblKoTitel", '"Ansprechpartner"', "172", "0", "600", "64", size=20, color="Color.White", bold=True),
-        btn("btnKoPruefer", '"👤 Prüfer ›"', "Parent.Width - 196", "12", "180", "40", "If(!varIsLoading, Navigate(scrPruefer, ScreenTransition.None))", art="kopf"),
     ]),
     lbl("lblKoHilfe", '"Wer soll bei einem kritischen Mangel informiert werden? „bei jedem“ erscheint bei jedem kritischen Mangel. '
         'Nicht mehr gebraucht: auf „inaktiv“ stellen, nicht löschen."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
@@ -1990,52 +1988,9 @@ scr_codes = C("scrCodes", "Screen", {
     laden_overlay("conZcLaden"),
 ])
 
-# ---------------------------------------------------------------- Bildschirm Prüfer (Paket 11)
-PF_NEU = ("If(" + FREI + ",\n    " + LOCK + ";\n"
-          "    With({e: Lower(ThisItem.Mail), alt: LookUp(colPfAlle, Lower(Email) = Lower(ThisItem.Mail))},\n"
-          "        Set(varPatchFehler, false);\n"
-          "        If(IsBlank(alt),\n"
-          "            IfError(Patch(RG_Pruefer, Defaults(RG_Pruefer), {Title: ThisItem.DisplayName, Email: e, Aktiv: true}), Set(varPatchFehler, true)),\n"
-          "            !Coalesce(alt.Aktiv, false),\n"
-          "            IfError(Patch(RG_Pruefer, LookUp(RG_Pruefer, ID = alt.ID), {Aktiv: true}), Set(varPatchFehler, true))\n"
-          "        );\n"
-          "        Refresh(RG_Pruefer);\n"
-          "        ClearCollect(colPfAlle, RG_Pruefer);\n"
-          "        If(varPatchFehler, Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error), Notify(ThisItem.DisplayName & \" ist in der Prüferliste.\", NotificationType.Success))\n"
-          "    )\n)")
-PF_AKTIV = ("If(" + FREI + ",\n    " + LOCK + ";\n    Set(varPatchFehler, false);\n"
-            "    IfError(Patch(RG_Pruefer, LookUp(RG_Pruefer, ID = ThisItem.ID), {Aktiv: !Coalesce(ThisItem.Aktiv, false)}), Set(varPatchFehler, true));\n"
-            "    If(varPatchFehler,\n        Notify(\"Nicht gespeichert. Bitte erneut versuchen.\", NotificationType.Error),\n"
-            "        Patch(colPfAlle, LookUp(colPfAlle, ID = ThisItem.ID), LookUp(RG_Pruefer, ID = ThisItem.ID))\n    )\n)")
-scr_pruefer = C("scrPruefer", "Screen", {
-    "Fill": "clrHintergrund",
-    "OnVisible": "Set(varIsLoading, true);\nSet(varLadeText, \"\");\nRefresh(RG_Pruefer);\nClearCollect(colPfAlle, RG_Pruefer);\nReset(txtPfSuche);\nSet(varIsLoading, false)",
-}, [
-    con("conPfKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Height": "64"}, [
-        btn("btnPfZurueck", '"← Ansprechpartner"', "16", "12", "210", "40", "If(!varIsLoading, Navigate(scrKontakte, ScreenTransition.None))", art="kopf"),
-        lbl("lblPfTitelKopf", '"Prüfer"', "242", "0", "600", "64", size=20, color="Color.White", bold=True),
-    ]),
-    lbl("lblPfHilfe", '"Diese Personen erscheinen in der Rundgang-App zum Antippen. Jeder Mitarbeiter darf prüfen: Vertretungen sucht der Prüfer dort selbst, '
-        'sie kommen dann automatisch hierher. Nicht mehr gebraucht: auf „inaktiv“ tippen (nicht löschen)."', "24", "72", "Parent.Width - 48", "44", size=13, color="clrTextGrau"),
-    gal("galPf", 'Sort(colPfAlle, If(Coalesce(Aktiv, false), "0", "1") & Lower(Title))', "24", "124", "620", "Parent.Height - 140", 60, [
-        lbl("lblPfName", 'ThisItem.Title & "  ·  " & Coalesce(ThisItem.Email, "")', "12", "0", "Parent.TemplateWidth - 160", "Parent.TemplateHeight - 4",
-            size=14, Color="If(Coalesce(ThisItem.Aktiv, false), clrText, clrTextGrau)", Wrap="false"),
-        btn("btnPfAktiv", 'If(Coalesce(ThisItem.Aktiv, false), "aktiv", "inaktiv")', "Parent.TemplateWidth - 140", "8", "128", "40", PF_AKTIV, art="sekundaer", size=13,
-            Fill='If(Coalesce(ThisItem.Aktiv, false), clrPrimaerHell, clrKarte)'),
-    ], '"Prüfer"'),
-    lbl("lblPfLeer", '"Noch keine Prüfer. Rechts nach Namen suchen."', "24", "134", "620", "48", size=13, color="clrTextGrau",
-        Visible="IsEmpty(colPfAlle) && !varIsLoading"),
-    lbl("lblPfSuchT", '"Person aus dem Firmenverzeichnis hinzufügen"', "668", "124", "Parent.Width - 692", "24", size=13, bold=True),
-    txt("txtPfSuche", '""', "false", "668", "152", "Parent.Width - 692", "44", '"Name eingeben (mind. 3 Buchstaben)"', '"Name suchen"', DelayOutput="true"),
-    gal("galPfSuche", 'If(Len(Trim(txtPfSuche.Text)) >= 3, Filter(Office365Users.SearchUserV2({searchTerm: Trim(txtPfSuche.Text), top: 15, isSearchTermRequired: true}).value, !IsBlank(Mail) && AccountEnabled))',
-        "668", "204", "Parent.Width - 692", "Parent.Height - 220", 56, [
-        btn("btnPfNeu", '"+ " & ThisItem.DisplayName & If(Coalesce(ThisItem.Department, "") = "", "", "  ·  " & ThisItem.Department)',
-            "0", "4", "Parent.TemplateWidth", "48", PF_NEU, art="sekundaer", size=13, Align="Align.Left", PaddingLeft="12"),
-    ], '"Suchergebnisse"'),
-    laden_overlay("conPfLaden"),
-])
+# Bildschirm Prüfer (Paket 11) mit Paket 25 zurückgebaut (09.11.): echte Anmeldung, User().
 
-SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen, scr_codes, scr_pruefer]
+SCREENS = [scr_liste, scr_editor, scr_plan, scr_kontakte, scr_anleitungen, scr_codes]
 
 
 def maske(f):

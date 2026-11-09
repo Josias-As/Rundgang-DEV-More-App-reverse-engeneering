@@ -1,6 +1,6 @@
 # Paket 24 – Ein Info-Knopf ⓘ für Anleitung und Beispielbild
 
-Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket24), `werkzeuge/builder.py`, `werkzeuge/doc_paket24.py`. Voraussetzung: Paket 23, 18, 11 in beiden Apps.
+Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket24), `werkzeuge/builder.py`, `werkzeuge/doc_paket24.py`. Voraussetzung: Paket 23, 18, 11 und **25 (Rückbau Prüferauswahl)** in beiden Apps. Nach Paket 25 neu geprüft: keine gemeinsame Property, Vorher-Fassungen unverändert gültig.
 
 ## Kurzfassung
 

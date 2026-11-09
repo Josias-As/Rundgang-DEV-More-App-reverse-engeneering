@@ -30,7 +30,7 @@ def main():
             "txtPHinweis.X", "txtPHinweis.Y")},
     }, ["Keine neuen Daten."])
     z = ["# Paket 24 – Ein Info-Knopf ⓘ für Anleitung und Beispielbild", "",
-         "Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket24), `werkzeuge/builder.py`, `werkzeuge/doc_paket24.py`. Voraussetzung: Paket 23, 18, 11 in beiden Apps.", "",
+         "Stand 06.11.2026. Erzeugt mit `werkzeuge/baukasten.py` (paket24), `werkzeuge/builder.py`, `werkzeuge/doc_paket24.py`. Voraussetzung: Paket 23, 18, 11 und **25 (Rückbau Prüferauswahl)** in beiden Apps. Nach Paket 25 neu geprüft: keine gemeinsame Property, Vorher-Fassungen unverändert gültig.", "",
          "## Kurzfassung", "",
          "- **Rundgang DEV:** Pro Prüfpunkt nur noch **ein** runder Knopf **ⓘ** oben rechts, sichtbar bei Anleitung, Beispielbild oder beidem. Der Bild-Knopf („Bild“) und sein Fenster entfallen.",
          "- Das Fenster passt sich an: **nur Text** → Text auf voller Höhe; **nur Bild** → großes Bild, Überschrift „ⓘ Beispielbild“, darunter die Frage; **beides** → Text oben, Bild unten (wie bisher).",

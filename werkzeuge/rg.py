@@ -18,6 +18,8 @@ EXPORTE = {
     "2026-11-02_Builder": "quellen/2026-11-02_Builder/09684788-neueversionbuilderapp2.11.26_20261102140349.zip",
     "2026-11-03_0959": "quellen/2026-11-03_RundgangApp/6dce8db3-RundgangDEV03.11.26_20261103095938.zip",
     "2026-11-03_Builder": "quellen/2026-11-03_Builder/349743f9-RundgangBuilder03.11.26_20261103100033.zip",
+    "2026-11-09_1409": "quellen/2026-11-09_RundgangApp/967c9713-RundgangDEV09.11.26_20261109140930.zip",
+    "2026-11-09_Builder": "quellen/2026-11-09_Builder/c3baff50-RundgangBuilder09.11.26_20261109140954.zip",
 }
 
 
