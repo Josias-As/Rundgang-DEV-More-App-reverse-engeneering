@@ -1293,6 +1293,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     btn("btnPZahlMehr", '"Verlauf/Vergleich  ›"', "324", REST_Y + " + 248", "204", "32",
         'If(!varIsLoading,\n    Reset(txtZaAbwMax);\n    Reset(txtZaTol);\n    Reset(ddZaVgl);\n    Set(varZaOffen, true)\n)', art="sekundaer", size=12, DisplayMode=BTN_DM,
         Fill='If(!IsBlank(%s.AbwMax) || Coalesce(%s.NurSteigend, false) || Coalesce(%s.VergleichPunkt, 0) <> 0, clrPrimaerHell, clrKarte)' % (CUR, CUR, CUR),
+        HoverFill='If(!IsBlank(%s.AbwMax) || Coalesce(%s.NurSteigend, false) || Coalesce(%s.VergleichPunkt, 0) <> 0, ColorFade(clrPrimaerHell, -10%%), clrPrimaerHell)' % (CUR, CUR, CUR),
         Visible=ist_typ("ZAHL")),
     con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "242", "Fill": "clrHintergrund"}, [
         lbl("lblPFoto", '"Foto"', "0", "0", "256", "20", size=12, color="clrTextGrau"),
@@ -2496,14 +2497,17 @@ def pruefe_rechtecke_edp(bild_h=768):
                 if k.typ.startswith("GroupContainer"):
                     lauf(k, ox + x, oy + y, w, h)
                 else:
-                    rects.append((k.name, ox + x, oy + y, w, h))
+                    rects.append((k.name, ox + x, oy + y, w, h, k.typ.startswith("Label")))
         lauf(edp, 0, 0, 528, ph_edp)
-        for i, (a, ax, ay, aw, ah) in enumerate(rects):
-            for b, bx, by, bw, bh in rects[i + 1:]:
+        for i, (a, ax, ay, aw, ah, al) in enumerate(rects):
+            for b, bx, by, bw, bh, bl in rects[i + 1:]:
                 if ax < bx + bw and bx < ax + aw and ay < by + bh and by < ay + ah:
                     fehler += 1
                     zeilen.append("  %-9s %s überlappt %s  FEHLER" % (typ, a, b))
-        unten = max(y + h for _, _, y, _, h in rects)
+                elif not (al or bl) and ax < bx + bw + 4 and bx < ax + aw + 4 and ay < by + bh + 4 and by < ay + ah + 4:
+                    fehler += 1
+                    zeilen.append("  %-9s %s berührt %s (weniger als 4 px Abstand)  FEHLER" % (typ, a, b))
+        unten = max(r_[2] + r_[4] for r_ in rects)
         ok = unten <= ph_edp - 6
         fehler += 0 if ok else 1
         zeilen.append("  %-9s %2d Steuerelemente, unterster Rand %d von %d px%s" % (typ, n, unten, ph_edp, "" if ok else "  FEHLER (abgeschnitten)"))

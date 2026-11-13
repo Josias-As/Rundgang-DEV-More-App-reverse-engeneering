@@ -44,9 +44,9 @@ def main():
          "**Voraussetzung:** im Builder Paket 24 (alle Lage-Werte B2.x in `conPRest`) und Paket 26. Vorher-Fassungen = dieser Stand (Export 13.11. + P24-Lage + P26). Rundgang DEV ändert sich nicht.", "",
          "## Kurzfassung", "",
          "- **„Verlauf/Vergleich ›“** lag im Zahl-Bereich direkt unter „i.O. bis“/„nicht erlaubt“ und deckte sie zum Teil ab. Er steht jetzt **unten rechts neben „Bei n.i.O. ›“** (nur bei Zahl). "
-         "Ob Verlauf/Vergleich eingestellt ist, zeigt die Füllung (hellblau wie beim 🔑); der Text ist immer „Verlauf/Vergleich ›“ (der alte Text „…: an ›“ passte nicht).",
+         "Ob Verlauf/Vergleich eingestellt ist, zeigt die Füllung (hellblau wie beim 🔑, beim Überfahren etwas dunkler); der Text ist immer „Verlauf/Vergleich ›“ (der alte Text „…: an ›“ passte nicht).",
          "- **„Bei n.i.O. ›“** wurde unten abgeschnitten: Bei Zahl endete er genau am Rand des Bereichs (648 px). Durch den kürzeren Zahl-Bereich (ohne den Knopf) und eine 8 px flachere Zeile „Info ⓘ“ endet er jetzt 12 px über dem Rand.",
-         "- **Neue Generator-Prüfung:** Alle Steuerelemente in `conEdP` werden für **jeden Eingabetyp** als Rechtecke gezeichnet (sichtbare je Typ, Bildschirm 768 px). Geprüft: keine Überlappung, nichts ragt aus seinem Container, unten 6 px Rand. Mutation 15/15 (zwei neue Fälle: Überlappung, abgeschnitten). Ergebnis:", ""] + reihen + [
+         "- **Neue Generator-Prüfung:** Alle Steuerelemente in `conEdP` werden für **jeden Eingabetyp** als Rechtecke gezeichnet (sichtbare je Typ, Bildschirm 768 px). Geprüft: keine Überlappung, Knöpfe/Felder mindestens 4 px auseinander (Beschriftungen dürfen an ihr Feld stoßen), nichts ragt aus seinem Container, unten 6 px Rand. Rechnerisch stieß der alte Knopf nur an „nicht erlaubt“ (0 px Abstand); im Bild wirkt das wie Überdecken. Genau das findet die 4-px-Regel. Mutation 16/16 (drei neue Fälle: Überlappung, Berührung wie vorher, abgeschnitten). Ergebnis:", ""] + reihen + [
          "", "- Kein Scrollen nötig: Ein klassischer Container kann nicht scrollen. Ein Umbau auf einen automatischen vertikalen Container würde alle Lage-Werte ändern.",
          "- Umfang: 1 Knopf verschieben (löschen + YAML einfügen), %d Properties. Keine Daten, keine Formel-Logik. **Nicht in Studio getestet.**" % len(rest), "",
          "## B1 – „Verlauf/Vergleich ›“ verschieben", "",
@@ -63,7 +63,7 @@ def main():
           "| T3 | Typ **i.O./n.i.O.**, **Auswahl**, **Text** | „Bei n.i.O. ›“ über die ganze Breite, unten nichts abgeschnitten, kein „Verlauf/Vergleich“ |",
           "| T4 | Zeile „Info ⓘ“ | Anleitung und „Bild wählen“ auf einer Höhe, Vorschaubild rechts 36 × 36 |",
           "| T5 | Prüfpunkt kritisch + Rückfrage, Typ Zahl | Text „⚠ Bei n.i.O.: Rückfrage + kritisch ›“ passt in den Knopf |", "",
-          "## Rückweg", "", "Vorher-Fassungen einsetzen; `btnPZahlMehr` in `conEdP` löschen und das YAML aus dem Anhang in `conPZahl` einfügen.", "",
+          "## Rückweg", "", "Vorher-Fassungen einsetzen; `btnPZahlMehr` in `conEdP` ausschneiden, `conPZahl` markieren, einfügen und die Properties aus dem Anhang (Vorher-Liste `btnPZahlMehr`) einsetzen.", "",
           "## Anhang – Vorher-Fassungen", ""]
     for k in rest:
         z += ["**Builder `%s` vorher**" % k, "", "```", bv["de"][k], "```", ""]

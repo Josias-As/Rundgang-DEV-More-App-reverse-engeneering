@@ -32,6 +32,7 @@ MUTATIONEN = [
      lambda f: f.replace("If(!varPatchFehler, If(IsError(Patch(", "If(!varPatchFehler, IfError((Patch(", 1), "als Wert"),
     ("Label zu schmal (Innenabstand, 02.11.)", "lblPlAb", "Size", lambda f: "13", "FEHLER Label"),
     ("Überlappung in conEdP (Paket 27)", "btnPZahlMehr", "X", lambda f: "300", "überlappt"),
+    ("Knöpfe berühren sich (Paket 27, alter Fehler)", "btnPZahlMehr", "X", lambda f: "316", "berührt"),
     ("Prüfpunkt unten abgeschnitten (Paket 27)", "btnPNio", "Y", lambda f: f.replace("+ 248", "+ 256"), "abgeschnitten"),
     ("Abschnitt fehlt in der Kopie", "tmrArbeit", "OnTimerEnd", lambda f: f.replace(', Abschnitt: Coalesce(q.Abschnitt, "")', "", 1), "Abschnitt"),
 ]

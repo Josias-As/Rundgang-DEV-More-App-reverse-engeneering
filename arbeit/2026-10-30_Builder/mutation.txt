@@ -12,6 +12,7 @@ Bildschirm unbekannt                     gefunden
 IfError mit Set als Wert (02.11.)        gefunden
 Label zu schmal (Innenabstand, 02.11.)   gefunden
 Überlappung in conEdP (Paket 27)         gefunden
+Knöpfe berühren sich (Paket 27, alter Fehler) gefunden
 Prüfpunkt unten abgeschnitten (Paket 27) gefunden
 Abschnitt fehlt in der Kopie             gefunden
-Ergebnis: 15/15
+Ergebnis: 16/16

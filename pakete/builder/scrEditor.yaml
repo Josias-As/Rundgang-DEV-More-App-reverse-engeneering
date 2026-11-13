@@ -1936,7 +1936,7 @@ Screens:
                         Font: =Font.'Segoe UI'
                         Height: =32
                         HoverColor: =clrPrimaer
-                        HoverFill: =clrPrimaerHell
+                        HoverFill: =If(!IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax) || Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false) || Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) <> 0, ColorFade(clrPrimaerHell, -10%), clrPrimaerHell)
                         OnSelect: |-
                           =If(!varIsLoading,
                               Reset(txtZaAbwMax);

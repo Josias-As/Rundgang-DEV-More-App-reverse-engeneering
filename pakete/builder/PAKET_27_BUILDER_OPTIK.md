@@ -4,9 +4,9 @@ Stand 13.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket27.
 
 ## Kurzfassung
 
-- **„Verlauf/Vergleich ›“** lag im Zahl-Bereich direkt unter „i.O. bis“/„nicht erlaubt“ und deckte sie zum Teil ab. Er steht jetzt **unten rechts neben „Bei n.i.O. ›“** (nur bei Zahl). Ob Verlauf/Vergleich eingestellt ist, zeigt die Füllung (hellblau wie beim 🔑); der Text ist immer „Verlauf/Vergleich ›“ (der alte Text „…: an ›“ passte nicht).
+- **„Verlauf/Vergleich ›“** lag im Zahl-Bereich direkt unter „i.O. bis“/„nicht erlaubt“ und deckte sie zum Teil ab. Er steht jetzt **unten rechts neben „Bei n.i.O. ›“** (nur bei Zahl). Ob Verlauf/Vergleich eingestellt ist, zeigt die Füllung (hellblau wie beim 🔑, beim Überfahren etwas dunkler); der Text ist immer „Verlauf/Vergleich ›“ (der alte Text „…: an ›“ passte nicht).
 - **„Bei n.i.O. ›“** wurde unten abgeschnitten: Bei Zahl endete er genau am Rand des Bereichs (648 px). Durch den kürzeren Zahl-Bereich (ohne den Knopf) und eine 8 px flachere Zeile „Info ⓘ“ endet er jetzt 12 px über dem Rand.
-- **Neue Generator-Prüfung:** Alle Steuerelemente in `conEdP` werden für **jeden Eingabetyp** als Rechtecke gezeichnet (sichtbare je Typ, Bildschirm 768 px). Geprüft: keine Überlappung, nichts ragt aus seinem Container, unten 6 px Rand. Mutation 15/15 (zwei neue Fälle: Überlappung, abgeschnitten). Ergebnis:
+- **Neue Generator-Prüfung:** Alle Steuerelemente in `conEdP` werden für **jeden Eingabetyp** als Rechtecke gezeichnet (sichtbare je Typ, Bildschirm 768 px). Geprüft: keine Überlappung, Knöpfe/Felder mindestens 4 px auseinander (Beschriftungen dürfen an ihr Feld stoßen), nichts ragt aus seinem Container, unten 6 px Rand. Rechnerisch stieß der alte Knopf nur an „nicht erlaubt“ (0 px Abstand); im Bild wirkt das wie Überdecken. Genau das findet die 4-px-Regel. Mutation 16/16 (drei neue Fälle: Überlappung, Berührung wie vorher, abgeschnitten). Ergebnis:
 
 - IONIO     32 Steuerelemente, unterster Rand 576 von 648 px
 - ZAHL      39 Steuerelemente, unterster Rand 636 von 648 px
@@ -39,7 +39,7 @@ Stand 13.11.2026. Erzeugt mit `werkzeuge/builder.py` und `werkzeuge/doc_paket27.
       Font: =Font.'Segoe UI'
       Height: =32
       HoverColor: =clrPrimaer
-      HoverFill: =clrPrimaerHell
+      HoverFill: =If(!IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax) || Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false) || Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) <> 0, ColorFade(clrPrimaerHell, -10%), clrPrimaerHell)
       OnSelect: |-
         =If(!varIsLoading,
             Reset(txtZaAbwMax);
@@ -349,7 +349,7 @@ If((LookUp(colP; ID = varAuswahlID).Eingabetyp.Value = "ZAHL"); 356; (LookUp(col
 
 ## Rückweg
 
-Vorher-Fassungen einsetzen; `btnPZahlMehr` in `conEdP` löschen und das YAML aus dem Anhang in `conPZahl` einfügen.
+Vorher-Fassungen einsetzen; `btnPZahlMehr` in `conEdP` ausschneiden, `conPZahl` markieren, einfügen und die Properties aus dem Anhang (Vorher-Liste `btnPZahlMehr`) einsetzen.
 
 ## Anhang – Vorher-Fassungen
 
