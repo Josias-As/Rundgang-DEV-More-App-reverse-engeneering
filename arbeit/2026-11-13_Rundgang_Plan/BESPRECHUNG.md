@@ -33,6 +33,7 @@ Für Josias. Je Punkt: **Frage**, warum sie wichtig ist, was bis zur Antwort gil
 | B10 | Haustechnik | **„Wasseraufbereitung (Jansen)“** – ist Jansen eine Firma? | so übernommen |
 | B11 | Haustechnik | **Was passiert in MoreApp bei „nicht in Ordnung“?** Kommen Foto- oder Textfelder dazu? (Screenshot, nicht senden) | Kommentar Pflicht, Foto möglich |
 | B12 | Haustechnik | **Fotos:** Gibt es Punkte, bei denen ein Foto Pflicht sein soll (immer oder bei Mangel)? | kein Foto-Zwang |
+| B14 | Haustechnik | **„Mangelbeschreibung*“ ist in MoreApp immer Pflicht** (Stern, auch ohne Mangel – belegt MI 130405). Was wird dort eingetragen, wenn alles i.O. ist? Unsere App verlangt den Kommentar nur bei Mangel. | Kommentar nur bei Mangel Pflicht |
 | B13 | Haustechnik / Brandschutz | **Objekthandouts Haustechnik / Brandschutz** (Links im MoreApp-Kopf): Inhalt? In die App als Anleitung (ⓘ)? | weggelassen |
 
 ## C · Verbesserungen, die ich vorschlagen würde (nicht im Original – nur mit Freigabe)
