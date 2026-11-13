@@ -117,6 +117,6 @@ for (const rg of Object.keys(GL)) {
   }
   md.push("");
 }
-fs.writeFileSync(path.join(__dirname, "plan_tabellen.md"), md.join("\n"));
+fs.writeFileSync(path.join(__dirname, "PLAN_RUNDGAENGE.md"), fs.readFileSync(path.join(__dirname, "PLAN_KOPF.md"), "utf8") + md.join("\n"));
 fs.writeFileSync(path.join(__dirname, "PLAN_RUNDGAENGE.csv"), "﻿" + csv.join("\n"));
 console.log(JSON.stringify(zus, null, 1));
