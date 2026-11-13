@@ -4,6 +4,15 @@ P1  ok    Foto Pflicht, kein Foto, sonst alles ausgefüllt                      
 P1  ok    Foto Pflicht, 1 neues Foto (colFotos)                                  erwartet ''           ist ''
 P1  ok    Foto Pflicht, Foto schon gespeichert (Link)                            erwartet ''           ist ''
 P1  ok    Foto Pflicht, Punkt nicht Pflicht und unbeantwortet                    erwartet 'Foto'       ist 'Foto'
+P26  ok    A14: Start Mi 04.11., alle 2 Wochen Mo: Mo 02.11. (vor Start) nein     erwartet False        ist False
+P26  ok    A14: … Mo 09.11. (Woche 1 ab Wochen-Montag) nein                       erwartet False        ist False
+P26  ok    A14: … Mo 16.11. (Woche 2) ja                                          erwartet True         ist True
+P26  ok    A14: … Fr 06.11. (Startwoche, nach Start) bei Freitag-Plan ja          erwartet True         ist True
+P26  ok    A14: Start Mo 02.11. wöchentlich Mo 09.11. ja                          erwartet True         ist True
+P26  ok    A5: Foto Pflicht, freiwillig und unbeantwortet -> kein Foto nötig      erwartet ''           ist ''
+P26  ok    A5: Foto Pflicht, freiwillig aber beantwortet -> Foto                  erwartet 'Foto'       ist 'Foto'
+P26  ok    A5: Foto Pflicht, freiwillige Zahl eingetragen -> Foto                 erwartet 'Foto'       ist 'Foto'
+P26  ok    A5: Foto Pflicht, Pflichtfrage -> Foto (vor Wert? nein: Wert zuerst)   erwartet 'Foto'       ist 'Foto'
 P1  ok    Foto Optional, kein Foto                                               erwartet ''           ist ''
 P1  ok    n.i.O. ohne Kommentar und Foto Pflicht ohne Foto: Kommentar zuerst     erwartet 'Kommentar'  ist 'Kommentar'
 P1  ok    Pflicht-Wert fehlt vor allem anderen                                   erwartet 'Wert'       ist 'Wert'
@@ -116,4 +125,4 @@ P14  ok    Vergleich: Toleranz 0 = exakt gleich                                 
 P14  ok    Vergleich: anderer Wert fehlt noch                                     erwartet False        ist False
 P14  ok    Vergleich: 1,1 und 0,8 bei Toleranz 0,3 (Gleitkomma-Grenze)            erwartet False        ist False
 
-Szenarien: 115, Fehler: 0
+Szenarien: 124, Fehler: 0

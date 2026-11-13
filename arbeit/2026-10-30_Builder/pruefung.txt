@@ -1,5 +1,5 @@
 Rundgang-Builder: 6 Bildschirme, 379 Steuerelemente, 5295 Properties, 55 Variablen, 17 Funktionen
-Patch-Felder geprüft: 326
+Patch-Felder geprüft: 327
 YAML scrListe: 613 Properties zeichengleich zurückgelesen
 YAML scrEditor: 3273 Properties zeichengleich zurückgelesen
 YAML scrPlan: 475 Properties zeichengleich zurückgelesen
@@ -64,6 +64,8 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnZcZurueck            137 px (+10 %) /  150 px, 1 Zeile(n), erlaubt 1  ok  '← Anleitungen'
   ddPCode                 451 px (+10 %) /  512 px, 1 Zeile(n), erlaubt 1  ok  'Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)'
   lblVsTitel              302 px (+10 %) /  394 px, 1 Zeile(n), erlaubt 1  ok  'Vorschau – so sieht es der Prüfer'
+  ddPKategorie            271 px (+10 %) /  280 px, 1 Zeile(n), erlaubt 1  ok  'Kältemaschine 1 (Außenbereich)'
+  ddPKategorie            275 px (+10 %) /  280 px, 1 Zeile(n), erlaubt 1  ok  'Sanitär Herren · Produktionshalle'
   lblPrTitel              276 px (+10 %) /  394 px, 1 Zeile(n), erlaubt 1  ok  'Prüfung: 12 Fehler, 3 Hinweise'
   btnHolenUebernehmen     204 px (+10 %) /  240 px, 1 Zeile(n), erlaubt 1  ok  'Kategorie übernehmen'
   btnAktJetzt             143 px (+10 %) /  180 px, 1 Zeile(n), erlaubt 1  ok  'Jetzt aktivieren'
@@ -152,7 +154,7 @@ Abfragen auf SharePoint (Delegation nachlesen):
   txtPFrage.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Title: Left(Trim(Self.Text), 255)}), Set
   txtPFrage.OnChange             LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   btnPTyp.OnSelect               LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
-  btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}}), Set(v
+  btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}, Verglei
   btnPTyp.OnSelect               LookUp(RG_Pruefpunkte, ID = varAuswahlID))
   btnPPflicht.OnSelect           LookUp(RG_Rundgaenge, ID = varRgID).EntwurfFassung, 0) = varFassung)
   btnPPflicht.OnSelect           LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Pflicht: ThisItem.W = "ja"}), Set(varPat

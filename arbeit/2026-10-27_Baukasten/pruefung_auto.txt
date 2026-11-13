@@ -1459,6 +1459,10 @@
   lblKaInfoText.Height             ok
   imgKaInfo.Y                      ok
   imgKaInfo.Height                 ok
+== Paket 26: 3 Properties, neue Steuerelemente: -
+  btnRgAktion.OnSelect             ok
+  btnKaSpeichern.OnSelect          ok
+  App.Formulas                     ok
   Paket 1: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 2: colAntworten hat in allen drei Zweigen dieselben 19 Felder
   Paket 3: colAntworten hat in allen drei Zweigen dieselben 20 Felder
@@ -1483,6 +1487,7 @@
   Paket 11: colAntworten hat in allen drei Zweigen dieselben 48 Felder
   Paket 25: colAntworten hat in allen drei Zweigen dieselben 48 Felder
   Paket 24: colAntworten hat in allen drei Zweigen dieselben 48 Felder
+  Paket 26: colAntworten hat in allen drei Zweigen dieselben 48 Felder
 Aufrufe fnFehlt im Endstand: btnKaSpeichern.OnSelect, conKaKarte.BorderColor, conKaKarte.BorderThickness, lblKaFehlend.Text, lblKaFehlendAnzahl.Text
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnRuUOk                      309 px (+10 %) / 330 px, 1 Zeile(n) nötig, erlaubt 1  ok  'Unterschreiben und abschließen'

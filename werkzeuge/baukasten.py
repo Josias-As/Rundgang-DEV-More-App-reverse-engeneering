@@ -1686,7 +1686,39 @@ def paket25(st):
     return p
 
 
-PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11, paket25, paket24]
+# ---------------------------------------------------------------- Paket 26 (Testlauf-Fehler A3, A5, A9, A10, A14; Reparatur btnRgAktion)
+
+def paket26(st):
+    p = {"nr": 26, "props": [], "neu": []}
+
+    def start(t):
+        t = rep(t, "With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k: Filter(RG_Kategorien, Aktiv = true)},\n",
+                "With({b: Filter(RG_Bereiche, RundgangID = varRgID && Aktiv = true), k1: Filter(RG_Kategorien, RundgangID = varRgID && Aktiv = true), "
+                "p1: ShowColumns(Filter(RG_Pruefpunkte, RundgangID = varRgID && Aktiv = true), KategorieID)},\n"
+                "            With({k: If(IsEmpty(k1), Filter(RG_Kategorien, Aktiv = true), k1)},\n")
+        t = rep(t, "Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0)",
+                "Filter(k As kat, CountRows(Filter(b As be, be.ID = kat.BereichID)) > 0 && (IsEmpty(p1) || !IsBlank(LookUp(p1 As pp, pp.KategorieID = kat.ID))))")
+        t = rep(t, "{KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                )\n            );\n",
+                "{KategorieID: z.ID, Position: s.Value, BereichName: z.BName, KategorieName: z.Title})))\n                )\n            )\n            );\n")
+        return t
+    aendern(st, p, "26.1", "btnRgAktion.OnSelect", start)
+    aendern(st, p, "26.2", "btnKaSpeichern.OnSelect", lambda t: rep(
+        t, "ClearCollect(colSpeichern, ForAll(colAntworten As r, If(r.PruefpunktID in colVersteckt.PruefpunktID, Patch(r, {Bewertung: \"\", WertText: \"\", WertZahl: Blank(), Kommentar: \"\", Fotos: \"\", Warnung: false, Ausgeblendet: true}), r.Inaktiv, r, Patch(r, {Ausgeblendet: false}))));",
+        "ClearCollect(colSpeichern, ForAll(Filter(colAntworten, !Inaktiv) As r, If(r.PruefpunktID in colVersteckt.PruefpunktID, Patch(r, {Bewertung: \"\", WertText: \"\", WertZahl: Blank(), Kommentar: \"\", Fotos: \"\", Warnung: false, Ausgeblendet: true}), Patch(r, {Ausgeblendet: false}))));"))
+
+    def formeln(t):
+        t = rep(t, '    (foto = "Pflicht" || (foto = "BeiMangel" && bew = "NIO")) && fanz < 1, "Foto",',
+                '    ((foto = "Pflicht" && (pflicht || bew <> "" || Trim(wt) <> "" || !IsBlank(wz))) || (foto = "BeiMangel" && bew = "NIO")) && fanz < 1, "Foto",')
+        t = rep(t, "        t: DateDiff(\n            start,\n            d,\n            TimeUnit.Days\n        )\n    },",
+                "        t: DateDiff(\n            DateAdd(start, 1 - Weekday(start, StartOfWeek.Monday), TimeUnit.Days),\n            d,\n            TimeUnit.Days\n        ),\n"
+                "        t0: DateDiff(\n            start,\n            d,\n            TimeUnit.Days\n        )\n    },")
+        t = rep(t, ") = wt && t >= 0 && (IsBlank(bis)", ") = wt && t0 >= 0 && (IsBlank(bis)")
+        return t
+    aendern(st, p, "26.3", "App.Formulas", formeln)
+    return p
+
+
+PAKETE = [paket1, paket2, paket3, paket4, paket5, paket6, paket7, paket8, paket9, paket10, paket19, paket20, paket21, paket22, paket12, paket16, paket14, paket17, paket13, paket23, paket18, paket11, paket25, paket24, paket26]
 
 
 # ---------------------------------------------------------------- Prüfungen

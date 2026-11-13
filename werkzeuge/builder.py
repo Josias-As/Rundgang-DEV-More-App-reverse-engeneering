@@ -83,7 +83,7 @@ fnBedText(w: Text): Text = Switch(fnBedNorm(w), "nio", "n.i.O. (Mangel)", "io", 
 fnWochentag(n: Number): Text = Switch(n, 1, "Montag", 2, "Dienstag", 3, "Mittwoch", 4, "Donnerstag", 5, "Freitag", 6, "Samstag", 7, "Sonntag", "?");
 fnZyklus(z: Number): Text = If(Coalesce(z, 1) <= 1, "jede Woche", "alle " & z & " Wochen");
 fnMontag(d: Date): DateTime = DateAdd(d, 1 - Weekday(d, StartOfWeek.Monday), TimeUnit.Days);
-fnPlanPasst(start: DateTime, bis: DateTime, wt: Number, zyklus: Number, d: Date): Boolean = With({t: DateDiff(start, d, TimeUnit.Days)}, !IsBlank(start) && Weekday(d, StartOfWeek.Monday) = wt && t >= 0 && (IsBlank(bis) || DateDiff(d, bis, TimeUnit.Days) >= 0) && Mod(RoundDown(t / 7, 0), Max(1, zyklus)) = 0);'''
+fnPlanPasst(start: DateTime, bis: DateTime, wt: Number, zyklus: Number, d: Date): Boolean = With({t0: DateDiff(start, d, TimeUnit.Days), t: DateDiff(DateAdd(start, 1 - Weekday(start, StartOfWeek.Monday), TimeUnit.Days), d, TimeUnit.Days)}, !IsBlank(start) && Weekday(d, StartOfWeek.Monday) = wt && t0 >= 0 && (IsBlank(bis) || DateDiff(d, bis, TimeUnit.Days) >= 0) && Mod(RoundDown(t / 7, 0), Max(1, zyklus)) = 0);'''
 
 ONSTART_VARS = [
     ("varIsLoading", "false"), ("varLadeText", '""'), ("varSperreBis", "Now()"), ("varPatchFehler", "false"),
@@ -479,7 +479,9 @@ REGELN = [
     '{ID: p.ID, KategorieID: p.KategorieID, Title: p.Title, G: If(IsBlank(a) || a.KategorieID <> p.KategorieID, "Die Bedingung zeigt auf eine Frage außerhalb dieser Kategorie.", '
     'Coalesce(a.BedingungPunkt, 0) <> 0, "Die Frage der Bedingung hat selbst eine Bedingung (nur eine Ebene erlaubt).", '
     'a.RgReihenfolge * 1000000 + a.ID > p.RgReihenfolge * 1000000 + p.ID, "Die Frage der Bedingung muss weiter oben stehen.", '
-    '!fnBedGueltig(p.BedingungWert, a.Eingabetyp.Value, a.Auswahlwerte), "Der Wert der Bedingung passt nicht zu „" & a.Title & "“.", "")})), G <> "") As p, '
+    '!fnBedGueltig(p.BedingungWert, a.Eingabetyp.Value, a.Auswahlwerte), "Der Wert der Bedingung passt nicht zu „" & a.Title & "“.", '
+    'a.Eingabetyp.Value = "ZAHL" && fnBedNorm(p.BedingungWert) = "nio" && (fnGrenzmodus(a.Grenzmodus.Value) <> "Mangel" || (IsBlank(a.MinWert) && IsBlank(a.MaxWert))), '
+    '"Bedingung „n.i.O.“: „" & a.Title & "“ wird nie n.i.O. (keine Grenzen ab/bis oder „Außerhalb“ ist nicht „Mangel“). Die Frage erschiene nie.", "")})), G <> "") As p, '
     + P_REGEL("Fehler", '"„" & p.Title & "“: " & p.G') + ')',
     'ForAll(Filter(colP As p, p.Eingabetyp.Value = "ZAHL" && fnGrenzmodus(p.Grenzmodus.Value) <> "Mangel" && IsBlank(p.MinWert) && IsBlank(p.MaxWert)) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“: „Außerhalb“ wirkt nur mit Grenzen (ab/bis)."') + ')',
@@ -496,11 +498,11 @@ REGELN = [
     + P_REGEL("Hinweis", '"„" & p.Title & "“ ist kritisch, aber ohne eigenen Ansprechpartner (es erscheinen nur die allgemeinen)."') + ')',
     'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "IONIO" && (Trim(Coalesce(p.TextIO, "")) <> "" || Trim(Coalesce(p.TextNIO, "")) <> "")) As p, '
     + P_REGEL("Hinweis", '"„" & p.Title & "“: eigene Knopf-Beschriftungen wirken nur bei i.O./n.i.O."') + ')',
-    'ForAll(Filter(colP As p, Coalesce(p.VergleichPunkt, 0) <> 0 && With({w: LookUp(colP As w0, w0.ID = p.VergleichPunkt)}, IsBlank(w) || w.ID = p.ID || w.KategorieID <> p.KategorieID || '
-    'w.Eingabetyp.Value <> "ZAHL" || p.Eingabetyp.Value <> "ZAHL")) As p, '
+    'ForAll(Filter(colP As p, p.Eingabetyp.Value = "ZAHL" && Coalesce(p.VergleichPunkt, 0) <> 0 && With({w: LookUp(colP As w0, w0.ID = p.VergleichPunkt)}, IsBlank(w) || w.ID = p.ID || w.KategorieID <> p.KategorieID || '
+    'w.Eingabetyp.Value <> "ZAHL")) As p, '
     + P_REGEL("Fehler", '"„" & p.Title & "“: Der Vergleich zeigt auf keine Zahl-Frage derselben Kategorie."') + ')',
-    'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false))) As p, '
-    + P_REGEL("Hinweis", '"„" & p.Title & "“: Verlauf/Vergleich wirkt nur bei Zahlen."') + ')',
+    'ForAll(Filter(colP As p, p.Eingabetyp.Value <> "ZAHL" && (!IsBlank(p.AbwMax) || Coalesce(p.NurSteigend, false) || Coalesce(p.VergleichPunkt, 0) <> 0)) As p, '
+    + P_REGEL("Hinweis", '"„" & p.Title & "“: Verlauf/Vergleich wirkt nur bei Zahlen (wird ignoriert)."') + ')',
     'ForAll(Filter(colP As p, !IsBlank(p.AbwMax) && p.AbwMax < 0) As p, ' + P_REGEL("Fehler", '"„" & p.Title & "“: höchste Abweichung darf nicht negativ sein."') + ')',
     'ForAll(Filter(colP As p, !IsBlank(p.VergleichTol) && p.VergleichTol < 0) As p, ' + P_REGEL("Fehler", '"„" & p.Title & "“: erlaubter Unterschied darf nicht negativ sein."') + ')',
     'ForAll(Filter(colP As p, Coalesce(p.AnleitungID, 0) > 0 && IsBlank(LookUp(colAnlAktiv As n0, n0.ID = p.AnleitungID))) As p, '
@@ -512,8 +514,8 @@ REGELN = [
     + '), !varIstVorlage && IsEmpty(Filter(colPlanR, Coalesce(Aktiv, false))))',
 ]
 
-PRUEF_ITEMS = ("Sort(\n    Ungroup(\n        Table(\n" + ",\n".join("            {T: " + r + "}" for r in REGELN)
-               + "\n        ),\n        T\n    ),\n    If(Art = \"Fehler\", 0, 1)\n)")
+PRUEF_ITEMS = ("Sort(\n    Filter(\n        Ungroup(\n            Table(\n" + ",\n".join("                {T: " + r + "}" for r in REGELN)
+               + "\n            ),\n            T\n        ),\n        (Art = \"Fehler\" || Art = \"Hinweis\") && Trim(Coalesce(Text, \"\")) <> \"\"\n    ),\n    If(Art = \"Fehler\", 0, 1)\n)")
 FEHLER_ANZ = 'CountRows(Filter(galPr.AllItems, Art = "Fehler"))'
 HINWEIS_ANZ = 'CountRows(Filter(galPr.AllItems, Art = "Hinweis"))'
 
@@ -1094,7 +1096,8 @@ BED_W_BASIS = ('With({a: LookUp(colP, ID = ' + CUR + '.BedingungPunkt)}, If(a.Ei
                'Table({W: "*", N: "beantwortet"})))')
 BED_W_ITEMS = ('Ungroup(Table({T: ' + BED_W_BASIS + '}, {T: Filter(Table({W: Coalesce(' + CUR + '.BedingungWert, ""), N: Trim(Coalesce(' + CUR + '.BedingungWert, "")) & " (passt nicht)"}), '
                'Trim(Coalesce(' + CUR + '.BedingungWert, "")) <> "" && IsBlank(LookUp(' + BED_W_BASIS + ', fnBedNorm(W) = fnBedNorm(' + CUR + '.BedingungWert))))}), T)')
-KAT_N = lambda k: ('LookUp(colB As b0, b0.ID = %(k)s.BereichID).Title & " › " & %(k)s.Title & If(CountRows(Filter(colK As x, x.Title = %(k)s.Title)) > 1, " (#" & %(k)s.ID & ")", "")' % {"k": k})  # noqa: E731
+KAT_N = lambda k: ('%(k)s.Title & If(CountRows(Filter(colK As x, x.Title = %(k)s.Title)) > 1, " · " & LookUp(colB As b0, b0.ID = %(k)s.BereichID).Title & '
+                   'If(CountRows(Filter(colK As x, x.Title = %(k)s.Title && x.BereichID = %(k)s.BereichID)) > 1, " #" & %(k)s.ID, ""), "")' % {"k": k})  # noqa: E731
 KAT_ITEMS = ('Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: ' + KAT_N("k") + ', '
              'S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)')
 P_VERSCHIEBEN = ('If(!IsBlank(Self.Selected) && Self.Selected.ID <> ' + CUR + '.KategorieID && varSchreibbar,\n'
@@ -1233,7 +1236,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         "0", "20", "528", "40", '"Frage, z. B. Lager sauber?"', '"Frage des Prüfpunkts"'),
     lbl("lblPTyp", '"Was tut der Prüfer?"', "0", "68", "528", "20", size=12, color="clrTextGrau"),
     optionen("galPTyp", TYP_ITEMS, CUR + ".Eingabetyp.Value",
-             'If(ThisItem.W <> %s.Eingabetyp.Value,\n    %s\n)' % (CUR, ind(PP('{Eingabetyp: {Value: ThisItem.W}}'), 4)),
+             'If(ThisItem.W <> %s.Eingabetyp.Value,\n    %s\n)' % (CUR, ind(PP('{Eingabetyp: {Value: ThisItem.W}, VergleichPunkt: If(ThisItem.W = "ZAHL", Coalesce(%s.VergleichPunkt, 0), 0)}' % CUR), 4)),
              "0", "88", "528", 4, '"Eingabetyp"', h=36, size=12, zeilen=2),
     lbl("lblPPflicht", '"Antwort"', "0", "168", "256", "20", size=12, color="clrTextGrau"),
     optionen("galPPflicht", 'Table({W: "ja", N: "Pflicht"}, {W: "nein", N: "freiwillig"})', 'If(Coalesce(%s.Pflicht, false), "ja", "nein")' % CUR,
@@ -1323,7 +1326,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         lbl("lblPKat", '"Gehört zur Kategorie"', "0", "194", "340", "20", size=12, color="clrTextGrau"),
         dd("ddPKategorie", KAT_ITEMS, "N",
            'With({k: LookUp(colK, ID = %s.KategorieID)}, ' % CUR + KAT_N("k") + ')',
-           P_VERSCHIEBEN, "0", "214", "340", "36", '"Kategorie (verschieben)"'),
+           P_VERSCHIEBEN, "0", "214", "340", "36", '"Kategorie (verschieben)"', Size="13"),
         lbl("lblPAbschnitt", '"Abschnitt (optional)"', "352", "194", "176", "20", size=12, color="clrTextGrau"),
         txt("txtPAbschnitt", 'Coalesce(%s.Abschnitt, "")' % CUR,
             'If(Trim(Self.Text) <> Trim(Coalesce(%s.Abschnitt, "")),\n    %s\n)' % (CUR, ind(PP('{Abschnitt: Left(Trim(Self.Text), 255)}'), 4)),
@@ -1500,8 +1503,9 @@ ed_kopf = con("conEdKopf", {"Fill": "clrPrimaer", "Width": "Parent.Width", "Heig
     lbl("lblEdPruefZahl", 'If(' + FEHLER_ANZ + ' > 0, ' + FEHLER_ANZ + ' & " Fehler", "keine Fehler")', "Parent.Width - 400", "12", "180", "40",
         size=13, color="Color.White", Align="Align.Right", Visible="(varSchreibbar && !varIstVorlage) || varAktivRest"),
     btn("btnEdAktivieren", '"Aktivieren …"', "Parent.Width - 206", "12", "190", "40", AKT_OEFFNEN, art="sekundaer",
-        Visible="(varSchreibbar && !varIstVorlage) || varAktivRest", Fill='If(' + FEHLER_ANZ + ' > 0, clrGesperrtHell, clrKarte)',
-        Color='If(' + FEHLER_ANZ + ' > 0, clrTextGrau, clrPrimaer)'),
+        Visible="(varSchreibbar && !varIstVorlage) || varAktivRest", Fill="clrErfolg", Color="Color.White",
+        HoverFill="ColorFade(clrErfolg, -20%)", PressedFill="ColorFade(clrErfolg, -35%)", HoverColor="Color.White", PressedColor="Color.White",
+        BorderThickness="0", DisplayMode='If(varIsLoading || ' + FEHLER_ANZ + ' > 0, DisplayMode.Disabled, DisplayMode.Edit)'),
     btn("btnEdBearbeiten", '"Neue Fassung bearbeiten"', "Parent.Width - 286", "12", "270", "40",
         "If(" + FREI + ",\n    " + LOCK + ";\n    Set(varSchreibbar, true);\n    Set(varJob, \"neueFassung\");\n    Set(varIsLoading, true);\n    Set(varArbeitStart, true)\n)",
         art="sekundaer", Visible='!varSchreibbar && !varAktivRest && fnStatus(varRg.Status, varRg.Aktiv) <> "Entwurf"'),
@@ -2390,6 +2394,7 @@ TEXTE = [
     ("lblPlKopfT", "Kopfdaten für das Protokoll", 13, 600, 0, 1), ("btnPCode", "🔑", 13, 48, 4, 1), ("btnAnCodes", "🔑 Zugangscodes ›", 14, 220, 20, 1),
     ("btnZcZurueck", "← Anleitungen", 14, 170, 20, 1), ("ddPCode", "Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)", 14, 572, 60, 1),
     ("lblVsTitel", "Vorschau – so sieht es der Prüfer", 14, 394, 0, 1),
+    ("ddPKategorie", "Kältemaschine 1 (Außenbereich)", 13, 340, 60, 1), ("ddPKategorie", "Sanitär Herren · Produktionshalle", 13, 340, 60, 1),
     ("lblPrTitel", "Prüfung: 12 Fehler, 3 Hinweise", 14, 394, 0, 1),
     ("btnHolenUebernehmen", "Kategorie übernehmen", 14, 260, 20, 1), ("btnAktJetzt", "Jetzt aktivieren", 14, 200, 20, 1),
     ("btnMehrAnlegen", "Anlegen (120)", 14, 220, 20, 1), ("galMehrTyp", "i.O./n.i.O.", 13, 204 - 6, 16, 1),

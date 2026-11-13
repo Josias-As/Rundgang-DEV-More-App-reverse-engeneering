@@ -77,11 +77,21 @@ def fnFehltGrund(paket, typ, pflicht, bew, wt, wz, kom, foto, fanz, kpfl, gm, mi
         return "Bereich"
     if fnKommentarNoetig(paket, typ, bew, wt, wz, kpfl, gm, mi, ma) and trim(kom) == "":
         return "Kommentar"
-    if (foto == "Pflicht" or (paket >= 7 and foto == "BeiMangel" and bew == "NIO")) and fanz < 1:
+    beantwortet = not leer(bew) or trim(wt) != "" or wz is not None
+    foto_pfl = foto == "Pflicht" and (paket < 26 or pflicht or beantwortet)
+    if (foto_pfl or (paket >= 7 and foto == "BeiMangel" and bew == "NIO")) and fanz < 1:
         return "Foto"
     if paket >= 9 and kritoffen and bew == "NIO":
         return "Kritisch"
     return ""
+
+
+def fnPlanPasst(start, wt, zyklus, d):
+    """Paket 26 (A14): Wochen ab dem Montag der Startwoche, fällig erst ab dem Startdatum."""
+    import datetime as dt
+    s, t = dt.date.fromisoformat(start), dt.date.fromisoformat(d)
+    montag = s - dt.timedelta(days=s.weekday())
+    return t.isoweekday() == wt and (t - s).days >= 0 and ((t - montag).days // 7) % max(1, zyklus) == 0
 
 
 def fnAbweichung(z, l, mx, proz, steig):
@@ -217,6 +227,15 @@ SZENARIEN = [
     (1, "Foto Pflicht, 1 neues Foto (colFotos)", "grund", ("IONIO", True, "IO", "", None, "", "Pflicht", 1, False, "Mangel", None, None), ""),
     (1, "Foto Pflicht, Foto schon gespeichert (Link)", "grund", ("IONIO", True, "IO", "", None, "", "Pflicht", fnLinkAnzahl("https://x/a.jpg"), False, "Mangel", None, None), ""),
     (1, "Foto Pflicht, Punkt nicht Pflicht und unbeantwortet", "grund", ("IONIO", False, "", "", None, "", "Pflicht", 0, False, "Mangel", None, None), "Foto"),
+    (26, "A14: Start Mi 04.11., alle 2 Wochen Mo: Mo 02.11. (vor Start) nein", "plan", ("2026-11-04", 1, 2, "2026-11-02"), False),
+    (26, "A14: … Mo 09.11. (Woche 1 ab Wochen-Montag) nein", "plan", ("2026-11-04", 1, 2, "2026-11-09"), False),
+    (26, "A14: … Mo 16.11. (Woche 2) ja", "plan", ("2026-11-04", 1, 2, "2026-11-16"), True),
+    (26, "A14: … Fr 06.11. (Startwoche, nach Start) bei Freitag-Plan ja", "plan", ("2026-11-04", 5, 2, "2026-11-06"), True),
+    (26, "A14: Start Mo 02.11. wöchentlich Mo 09.11. ja", "plan", ("2026-11-02", 1, 1, "2026-11-09"), True),
+    (26, "A5: Foto Pflicht, freiwillig und unbeantwortet -> kein Foto nötig", "grund", ("IONIO", False, "", "", None, "", "Pflicht", 0, False, "Mangel", None, None), ""),
+    (26, "A5: Foto Pflicht, freiwillig aber beantwortet -> Foto", "grund", ("IONIO", False, "IO", "", None, "", "Pflicht", 0, False, "Mangel", None, None), "Foto"),
+    (26, "A5: Foto Pflicht, freiwillige Zahl eingetragen -> Foto", "grund", ("ZAHL", False, "", "", 5, "", "Pflicht", 0, False, "Mangel", None, None), "Foto"),
+    (26, "A5: Foto Pflicht, Pflichtfrage -> Foto (vor Wert? nein: Wert zuerst)", "grund", ("TEXT", True, "", "abc", None, "", "Pflicht", 0, False, "Mangel", None, None), "Foto"),
     (1, "Foto Optional, kein Foto", "grund", ("IONIO", True, "IO", "", None, "", "Optional", 0, False, "Mangel", None, None), ""),
     (1, "n.i.O. ohne Kommentar und Foto Pflicht ohne Foto: Kommentar zuerst", "grund", ("IONIO", True, "NIO", "", None, "", "Pflicht", 0, False, "Mangel", None, None), "Kommentar"),
     (1, "Pflicht-Wert fehlt vor allem anderen", "grund", ("IONIO", True, "", "", None, "", "Pflicht", 0, False, "Mangel", None, None), "Wert"),
@@ -353,6 +372,8 @@ def fuehre(paket, art, args):
         return fnFotoNeuErlaubt(*args)
     if art == "uhr":
         return uhr_ablauf(*args)
+    if art == "plan":
+        return fnPlanPasst(*args)
     if art == "abw":
         return fnAbweichung(*args)
     if art == "vgl":

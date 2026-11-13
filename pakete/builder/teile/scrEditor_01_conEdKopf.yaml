@@ -109,17 +109,17 @@
           Control: Classic/Button@2.2.0
           Properties:
             BorderColor: =clrPrimaer
-            BorderThickness: =1
-            Color: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, clrTextGrau, clrPrimaer)
+            BorderThickness: =0
+            Color: =Color.White
             DisabledBorderColor: =clrGesperrtHell
             DisabledColor: =clrGesperrt
             DisabledFill: =clrGesperrtHell
-            DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
-            Fill: =If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, clrGesperrtHell, clrKarte)
+            DisplayMode: =If(varIsLoading || CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0, DisplayMode.Disabled, DisplayMode.Edit)
+            Fill: =clrErfolg
             Font: =Font.'Segoe UI'
             Height: =40
-            HoverColor: =clrPrimaer
-            HoverFill: =clrPrimaerHell
+            HoverColor: =Color.White
+            HoverFill: =ColorFade(clrErfolg, -20%)
             OnSelect: |-
               =If(!varIsLoading && Now() >= varSperreBis,
                   If(CountRows(Filter(galPr.AllItems, Art = "Fehler")) > 0,
@@ -134,8 +134,8 @@
                       Set(varAktivOffen, true)
                   )
               )
-            PressedColor: =clrPrimaer
-            PressedFill: =clrPrimaerHell
+            PressedColor: =Color.White
+            PressedFill: =ColorFade(clrErfolg, -35%)
             RadiusBottomLeft: =6
             RadiusBottomRight: =6
             RadiusTopLeft: =6

@@ -592,7 +592,7 @@
                                   If(!varEntwurfOk, Set(varSchreibbar, false); Notify("Dieser Entwurf ist nicht mehr offen (inzwischen aktiviert oder verworfen). Nichts wurde geändert. Bitte zur Übersicht.", NotificationType.Error));
                                   If(varEntwurfOk,
                                       Set(varPatchFehler, false);
-                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}}), Set(varPatchFehler, true));
+                                      IfError(Patch(RG_Pruefpunkte, LookUp(RG_Pruefpunkte, ID = varAuswahlID && RundgangID = varRgID && Fassung = varFassung), {Eingabetyp: {Value: ThisItem.W}, VergleichPunkt: If(ThisItem.W = "ZAHL", Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0), 0)}), Set(varPatchFehler, true));
                                       If(varPatchFehler,
                                           Notify("Nicht gespeichert. Bitte erneut versuchen.", NotificationType.Error),
                                           Patch(colP, LookUp(colP, ID = varAuswahlID), LookUp(RG_Pruefpunkte, ID = varAuswahlID));
@@ -1668,14 +1668,14 @@
                         ChevronHoverFill: =Color.White
                         Color: =clrText
                         Default: |-
-                          =With({k: LookUp(colK, ID = LookUp(colP, ID = varAuswahlID).KategorieID)}, LookUp(colB As b0, b0.ID = k.BereichID).Title & " › " & k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " (#" & k.ID & ")", ""))
+                          =With({k: LookUp(colK, ID = LookUp(colP, ID = varAuswahlID).KategorieID)}, k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " · " & LookUp(colB As b0, b0.ID = k.BereichID).Title & If(CountRows(Filter(colK As x, x.Title = k.Title && x.BereichID = k.BereichID)) > 1, " #" & k.ID, ""), ""))
                         DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.View)
                         Fill: =clrKarte
                         Font: =Font.'Segoe UI'
                         Height: =36
                         HoverFill: =clrPrimaerHell
                         Items: |-
-                          =Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: LookUp(colB As b0, b0.ID = k.BereichID).Title & " › " & k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " (#" & k.ID & ")", ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)
+                          =Sort(ForAll(colK As k, With({b: LookUp(colB As b0, b0.ID = k.BereichID)}, {ID: k.ID, N: k.Title & If(CountRows(Filter(colK As x, x.Title = k.Title)) > 1, " · " & LookUp(colB As b0, b0.ID = k.BereichID).Title & If(CountRows(Filter(colK As x, x.Title = k.Title && x.BereichID = k.BereichID)) > 1, " #" & k.ID, ""), ""), S: Text(b.RgReihenfolge, "000000") & Text(b.ID, "000000") & Text(k.RgReihenfolge, "000000") & Text(k.ID, "000000")})), S)
                         Items.Value: =N
                         OnChange: |-
                           =If(!IsBlank(Self.Selected) && Self.Selected.ID <> LookUp(colP, ID = varAuswahlID).KategorieID && varSchreibbar,
@@ -1720,7 +1720,7 @@
                         PressedFill: =clrPrimaer
                         SelectionColor: =Color.White
                         SelectionFill: =clrPrimaer
-                        Size: =14
+                        Size: =13
                         Width: =340
                         X: =0
                         Y: =214
