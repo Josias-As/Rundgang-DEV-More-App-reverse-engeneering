@@ -1145,7 +1145,7 @@ ANL_DEFAULT = ('With({akt: %s, cur: Coalesce(%s.AnleitungID, 0)}, If(cur = 0, "�
                'Coalesce(LookUp(RG_Anleitungen, ID = cur).Title, "Anleitung #" & cur) & " (inaktiv oder gelöscht)", '
                'With({n: LookUp(akt As a3, a3.ID = cur)}, n.Title & If(CountRows(Filter(akt As d, d.Title = n.Title)) > 1, " (#" & n.ID & ")", ""))))') % (ANL_AKTIV, CUR)
 VS_W = 'If(Max(Len(Coalesce(%s.TextIO, "")), Len(Coalesce(%s.TextNIO, ""))) > 8, 200, 120)'
-REST_Y = 'If(%s, 360, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
+REST_Y = 'If(%s, 356, %s, 350, %s, 296, 232)' % (ist_typ("ZAHL"), ist_typ("AUSWAHL", "MEHRFACH"), ist_typ("IONIO"))
 
 
 NIO_OEFFNEN = ('If(!varIsLoading,\n    Refresh(RG_Ansprechpartner);\n    ClearCollect(colKontakte, RG_Ansprechpartner);\n'
@@ -1256,7 +1256,7 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
             'If(Trim(Self.Text) <> Trim(Coalesce(%s.TextNIO, "")),\n    %s\n)' % (CUR, ind(PP('{TextNIO: Left(Trim(Self.Text), 18)}'), 4)),
             "272", "20", "256", "36", '"z. B. nicht durchgeführt"', '"Beschriftung des n.i.O.-Knopfs"', MaxLength="18"),
     ]),
-    con("conPZahl", {"X": "0", "Y": "232", "Width": "528", "Height": "120", "Fill": "clrHintergrund", "Visible": ist_typ("ZAHL")}, [
+    con("conPZahl", {"X": "0", "Y": "232", "Width": "528", "Height": "118", "Fill": "clrHintergrund", "Visible": ist_typ("ZAHL")}, [
         lbl("lblPNM", '"nicht messbar"', "416", "0", "112", "20", size=12, color="clrTextGrau", PaddingLeft="0", PaddingRight="0"),
         btn("btnPNM", 'If(Coalesce(%s.NichtMessbar, false), "✓ erlaubt", "nicht erlaubt")' % CUR, "416", "20", "112", "36",
             'If(varSchreibbar && varAuswahlEbene = 3 && ' + FREI + ',\n    ' + LOCK + ';\n    %s\n)' % ind(PP('{NichtMessbar: !Coalesce(%s.NichtMessbar, false)}' % CUR), 4), art="sekundaer", size=12,
@@ -1274,8 +1274,6 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
         txt("txtPMax", 'If(IsBlank(%s.MaxWert), "", Text(%s.MaxWert))' % (CUR, CUR), ZAHL_FELD("MaxWert", "txtPMax"),
             "284", "20", "120", "36", '"leer = keine"', '"Obere Grenze"', zahl=True),
         lbl("lblPGrenz", '"Wert außerhalb der Grenzen ergibt"', "0", "62", "300", "20", size=12, color="clrTextGrau"),
-        btn("btnPZahlMehr", 'If(!IsBlank(%s.AbwMax) || Coalesce(%s.NurSteigend, false) || Coalesce(%s.VergleichPunkt, 0) <> 0, "Verlauf/Vergleich: an  ›", "Verlauf/Vergleich  ›")' % (CUR, CUR, CUR), "316", "56", "212", "26",
-            'If(!varIsLoading,\n    Reset(txtZaAbwMax);\n    Reset(txtZaTol);\n    Reset(ddZaVgl);\n    Set(varZaOffen, true)\n)', art="sekundaer", size=12, DisplayMode=BTN_DM),
         optionen("galPGrenz", 'Table({W: "Mangel", N: "Mangel"}, {W: "Warnen", N: "Hinweis + Grund"}, {W: "Sperren", N: "nicht speicherbar"})',
                  'fnGrenzmodus(%s.Grenzmodus.Value)' % CUR,
                  'If(ThisItem.W <> fnGrenzmodus(%s.Grenzmodus.Value),\n    %s\n)' % (CUR, ind(PP('{Grenzmodus: {Value: ThisItem.W}}'), 4)),
@@ -1290,14 +1288,18 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
     ]),
     btn("btnPNio", 'If(Coalesce(%s.Kritisch, false), "⚠ ", "") & "Bei n.i.O.: " & If(Coalesce(%s.Rueckfrage, false) || Coalesce(%s.Kritisch, false), '
         'If(Coalesce(%s.Rueckfrage, false), "Rückfrage", "") & If(Coalesce(%s.Rueckfrage, false) && Coalesce(%s.Kritisch, false), " + ", "") & If(Coalesce(%s.Kritisch, false), "kritisch", ""), "nichts Besonderes") & "  ›"' % ((CUR,) * 7),
-        "0", REST_Y + " + 256", "528", "32", NIO_OEFFNEN, art="sekundaer", size=13, DisplayMode=BTN_DM,
+        "0", REST_Y + " + 248", 'If(%s, 316, 528)' % ist_typ("ZAHL"), "32", NIO_OEFFNEN, art="sekundaer", size=12, DisplayMode=BTN_DM,
         Color='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR, BorderColor='If(Coalesce(%s.Kritisch, false), clrFehler, clrPrimaer)' % CUR),
-    con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "250", "Fill": "clrHintergrund"}, [
+    btn("btnPZahlMehr", '"Verlauf/Vergleich  ›"', "324", REST_Y + " + 248", "204", "32",
+        'If(!varIsLoading,\n    Reset(txtZaAbwMax);\n    Reset(txtZaTol);\n    Reset(ddZaVgl);\n    Set(varZaOffen, true)\n)', art="sekundaer", size=12, DisplayMode=BTN_DM,
+        Fill='If(!IsBlank(%s.AbwMax) || Coalesce(%s.NurSteigend, false) || Coalesce(%s.VergleichPunkt, 0) <> 0, clrPrimaerHell, clrKarte)' % (CUR, CUR, CUR),
+        Visible=ist_typ("ZAHL")),
+    con("conPRest", {"X": "0", "Y": REST_Y, "Width": "528", "Height": "242", "Fill": "clrHintergrund"}, [
         lbl("lblPFoto", '"Foto"', "0", "0", "256", "20", size=12, color="clrTextGrau"),
         lbl("lblPAnl", '"Info ⓘ: Anleitung (optional)"', "0", "124", "256", "20", size=12, color="clrTextGrau"),
         dd("ddPAnl", ANL_ITEMS, "N", ANL_DEFAULT,
            'If(!IsBlank(Self.Selected) && Self.Selected.ID <> Coalesce(%s.AnleitungID, 0),\n    %s\n)' % (CUR, ind(PP('{AnleitungID: Self.Selected.ID}'), 4)),
-           "0", "148", "256", "36", '"Anleitung"'),
+           "0", "144", "256", "36", '"Anleitung"'),
         dd("ddPFoto", FOTO_ITEMS, "N", 'LookUp(%s, W = %s).N' % (FOTO_ITEMS, FOTO_IST),
            'If(!IsBlank(Self.Selected) && Self.Selected.W <> %s,\n    %s\n)' % (FOTO_IST, ind(PP('{Foto: {Value: Self.Selected.W}}'), 4)),
            "0", "20", "256", "36", '"Foto-Regel"'),
@@ -1318,19 +1320,19 @@ ed_p = con("conEdP", {"X": "16", "Y": "56", "Width": "528", "Height": "Parent.He
             "If(!varIsLoading,\n    Refresh(RG_Zugangscodes);\n    Reset(ddPCode);\n    Set(varCodeOffen, true)\n)", art="sekundaer", size=13,
             Fill='If(Coalesce(%s.ZugangscodeID, 0) > 0, clrPrimaerHell, clrKarte)' % CUR, PaddingLeft="2", PaddingRight="2"),
         lbl("lblPBild", '"Info ⓘ: Beispielbild (optional)"', "272", "124", "256", "20", size=12, color="clrTextGrau"),
-        btn("btnPBild", 'If(Coalesce(%s.HinweisBildID, 0) > 0, "Bild ändern", "Bild wählen")' % CUR, "272", "144", "204", "44",
+        btn("btnPBild", 'If(Coalesce(%s.HinweisBildID, 0) > 0, "Bild ändern", "Bild wählen")' % CUR, "272", "144", "212", "36",
             "Set(varBildOffen, true)", art="sekundaer", size=13, DisplayMode=EDIT.replace("DisplayMode.View", "DisplayMode.Disabled")),
-        C("imgPBild", "Image@2.2.3", {"X": "484", "Y": "144", "Width": "44", "Height": "44", "ImagePosition": "ImagePosition.Fill",
+        C("imgPBild", "Image@2.2.3", {"X": "492", "Y": "144", "Width": "36", "Height": "36", "ImagePosition": "ImagePosition.Fill",
                                       "AccessibleLabel": '"Gewähltes Beispielbild"',
                                       "Image": 'If(varAuswahlEbene = 3 && Coalesce(%s.HinweisBildID, 0) > 0, LookUp(RG_Hinweisbilder, ID = %s.HinweisBildID).Thumbnail.Small)' % (CUR, CUR)}),
-        lbl("lblPKat", '"Gehört zur Kategorie"', "0", "194", "340", "20", size=12, color="clrTextGrau"),
+        lbl("lblPKat", '"Gehört zur Kategorie"', "0", "186", "340", "20", size=12, color="clrTextGrau"),
         dd("ddPKategorie", KAT_ITEMS, "N",
            'With({k: LookUp(colK, ID = %s.KategorieID)}, ' % CUR + KAT_N("k") + ')',
-           P_VERSCHIEBEN, "0", "214", "340", "36", '"Kategorie (verschieben)"', Size="13"),
-        lbl("lblPAbschnitt", '"Abschnitt (optional)"', "352", "194", "176", "20", size=12, color="clrTextGrau"),
+           P_VERSCHIEBEN, "0", "206", "340", "36", '"Kategorie (verschieben)"', Size="13"),
+        lbl("lblPAbschnitt", '"Abschnitt (optional)"', "352", "186", "176", "20", size=12, color="clrTextGrau"),
         txt("txtPAbschnitt", 'Coalesce(%s.Abschnitt, "")' % CUR,
             'If(Trim(Self.Text) <> Trim(Coalesce(%s.Abschnitt, "")),\n    %s\n)' % (CUR, ind(PP('{Abschnitt: Left(Trim(Self.Text), 255)}'), 4)),
-            "352", "214", "176", "36", '"z. B. Kompressor 1"', '"Abschnitt innerhalb der Kategorie"'),
+            "352", "206", "176", "36", '"z. B. Kompressor 1"', '"Abschnitt innerhalb der Kategorie"'),
     ]),
 ])
 
@@ -2394,6 +2396,8 @@ TEXTE = [
     ("lblPlKopfT", "Kopfdaten für das Protokoll", 13, 600, 0, 1), ("btnPCode", "🔑", 13, 48, 4, 1), ("btnAnCodes", "🔑 Zugangscodes ›", 14, 220, 20, 1),
     ("btnZcZurueck", "← Anleitungen", 14, 170, 20, 1), ("ddPCode", "Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)", 14, 572, 60, 1),
     ("lblVsTitel", "Vorschau – so sieht es der Prüfer", 14, 394, 0, 1),
+    ("btnPNio", "⚠ Bei n.i.O.: Rückfrage + kritisch  ›", 12, 316, 20, 1), ("btnPNio", "Bei n.i.O.: nichts Besonderes  ›", 12, 316, 20, 1),
+    ("btnPZahlMehr", "Verlauf/Vergleich  ›", 12, 204, 20, 1),
     ("ddPKategorie", "Kältemaschine 1 (Außenbereich)", 13, 340, 60, 1), ("ddPKategorie", "Sanitär Herren · Produktionshalle", 13, 340, 60, 1),
     ("lblPrTitel", "Prüfung: 12 Fehler, 3 Hinweise", 14, 394, 0, 1),
     ("btnHolenUebernehmen", "Kategorie übernehmen", 14, 260, 20, 1), ("btnAktJetzt", "Jetzt aktivieren", 14, 200, 20, 1),
@@ -2450,12 +2454,70 @@ def delegation(props):
     return z
 
 
+def pruefe_rechtecke_edp(bild_h=768):
+    """Paket 27: alle Steuerelemente in conEdP je Eingabetyp als Rechtecke. Keine Überlappung (Galerie-Vorlagen ausgenommen),
+    alles innerhalb des Elterncontainers und in conEdP mit 6 px Rand nach unten sichtbar."""
+    zeilen, fehler = [], 0
+    edp = [c for c, _ in alle([x for x in SCREENS if x.name == "scrEditor"][0]) if c.name == "conEdP"][0]
+    typen = ["IONIO", "ZAHL", "AUSWAHL", "MEHRFACH", "TEXT", "DATUM", "DATUMZEIT"]
+
+    def If(*a):
+        for i in range(0, len(a) - 1, 2):
+            if a[i]:
+                return a[i + 1]
+        return a[-1] if len(a) % 2 else None
+
+    def ev(f, typ, pw, ph, default=None):
+        t = re.sub(re.escape(CUR) + r'\.Eingabetyp\.Value = "(\w+)"', lambda m: str(m.group(1) == typ), f)
+        t = t.replace("Parent.Width", str(pw)).replace("Parent.Height", str(ph)).replace("||", " or ").replace("&&", " and ")
+        try:
+            return eval(t, {"If": If, "True": True, "False": False})
+        except Exception:
+            if default is None:
+                raise ValueError("nicht auswertbar: " + f)
+            return default
+    ph_edp = bild_h - 64 - 56
+    for typ in typen:
+        rects, n = [], 0
+
+        def lauf(c, ox, oy, pw, ph):
+            nonlocal fehler, n
+            for k in c.kinder:
+                if not ev(k.props.get("Visible", "true").replace("true", "True").replace("false", "False"), typ, pw, ph, default=True):
+                    continue
+                x = ev(k.props.get("X", "0"), typ, pw, ph)
+                y = ev(k.props.get("Y", "0"), typ, pw, ph)
+                w = ev(k.props.get("Width", "0"), typ, pw, ph)
+                h = ev(k.props.get("Height", "0"), typ, pw, ph)
+                n += 1
+                if x < 0 or y < 0 or x + w > pw or y + h > ph:
+                    fehler += 1
+                    zeilen.append("  %-9s %-16s ragt aus %s heraus (%s,%s %sx%s in %sx%s)  FEHLER" % (typ, k.name, c.name, x, y, w, h, pw, ph))
+                if k.typ.startswith("GroupContainer"):
+                    lauf(k, ox + x, oy + y, w, h)
+                else:
+                    rects.append((k.name, ox + x, oy + y, w, h))
+        lauf(edp, 0, 0, 528, ph_edp)
+        for i, (a, ax, ay, aw, ah) in enumerate(rects):
+            for b, bx, by, bw, bh in rects[i + 1:]:
+                if ax < bx + bw and bx < ax + aw and ay < by + bh and by < ay + ah:
+                    fehler += 1
+                    zeilen.append("  %-9s %s überlappt %s  FEHLER" % (typ, a, b))
+        unten = max(y + h for _, _, y, _, h in rects)
+        ok = unten <= ph_edp - 6
+        fehler += 0 if ok else 1
+        zeilen.append("  %-9s %2d Steuerelemente, unterster Rand %d von %d px%s" % (typ, n, unten, ph_edp, "" if ok else "  FEHLER (abgeschnitten)"))
+    return fehler, zeilen
+
+
 def main():
     app_ref = rg.App("2026-10-27_0909")
     fehler, zeilen, props, kontrollen = pruefen(app_ref)
     f2, z2 = pruefe_texte()
     f3, z3 = pruefe_label_auto()
-    fehler += f2 + f3
+    f4, z4 = pruefe_rechtecke_edp()
+    fehler += f2 + f3 + f4
+    zeilen += ["", "Rechtecke in conEdP je Eingabetyp (Bildschirm 768 px hoch):"] + z4
     zeilen += ["", "Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):"] + z2 + z3
     zeilen += ["", "Abfragen auf SharePoint (Delegation nachlesen):"] + delegation(props)
     os.makedirs(AUS_PAKET, exist_ok=True)

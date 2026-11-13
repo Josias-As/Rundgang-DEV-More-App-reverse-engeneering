@@ -11,5 +11,7 @@ Feld nach Punkt falsch                   gefunden
 Bildschirm unbekannt                     gefunden
 IfError mit Set als Wert (02.11.)        gefunden
 Label zu schmal (Innenabstand, 02.11.)   gefunden
+Überlappung in conEdP (Paket 27)         gefunden
+Prüfpunkt unten abgeschnitten (Paket 27) gefunden
 Abschnitt fehlt in der Kopie             gefunden
-Ergebnis: 13/13
+Ergebnis: 15/15

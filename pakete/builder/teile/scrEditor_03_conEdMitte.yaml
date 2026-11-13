@@ -864,7 +864,7 @@
                 Properties:
                   BorderThickness: =0
                   Fill: =clrHintergrund
-                  Height: =120
+                  Height: =118
                   Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL")
                   Width: =528
                   X: =0
@@ -1088,40 +1088,6 @@
                         Width: =300
                         X: =0
                         Y: =62
-                  - btnPZahlMehr:
-                      Control: Classic/Button@2.2.0
-                      Properties:
-                        BorderColor: =clrPrimaer
-                        BorderThickness: =1
-                        Color: =clrPrimaer
-                        DisabledBorderColor: =clrGesperrtHell
-                        DisabledColor: =clrGesperrt
-                        DisabledFill: =clrGesperrtHell
-                        DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
-                        Fill: =clrKarte
-                        Font: =Font.'Segoe UI'
-                        Height: =26
-                        HoverColor: =clrPrimaer
-                        HoverFill: =clrPrimaerHell
-                        OnSelect: |-
-                          =If(!varIsLoading,
-                              Reset(txtZaAbwMax);
-                              Reset(txtZaTol);
-                              Reset(ddZaVgl);
-                              Set(varZaOffen, true)
-                          )
-                        PressedColor: =clrPrimaer
-                        PressedFill: =clrPrimaerHell
-                        RadiusBottomLeft: =6
-                        RadiusBottomRight: =6
-                        RadiusTopLeft: =6
-                        RadiusTopRight: =6
-                        Size: =12
-                        Text: |-
-                          =If(!IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax) || Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false) || Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) <> 0, "Verlauf/Vergleich: an  ›", "Verlauf/Vergleich  ›")
-                        Width: =212
-                        X: =316
-                        Y: =56
                   - galPGrenz:
                       Control: Gallery@2.15.0
                       Variant: Vertical
@@ -1271,22 +1237,56 @@
                   RadiusBottomRight: =6
                   RadiusTopLeft: =6
                   RadiusTopRight: =6
-                  Size: =13
+                  Size: =12
                   Text: |-
                     =If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "⚠ ", "") & "Bei n.i.O.: " & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) || Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false), "Rückfrage", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Rueckfrage, false) && Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), " + ", "") & If(Coalesce(LookUp(colP, ID = varAuswahlID).Kritisch, false), "kritisch", ""), "nichts Besonderes") & "  ›"
-                  Width: =528
+                  Width: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 316, 528)
                   X: =0
-                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 360, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO"), 296, 232) + 256
+                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 356, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO"), 296, 232) + 248
+            - btnPZahlMehr:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  BorderColor: =clrPrimaer
+                  BorderThickness: =1
+                  Color: =clrPrimaer
+                  DisabledBorderColor: =clrGesperrtHell
+                  DisabledColor: =clrGesperrt
+                  DisabledFill: =clrGesperrtHell
+                  DisplayMode: =If(varIsLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                  Fill: =If(!IsBlank(LookUp(colP, ID = varAuswahlID).AbwMax) || Coalesce(LookUp(colP, ID = varAuswahlID).NurSteigend, false) || Coalesce(LookUp(colP, ID = varAuswahlID).VergleichPunkt, 0) <> 0, clrPrimaerHell, clrKarte)
+                  Font: =Font.'Segoe UI'
+                  Height: =32
+                  HoverColor: =clrPrimaer
+                  HoverFill: =clrPrimaerHell
+                  OnSelect: |-
+                    =If(!varIsLoading,
+                        Reset(txtZaAbwMax);
+                        Reset(txtZaTol);
+                        Reset(ddZaVgl);
+                        Set(varZaOffen, true)
+                    )
+                  PressedColor: =clrPrimaer
+                  PressedFill: =clrPrimaerHell
+                  RadiusBottomLeft: =6
+                  RadiusBottomRight: =6
+                  RadiusTopLeft: =6
+                  RadiusTopRight: =6
+                  Size: =12
+                  Text: ="Verlauf/Vergleich  ›"
+                  Visible: =(LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL")
+                  Width: =204
+                  X: =324
+                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 356, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO"), 296, 232) + 248
             - conPRest:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
                   BorderThickness: =0
                   Fill: =clrHintergrund
-                  Height: =250
+                  Height: =242
                   Width: =528
                   X: =0
-                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 360, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO"), 296, 232)
+                  Y: =If((LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "ZAHL"), 356, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "AUSWAHL" || LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "MEHRFACH"), 350, (LookUp(colP, ID = varAuswahlID).Eingabetyp.Value = "IONIO"), 296, 232)
                 Children:
                   - lblPFoto:
                       Control: Label@2.5.1
@@ -1357,7 +1357,7 @@
                         Size: =14
                         Width: =256
                         X: =0
-                        Y: =148
+                        Y: =144
                   - ddPFoto:
                       Control: Classic/DropDown@2.3.1
                       Properties:
@@ -1620,7 +1620,7 @@
                         DisplayMode: =If(varSchreibbar && !varIsLoading, DisplayMode.Edit, DisplayMode.Disabled)
                         Fill: =clrKarte
                         Font: =Font.'Segoe UI'
-                        Height: =44
+                        Height: =36
                         HoverColor: =clrPrimaer
                         HoverFill: =clrPrimaerHell
                         OnSelect: =Set(varBildOffen, true)
@@ -1632,18 +1632,18 @@
                         RadiusTopRight: =6
                         Size: =13
                         Text: =If(Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, "Bild ändern", "Bild wählen")
-                        Width: =204
+                        Width: =212
                         X: =272
                         Y: =144
                   - imgPBild:
                       Control: Image@2.2.3
                       Properties:
                         AccessibleLabel: ="Gewähltes Beispielbild"
-                        Height: =44
+                        Height: =36
                         Image: =If(varAuswahlEbene = 3 && Coalesce(LookUp(colP, ID = varAuswahlID).HinweisBildID, 0) > 0, LookUp(RG_Hinweisbilder, ID = LookUp(colP, ID = varAuswahlID).HinweisBildID).Thumbnail.Small)
                         ImagePosition: =ImagePosition.Fill
-                        Width: =44
-                        X: =484
+                        Width: =36
+                        X: =492
                         Y: =144
                   - lblPKat:
                       Control: Label@2.5.1
@@ -1655,7 +1655,7 @@
                         Text: ="Gehört zur Kategorie"
                         Width: =340
                         X: =0
-                        Y: =194
+                        Y: =186
                   - ddPKategorie:
                       Control: Classic/DropDown@2.3.1
                       Properties:
@@ -1723,7 +1723,7 @@
                         Size: =13
                         Width: =340
                         X: =0
-                        Y: =214
+                        Y: =206
                   - lblPAbschnitt:
                       Control: Label@2.5.1
                       Properties:
@@ -1734,7 +1734,7 @@
                         Text: ="Abschnitt (optional)"
                         Width: =176
                         X: =352
-                        Y: =194
+                        Y: =186
                   - txtPAbschnitt:
                       Control: Classic/TextInput@2.3.2
                       Properties:
@@ -1769,4 +1769,4 @@
                         Size: =14
                         Width: =176
                         X: =352
-                        Y: =214
+                        Y: =206

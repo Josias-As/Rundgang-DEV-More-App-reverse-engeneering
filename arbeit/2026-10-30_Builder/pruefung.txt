@@ -1,11 +1,20 @@
-Rundgang-Builder: 6 Bildschirme, 379 Steuerelemente, 5295 Properties, 55 Variablen, 17 Funktionen
+Rundgang-Builder: 6 Bildschirme, 379 Steuerelemente, 5296 Properties, 55 Variablen, 17 Funktionen
 Patch-Felder geprüft: 327
 YAML scrListe: 613 Properties zeichengleich zurückgelesen
-YAML scrEditor: 3273 Properties zeichengleich zurückgelesen
+YAML scrEditor: 3274 Properties zeichengleich zurückgelesen
 YAML scrPlan: 475 Properties zeichengleich zurückgelesen
 YAML scrKontakte: 373 Properties zeichengleich zurückgelesen
 YAML scrAnleitungen: 279 Properties zeichengleich zurückgelesen
 YAML scrCodes: 280 Properties zeichengleich zurückgelesen
+
+Rechtecke in conEdP je Eingabetyp (Bildschirm 768 px hoch):
+  IONIO     32 Steuerelemente, unterster Rand 576 von 648 px
+  ZAHL      39 Steuerelemente, unterster Rand 636 von 648 px
+  AUSWAHL   30 Steuerelemente, unterster Rand 630 von 648 px
+  MEHRFACH  30 Steuerelemente, unterster Rand 630 von 648 px
+  TEXT      27 Steuerelemente, unterster Rand 512 von 648 px
+  DATUM     27 Steuerelemente, unterster Rand 512 von 648 px
+  DATUMZEIT 27 Steuerelemente, unterster Rand 512 von 648 px
 
 Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnLiNeu                166 px (+10 %) /  200 px, 1 Zeile(n), erlaubt 1  ok  '+ Neuer Rundgang'
@@ -64,6 +73,9 @@ Textbreiten (Segoe UI, Schätzung je Zeichenart, Punkt -> Pixel x 1,333):
   btnZcZurueck            137 px (+10 %) /  150 px, 1 Zeile(n), erlaubt 1  ok  '← Anleitungen'
   ddPCode                 451 px (+10 %) /  512 px, 1 Zeile(n), erlaubt 1  ok  'Bedienteil Kältemaschine 1 (inaktiv oder gelöscht)'
   lblVsTitel              302 px (+10 %) /  394 px, 1 Zeile(n), erlaubt 1  ok  'Vorschau – so sieht es der Prüfer'
+  btnPNio                 291 px (+10 %) /  296 px, 1 Zeile(n), erlaubt 1  ok  '⚠ Bei n.i.O.: Rückfrage + kritisch  ›'
+  btnPNio                 252 px (+10 %) /  296 px, 1 Zeile(n), erlaubt 1  ok  'Bei n.i.O.: nichts Besonderes  ›'
+  btnPZahlMehr            169 px (+10 %) /  184 px, 1 Zeile(n), erlaubt 1  ok  'Verlauf/Vergleich  ›'
   ddPKategorie            271 px (+10 %) /  280 px, 1 Zeile(n), erlaubt 1  ok  'Kältemaschine 1 (Außenbereich)'
   ddPKategorie            275 px (+10 %) /  280 px, 1 Zeile(n), erlaubt 1  ok  'Sanitär Herren · Produktionshalle'
   lblPrTitel              276 px (+10 %) /  394 px, 1 Zeile(n), erlaubt 1  ok  'Prüfung: 12 Fehler, 3 Hinweise'

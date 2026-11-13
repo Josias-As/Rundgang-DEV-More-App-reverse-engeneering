@@ -31,6 +31,8 @@ MUTATIONEN = [
     ("IfError mit Set als Wert (02.11.)", "btnLiVerwerfen", "OnSelect",
      lambda f: f.replace("If(!varPatchFehler, If(IsError(Patch(", "If(!varPatchFehler, IfError((Patch(", 1), "als Wert"),
     ("Label zu schmal (Innenabstand, 02.11.)", "lblPlAb", "Size", lambda f: "13", "FEHLER Label"),
+    ("Überlappung in conEdP (Paket 27)", "btnPZahlMehr", "X", lambda f: "300", "überlappt"),
+    ("Prüfpunkt unten abgeschnitten (Paket 27)", "btnPNio", "Y", lambda f: f.replace("+ 248", "+ 256"), "abgeschnitten"),
     ("Abschnitt fehlt in der Kopie", "tmrArbeit", "OnTimerEnd", lambda f: f.replace(', Abschnitt: Coalesce(q.Abschnitt, "")', "", 1), "Abschnitt"),
 ]
 
@@ -47,7 +49,8 @@ def main():
         try:
             f, z, _, _ = builder.pruefen(app_ref)
             f3, z3 = builder.pruefe_label_auto()
-            f, z = f + f3, z + z3
+            f4, z4 = builder.pruefe_rechtecke_edp()
+            f, z = f + f3 + f4, z + z3 + z4
         except Exception as e:
             f, z = 1, ["Ausnahme: %s" % e]
         c.props[prop] = alt
