@@ -118,3 +118,27 @@ Bild-Kürzel: MD = Ordner Montag+Dienstag, MI = Mittwoch, REPO = alte Repo-Bilde
 - Was steht wo: „(ggf. nachfüllen)::“ (doppelter Doppelpunkt, Damen-WC-Seifenspender) und „Verpackung“ / „Verpackungen“ (BS / Brandschutz).
 - Frage: Korrigieren bzw. vereinheitlichen?
 - Vorschlag: „::“ → „:“ korrigieren. „Verpackung/Verpackungen“ so lassen wie in MoreApp.
+
+## Haustechnikrundgang
+
+**Q-HT-1 – Tippfehler „::“**
+- Bilder: MD 124708 (Sozialräume, Herren-Seifenspender), MD 124644 (Büro 1. OG, Damen-Seifenspender).
+- Frage: Korrigieren?
+- Vorschlag: ja, „::“ → „:“.
+
+**Q-HT-2 – Trinkwasser spülen: „in Ordnung“ oder „durchgeführt“?**
+- Bild: MD 124729.
+- Was steht wo: Die 11 Entnahmestellen unter „Spülen der Trinkwasserleitungen (ca. 1-2 Minuten pro Entnahmestelle)“ haben in MoreApp die Knöpfe „in Ordnung / nicht in Ordnung“.
+- Frage: In der App lieber „durchgeführt / nicht durchgeführt“, so wie bei Legionellen?
+- Vorschlag: wie MoreApp lassen (i.O./n.i.O.). Wenn du „durchgeführt“ willst: TextIO „durchgeführt“, TextNIO „nicht durchgeführt“.
+
+**Q-HT-3 – Sammelstation „Verschmutzungen sofort entfernen lassen!“**
+- Bild: MD 124750.
+- Frage: Soll ein n.i.O. hier ein rotes „sofort melden“-Fenster öffnen? Wenn ja: an wen?
+- Vorschlag: nein, in MoreApp ist das nur ein Klammertext.
+
+**Q-HT-4 – „Rücksprache mit Kunde …“ unter „Trinkwasser spülen“**
+- Bild: MD 124743.
+- Was steht wo: Die Frage steht in MoreApp unter dem Balken „Spülen der Trinkwasserleitungen“, hat aber nichts damit zu tun.
+- Frage: Unter einen eigenen Abschnitt legen (z. B. „Reinigung“)?
+- Vorschlag: so lassen wie in MoreApp.
