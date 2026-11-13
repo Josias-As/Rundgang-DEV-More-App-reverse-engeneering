@@ -1,74 +1,59 @@
-# Bauplan der echten Rundgänge (Stand 13.11.2026)
+# Bauplan der echten Rundgänge (Stand 13.11.2026, Fassung „am Original“)
 
-Erstellt vom Einsetz-Chat als **Denkschritt vor dem Bauen**. Grundlage: Bildanalyse `arbeit/2026-11-10_Bildanalyse/` (133 Screenshots Mo/Di/Mi + 4 PDFs), Vorgaben von Josias. Noch **nichts** davon ist in SharePoint angelegt.
+Erstellt vom Einsetz-Chat als **Denkschritt vor dem Bauen**. Grundlage: Bildanalyse `arbeit/2026-11-10_Bildanalyse/` (133 Screenshots Mo/Di/Mi + 4 PDFs). Noch **nichts** davon ist in SharePoint angelegt.
 
-- **Josias' Vorgaben (13.11.):** „lieber mehr drin als weniger“ · aktuelles Konzept (5 Rundgänge nach Intervall), ein späterer Umbau auf Wochentags-Rundgänge bleibt möglich · zu jedem Prüfpunkt alles festlegen · Änderungen erlaubt, wenn sie gut passen · alles dokumentieren.
-- **Maschinenlesbar:** `PLAN_RUNDGAENGE.csv` (eine Zeile je Prüfpunkt, alle Einstellungen, Begründung, Quelle). Erzeugt mit `plan_erzeugen.js` aus den Analyse-CSVs – Änderungen an den Regeln dort, dann neu erzeugen.
-- **Kennzeichnung:** In der Spalte „Änderung ggü. MoreApp“ steht alles, was **nicht** 1:1 aus MoreApp kommt. Leer = genau wie in MoreApp.
+- **Josias' Vorgaben (13.11.):** „alles so gut es geht am Original“ · Ansprechpartner und Schlüssel (Zugangscode) erstmal überall **Platzhalter** · aktuelles Konzept (5 Rundgänge nach Intervall), späterer Umbau auf Wochentags-Rundgänge möglich · alles dokumentieren · Liste der Punkte, die mit den Verantwortlichen zu besprechen sind → `BESPRECHUNG.md`.
+- **Maschinenlesbar:** `PLAN_RUNDGAENGE.csv` (eine Zeile je Prüfpunkt, alle Einstellungen, Begründung, Quelle), erzeugt mit `plan_erzeugen.js` (`ORIGINAL = true`). Die zuerst geplante Variante „mit Zusätzen“ (Rückfragen, Plausibilitätsgrenzen, „nur steigend“, „nicht messbar“, Seiten-Aufteilung, „durchgeführt“-Knöpfe …) steckt im Skript (`ORIGINAL = false`) und steht als Vorschlagsliste in `BESPRECHUNG.md` Teil C.
+- **Kennzeichnung:** Spalte „Änderung ggü. MoreApp“ – leer = genau wie MoreApp.
 
 ## 1. Überblick
 
-| Rundgang | Plan | Prüfpunkte | Kategorien (Seiten) |
+| Rundgang | Plan | Prüfpunkte | Seiten (= MoreApp-Unterformulare) |
 |---|---|---|---|
-| Infrastrukturrundgang TGI MMS | Mo, Mi, Fr | 76 + Bemerkungen | 8 |
-| Brandschutzrundgang TGI MMS | Mo–Fr | 45 + Bemerkungen | 5 |
-| Haustechnikrundgang TGI MMS | Mo | 75 + Bemerkungen | 9 |
-| Legionellen Prävention TGI MMS | Mo | 2 + Bemerkungen | 1 |
-| Sichtprüfung Gefahrstoffschränke TGI MMS | Mo | 6 + Bemerkungen | 1 |
+| Infrastrukturrundgang TGI MMS | Mo, Mi, Fr | 76 + Bemerkungen | 4: Batterieraum (1) · Infrastrukturraum (44) · Produktionshalle (30) · Büro 1. OG (1 + Bemerkungen) |
+| Brandschutzrundgang TGI MMS | Mo–Fr | 45 + Bemerkungen | 4: Brandmeldezentrale (BMZ) (1) · Infrastrukturraum/ Produktionshalle (3) · Produktionshalle (29) · Brandschutz (12 + Bemerkungen) |
+| Haustechnikrundgang TGI MMS | Mo | 75 + Bemerkungen | 8: Grünflächen, Parkplätze (7) · Eingangsbereich/ Treppenhaus (6) · Infrastrukturraum (6) · Büro EG (9) · Büro 1. OG (17) · Sozialräume (15) · Allgemein (11) · Sammelstation (4 + Bemerkungen) |
+| Legionellen Prävention TGI MMS | Mo (MoreApp: Mi) | 2 + Bemerkungen | 1 |
+| Sichtprüfung Gefahrstoffschränke TGI MMS | Mo (MoreApp: Mi) | 6 + Bemerkungen | 1 |
 
-Alle: **Testrundgang = Ja** bis zur Inbetriebnahme (Läufe landen in der Test-Ablage, nicht im Banner). Kopfdaten: Standort „TGI MMS“, Adresse „Matthäus-Merian-Straße 6, 34253 Lohfelden“, Auftraggeber „Technoform Glass Insulation GmbH“ (aus dem PDF-Kopf; „TGI MMS“ als Standort geschlussfolgert).
+Alle Rundgänge: ein Bereich, **Überschrift ausgeblendet** (MoreApp hat keine Ebene über den Unterformularen) · **Testrundgang = Ja** bis zur Inbetriebnahme · Kopfdaten Standort „TGI MMS“, Adresse „Matthäus-Merian-Straße 6, 34253 Lohfelden“, Auftraggeber „Technoform Glass Insulation GmbH“ (aus dem PDF-Kopf).
 
-## 2. Grundregeln für jeden Prüfpunkt (wenn in der Tabelle nichts anderes steht)
+## 2. Einstellungen je Prüfpunkt (wenn in der Tabelle nichts anderes steht)
 
-| Einstellung | Wert | Warum |
+| Einstellung | Wert | Herkunft |
 |---|---|---|
-| Typ | i.O./n.i.O. | MoreApp nutzt fast überall „in Ordnung / nicht in Ordnung“ (belegt) |
-| Antwort | **Pflicht** | in MoreApp mit Stern (belegt) |
-| Kommentar | **Pflicht bei Mangel** | entspricht dem MoreApp-Feld „Mangelbeschreibung*“ je Unterformular – bei uns direkt an der Frage |
-| Foto | **kein Foto (bei n.i.O. möglich)** | in MoreApp kein Foto-Feld zu sehen (Q-ALL-3); bei n.i.O. kann der Prüfer trotzdem fotografieren |
-| Zahl außerhalb Grenzen | **Mangel** (bei echten Soll-Werten) | MoreApp zeigt rote Meldung (belegt bei 2,0 bar) |
-| Fragetext | wörtlich aus MoreApp, **ohne** den Doppelpunkt am Ende, eindeutige Tippfehler korrigiert | Doppelpunkt ist MoreApp-Formularstil; Tippfehler haben keine Bedeutung |
-| Nur zeigen, wenn … | immer zeigen | MoreApp-Bilder zeigen keine bedingten Felder (nichts angetippt, Q-ALL-3) |
-| Info ⓘ (Anleitung/Bild) | keine | Objekthandouts noch unbekannt (Q-ALL-4) |
+| Typ | i.O./n.i.O. bzw. Zahl/Text wie MoreApp | belegt |
+| Antwort | Pflicht | Stern in MoreApp (belegt) |
+| Kommentar | Pflicht bei Mangel | = MoreApp-Feld „Mangelbeschreibung*“ je Unterformular |
+| Foto | kein Foto (bei n.i.O. möglich) | in MoreApp kein Foto-Feld zu sehen |
+| Grenzen | nur wo MoreApp sie nennt (Heizung 1,5–2,0 bar, Heizungspumpe min. 2,0 bar, Klima Haftungskabine 21–25 °C, Messraum 19–24 °C, Serverraum 18–21 °C, cos φ > 0,90), außerhalb = Mangel | belegt im Fragetext / rote Meldung |
+| Knopf-Wörter | i.O./n.i.O.; Legionellen „durchgeführt / nicht durchgeführt“ | belegt |
+| Abschnitte | wie die grauen Balken in MoreApp (Kompressor 1–3, Kältemaschine 1–3, Herren/Damen WC …) | belegt |
+| Fragetext | wörtlich, nur der Doppelpunkt am Ende entfällt und eindeutige Tippfehler sind korrigiert („Kältemschine“, „Kühlamellen“, „::“) | Formatierung |
 
-## 3. Entscheidungen (mit Begründung und Sicherheit)
+## 3. Die einzigen Abweichungen vom Original
 
-| # | Entscheidung | Begründung | Sicherheit |
-|---|---|---|---|
-| E1 | **Gaszähler S1–S8 und „Füllung Stickstoffflasche“** bleiben im Infrastrukturrundgang (Mo/Mi/Fr), aber **freiwillig** mit Hinweis „Nur montags ablesen“ | „lieber mehr drin“; kein Extra-Rundgang nötig; an Mi/Fr darf leer bleiben. Bei Umbau auf Wochentags-Rundgänge einfach im Montags-Rundgang Pflicht setzen | gut begründet |
-| E2 | **Brandmeldezentrale** und **Produktionshalle** (ohne Kürzel) → **Brandschutzrundgang** | täglich in MoreApp wie Brandschutz, Inhalte Sicherheit/Ordnung | geschlussfolgert (kein PDF) |
-| E3 | **Legionellen** und **Gefahrstoffschränke**: Plan **Montag** (Josias' Liste) | MoreApp zeigt sie am Mittwoch – Plan ist im Builder mit 2 Klicks änderbar | Vorgabe Josias, Widerspruch dokumentiert |
-| E4 | **Infrastrukturraum (44 Fragen)** in 4 Seiten: Heizung und Kompressoren · Kältetrockner und Wasseraufbereitung · ONI Kühlanlage · Kältemaschinen | kürzere Seiten, Zwischenspeichern, weniger Verlust bei Abbruch; Reihenfolge wie MoreApp | gut begründet |
-| E5 | **Produktionshalle (IS)** in 2 Seiten (Räume und Klima / Zähler, Tore, Technik); **Produktionshalle (Brandschutz)** in 2 Seiten; **Büro 1. OG (Haustechnik)** in 2 Seiten | gleiche Gründe wie E4, Reihenfolge bleibt | gut begründet |
-| E6 | **Bereichs-Überschriften** nur im Infrastrukturrundgang sichtbar (Batterieraum, Infrastrukturraum, Produktionshalle, Büro 1. OG); sonst ein ausgeblendeter Bereich | dort helfen sie bei 8 Seiten; bei den anderen entsprechen die Seiten direkt den MoreApp-Unterformularen | Geschmack |
-| E7 | **„nur steigend“** bei allen Zählerständen und Betriebsstunden | fängt Tippfehler ab (Josias: Prüfer nicht verlässlich → Kontrollen) | sicher sinnvoll |
-| E8 | **„nicht messbar“ erlaubt** bei Raumklima ohne Gerät/Anzeige (Haftungskabine, Waren-Ein-/Ausgangsbüro) und Gaszähler S2/S8 | im PDF stand dort „0“ – ehrliche Antwort mit Begründung statt falscher 0 | belegt (PDF) |
-| E9 | **Plausibilitätsgrenzen „Hinweis + Grund“** für Zahlen ohne Soll: Kompressor-Betriebsdruck 4–13 bar, Kompressor-Temperatur 0–110 °C, Wassertemperatur Kältemaschine 0–30 °C, Raumtemperatur 10–35 °C, Stickstoffflasche 0–300 bar | fängt Vertipper (z. B. 920 statt 92), **sperrt nie, kein Mangel** – nur Begründung | **Grenzen geraten** – Haustechnik bitte bestätigen oder Werte nennen |
-| E10 | **Rückfrage** bei „Störungsfrei“, „Störungsanzeige“, „im grünen Bereich“ | verhindert versehentliches n.i.O. bei Anlagen, die praktisch immer laufen | sinnvoll, abschaltbar |
-| E11 | **Brandmeldezentrale „kritisch“** (rotes Fenster, sofort melden) | ÜE aus = Brand wird nicht an Feuerwehr gemeldet. Braucht Ansprechpartner-Einträge (Brandschutzbeauftragter, Haustechnik-Leitung) – **Namen/Telefon von Josias** | Vorschlag, in MoreApp nicht vorhanden |
-| E12 | **🔑 Zugangscode „Bedienteil Kältemaschine 1“** an Wassertemperatur + Betriebsstunden C1/C2 | MoreApp zeigt den Code rot offen (belegt) – bei uns erst nach Antippen | belegt; **Codewert trägt Josias ein** |
-| E13 | **Trinkwasser spülen** (10 Entnahmestellen): Knöpfe „durchgeführt / nicht durchgeführt“, Zeitangabe als Hinweis | es wird eine Tätigkeit bestätigt (wie Legionellen) | Änderung ggü. MoreApp |
-| E14 | **„Rücksprache mit Kunde …“** eigener Abschnitt „Reinigung“, Knöpfe „zufriedenstellend / nicht zufrieden“, Hinweis „im Kommentar dokumentieren“ | gehört nicht zum Spülen; „Mängelprotokoll“ = bei uns Kommentar + Mangel | Änderung ggü. MoreApp |
-| E15 | Klammer-Anweisungen werden **Hinweise**: Legionellen „10 Minuten … 60 °C“, Sammelstation „Verschmutzungen sofort entfernen lassen!“, Brandschutz „Aufgrund der baulichen Gegebenheiten …“ | Frage bleibt kurz, Anweisung steht trotzdem unter der Frage | Änderung ggü. MoreApp |
-| E16 | Am Ende jedes Rundgangs **„Bemerkungen“** (Text, freiwillig) | MoreApp hat „Bemerkungen:“ am Formularende (belegt) | belegt |
-| E17 | Grenzen, die nur im Text stehen, aber in MoreApp i.O./n.i.O. sind (Durchlauferhitzer „mind. 60 °C“, „min. 1 Karton“, Siebkorbfilter „ab 0,5 bar“) → **bleiben i.O./n.i.O.** | 1:1, kein Zahlenfeld in MoreApp | belegt |
-| E18 | **Gefahrstoffschränke**: Service-Nr. im Abschnitt („Gefahrstoffschrank Nr. 01 · Service-Nr. 106304“), kein Barcode | App kann nicht scannen; Inhalt nur aus PDF (Unterformular nicht fotografiert) | UNSICHER bis Fotos da |
-| E19 | „Kühlamellen“ → „Kühllamellen“, „Kältemschine“ → „Kältemaschine“, „::“ → „:“ | eindeutige Tippfehler | sicher |
+| # | Abweichung | Warum |
+|---|---|---|
+| A1 | Gaszähler S1–S8 und „Füllung Stickstoffflasche“ (Infrastruktur) **freiwillig** + Hinweis „Nur montags ablesen“ | MoreApp blendet sie außer montags aus; unsere App kann nicht nach Wochentag ausblenden. So bleiben sie drin. |
+| A2 | 🔑 Zugangscode **„PLATZHALTER Bedienteil Kältemaschine 1“** an Wassertemperatur, Betriebsstunden C1/C2 | MoreApp zeigt den Code offen (belegt); bei uns hinter 🔑. Code-Wert fehlt noch. |
+| A3 | Brandmeldezentrale: **kritisch** mit Ansprechpartner **„PLATZHALTER Ansprechpartner BMZ“** | Josias: Ansprechpartner als Platzhalter. In MoreApp nicht vorhanden → Besprechungspunkt B1. Ohne Freigabe einfach „kritisch“ wieder aus. |
+| A4 | „Bemerkungen“ (Text, freiwillig) als letzte Frage jedes Rundgangs | MoreApp hat „Bemerkungen:“ am Formularende (belegt) |
+| A5 | Zuordnung der Unterformulare zu den 5 Rundgängen; BMZ und Produktionshalle zum Brandschutz | MoreApp ist **ein** Formular nach Wochentag (belegt); Zuordnung BMZ/Produktionshalle geschlussfolgert → B2 |
+| A6 | Legionellen und Gefahrstoffschränke laufen **montags** | Josias' Intervall-Liste; MoreApp: Mittwoch → B3 |
 
-## 4. Vor dem Bauen nötig (von Josias)
+## 4. Vor dem Bauen anzulegen (mit Platzhaltern)
 
-1. **Ansprechpartner** für E11: Rolle, Name/Firma, Telefon (Brandschutzbeauftragter, Haustechnik-Leitung o. ä.). Ohne Einträge zeigt das rote Fenster nur die allgemeinen Kontakte.
-2. **Zugangscode-Wert** Kältemaschine 1 (trägst du selbst im Builder unter 🔑 Zugangscodes ein – ich lege nur den Eintrag mit Platzhalter an oder du legst ihn an).
-3. Optional: **Grenzwerte** aus E9 bestätigen/ändern (sonst bleiben die geratenen Plausibilitätsbereiche, die nie sperren).
-4. Optional: Fotos vom Unterformular **Gefahrstoffschränke** (Q-ALL-6), um E18 zu belegen.
+1. RG_Zugangscodes: Eintrag „PLATZHALTER Bedienteil Kältemaschine 1“, Code „0000“, Hinweis „Platzhalter – echten Code eintragen“.
+2. RG_Ansprechpartner: Eintrag Rolle „PLATZHALTER Ansprechpartner BMZ“, Kontakt „noch offen“, Telefon leer, Hinweis „Platzhalter – mit Verantwortlichen klären“.
 
-## 5. Bauweg (danach)
+## 5. Bauweg
 
-1. SharePoint-Skript (Konsole) legt je Rundgang Rundgang → Bereich(e) → Kategorien → Prüfpunkte, Plan, Kopfdaten, „Testrundgang = Ja“ an – genau nach `PLAN_RUNDGAENGE.csv` (wie beim Funktionsrundgang). Vorher: Zugangscode-Eintrag und Ansprechpartner.
-2. Im Builder je Rundgang öffnen → Prüfung „keine Fehler“ → ansehen.
-3. In Rundgang DEV je Rundgang einen Testlauf.
+1. SharePoint-Skript legt Platzhalter, Rundgänge, Bereich, Kategorien, Prüfpunkte, Plan, Kopfdaten, „Testrundgang = Ja“ an – genau nach `PLAN_RUNDGAENGE.csv`.
+2. Builder: je Rundgang Prüfung „keine Fehler“ (Hinweis „über 30 Prüfpunkte“ bei Infrastrukturraum ist erwartet).
+3. Rundgang DEV: je Rundgang ein Testlauf.
 
 ## 6. Tabellen je Rundgang
 
-Spalten: **Nr** = Nummer aus der Bildanalyse (Quelle/Bilder dort nachschlagen) · **Typ/Pflicht/Einheit/ab/bis/außerhalb** wie im Builder · **Hinweis** = „Hinweis für den Prüfer“ · **Extras** = Rückfrage, kritisch, nicht messbar, nur steigend, 🔑 · Foto immer „kein Foto (bei n.i.O. möglich)“, Kommentar immer „Pflicht bei Mangel“ (siehe §2).
+Spalten wie im Builder. **Nr** = Nummer aus der Bildanalyse (Bilder/Quelle dort). Foto immer „kein Foto (bei n.i.O. möglich)“, Kommentar immer „Pflicht bei Mangel“.
 

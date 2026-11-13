@@ -20,7 +20,23 @@ function sauber(t) {
   return { s: s.trim(), aend };
 }
 
-// ---------- Planungsregeln ----------
+// ---------- Modus ----------
+// ORIGINAL = true (Josias 13.11.: „alles so gut es geht am Original“): keine eigenen Zusätze,
+// Gliederung = MoreApp-Unterformulare, nur Tippfehler/Doppelpunkt bereinigt, Pflichtfragen „nur Mo“ freiwillig,
+// Platzhalter für Ansprechpartner (BMZ kritisch) und Zugangscode (Kältemaschine 1).
+const ORIGINAL = true;
+const PH_KONTAKT = "PLATZHALTER Ansprechpartner BMZ";
+const PH_CODE = "PLATZHALTER Bedienteil Kältemaschine 1";
+
+function planenOriginal(rg, p, r, f) {
+  if (rg === "infrastruktur" && p.tage === "Mo") { r.pflicht = "Nein"; r.hinweis = "Nur montags ablesen (in MoreApp nur am Montag). An anderen Tagen leer lassen."; r.aend.push("freiwillig statt Pflicht (MoreApp blendet die Frage außer montags aus)"); r.grund.push("unsere App kann nicht nach Wochentag ausblenden; so bleibt die Frage drin"); }
+  if (rg === "infrastruktur" && /kältemaschine 1/i.test(r.abs) && /wassertemperatur|betriebsstunden/.test(f)) { r.extras.push("🔑 Zugangscode „" + PH_CODE + "“ (Code fehlt noch)"); r.grund.push("MoreApp zeigt den Code rot über dem Block (belegt) – bei uns hinter 🔑"); }
+  if (rg === "brandschutz" && /üe eingeschaltet/.test(f)) { r.extras.push("KRITISCH (Platzhalter): Text „Bitte sofort melden.“ · Ansprechpartner „" + PH_KONTAKT + "“"); r.aend.push("neu: kritisch mit Platzhalter (zur Besprechung)"); r.grund.push("ÜE aus = Brandalarm geht nicht an die Feuerwehr; in MoreApp nicht vorhanden – Entscheidung offen (B-Liste)"); }
+  if (rg === "gefahrstoffschraenke") r.grund.push("Quelle nur PDF 28.10. (Unterformular nicht fotografiert)");
+  return r;
+}
+
+// ---------- Planungsregeln (Variante „mit Zusätzen“, nur wenn ORIGINAL = false) ----------
 // Standard je Prüfpunkt: Pflicht Ja, Foto „kein Foto (bei n.i.O. möglich)“, Kommentar „Pflicht bei Mangel“, Grenzmodus Mangel.
 function planen(rg, p) {
   const r = { ...p, pflicht: "Ja", foto: "Aus", komm: "bei Mangel", hinweis: "", extras: [], aend: [], grund: [] };
@@ -29,6 +45,7 @@ function planen(rg, p) {
   r.kat = sauber(p.kat).s;
   r.min = p.min; r.max = p.max; r.gm = p.typ === "ZAHL" ? (p.gm || "Mangel") : "";
   const f = r.frage.toLowerCase();
+  if (ORIGINAL) return planenOriginal(rg, p, r, f);
   if (p.typ === "ZAHL") {
     if (/zählerstand|betriebsstunden/.test(f)) { r.extras.push("nur steigend"); r.grund.push("Zähler kann nicht kleiner werden → fängt Tippfehler ab"); r.aend.push("neu: nur steigend"); }
     if (rg === "infrastruktur" && [49, 54, 56, 62, 67].includes(p.nr)) { r.extras.push("nicht messbar erlaubt"); r.grund.push("PDF 26.10. zeigt 0 (Gerät aus/keine Anzeige) → ehrliche Antwort statt 0"); r.aend.push("neu: nicht messbar erlaubt"); }
@@ -100,7 +117,8 @@ const md = [], csv = ["Rundgang|Bereich|Bereich_ausblenden|Kategorie|Abschnitt|N
 const zus = {};
 for (const rg of Object.keys(GL)) {
   const g = GL[rg]; const P = lese(rg).map(p => planen(rg, p));
-  P.forEach(p => { const [b, k] = g.kat(p); p.ber = b; p.k = k; });
+  if (ORIGINAL) { g.aus = true; g.plan = g.plan.replace(/ \(MoreApp: Mittwoch, s\. E3\)/, " (in MoreApp: Mittwoch – Besprechungspunkt)"); }
+  P.forEach(p => { const [b, k] = ORIGINAL ? [g.name, p.kat] : g.kat(p); p.ber = b; p.k = k; });
   const last = P[P.length - 1];
   P.push({ nr: "+1", ber: last.ber, k: last.k, abs: "Abschluss", frage: "Bemerkungen", typ: "TEXT", pflicht: "Nein", ein: "", min: "", max: "", gm: "", foto: "Aus", komm: "bei Mangel", hinweis: "Freiwillig: alles, was sonst nirgends hinpasst.", tio: "", tnio: "", extras: [], aend: ["neu: entspricht „Bemerkungen:“ am Ende des MoreApp-Formulars"], grund: ["MoreApp hat am Ende ein freies Bemerkungsfeld (belegt MD 124814)"], quelle: "MD 124814", sich: "belegt" });
   const kats = [...new Set(P.map(p => p.ber + " › " + p.k))];
