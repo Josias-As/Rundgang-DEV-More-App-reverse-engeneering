@@ -142,3 +142,17 @@ Bild-Kürzel: MD = Ordner Montag+Dienstag, MI = Mittwoch, REPO = alte Repo-Bilde
 - Was steht wo: Die Frage steht in MoreApp unter dem Balken „Spülen der Trinkwasserleitungen“, hat aber nichts damit zu tun.
 - Frage: Unter einen eigenen Abschnitt legen (z. B. „Reinigung“)?
 - Vorschlag: so lassen wie in MoreApp.
+
+## Legionellen Prävention
+- Plan-Widerspruch Mittwoch/Montag → **Q-ALL-1**. Sonst keine offenen Fragen. Der Inhalt ist vollständig belegt (MI 130405 = PDF 28.10.).
+
+## Sichtprüfung Gefahrstoffschränke
+
+**Q-GS-1 – Barcode**
+- Quelle: PDF 28.10. („Service Nr./ Barcode: 106304“ usw.).
+- Frage: Scannt der Prüfer in MoreApp den Barcode am Schrank, oder ist das nur eine Beschriftung?
+- Vorschlag: Unsere App kann nicht scannen. Die Nummer steht deshalb als Text im Abschnitt, z. B. „Gefahrstoffschrank Nr. 01 Service Nr./ Barcode: 106304“.
+
+**Q-GS-2 – Inhalt fehlt**
+- Siehe **Q-ALL-6**: Bitte das Unterformular „Gefahrstoffschränke:“ (Wochentag Mittwoch) öffnen und fotografieren.
+- Bis dahin ist alles aus dem PDF übernommen und UNSICHER.
