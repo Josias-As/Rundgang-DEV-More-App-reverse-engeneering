@@ -83,3 +83,38 @@ Bild-Kürzel: MD = Ordner Montag+Dienstag, MI = Mittwoch, REPO = alte Repo-Bilde
 - Was steht wo: „Kältemschine 1“ und „Kontrolle Kühlamellen:“ sind in MoreApp noch falsch geschrieben.
 - Frage: In der neuen App korrigiert übernehmen?
 - Vorschlag: korrigieren („Kältemaschine 1“, „Kühllamellen“). In `04_…` steht vorerst der Originaltext mit dem Korrekturvorschlag in der Spalte „Bemerkung“.
+
+## Brandschutzrundgang
+
+**Q-BS-1 – Gehören „Brandmeldezentrale (BMZ)“ und „Produktionshalle“ zum Brandschutz?**
+- Bilder: MD 124226, MD 125017, MI 130117 (BMZ); MD 124420–124516 und andere (Produktionshalle).
+- Was steht wo:
+  - Beide Unterformulare haben kein Kürzel.
+  - Beide gibt es an Mo, Di und Mi.
+  - In keinem PDF stehen sie.
+  - „Produktionshalle“ enthält neben Sicherheitsthemen (Erste Hilfe, Beleuchtung, Presscontainer) auch Sanitär- und Ordnungsfragen (Seifenspender, Handtuchpapier, Ordnung und Sauberkeit).
+- Frage: Sollen sie in den Brandschutz-Rundgang (läuft Mo–Fr)?
+- Vorschlag: ja, wie mit dem Einsetz-Chat abgesprochen. Alternativ „Produktionshalle“ in einen eigenen täglichen Rundgang „Hallenrundgang“.
+
+**Q-BS-2 – Name des Brandschutz-Rundgangs und Kategoriename „Brandschutz“**
+- Frage: Wie soll der Rundgang heißen?
+- Vorschlag: „Brandschutzrundgang TGI MMS“, passend zu den anderen Namen. Die Kategorie heißt wie in MoreApp „Brandschutz“, wahlweise „Brandschutz allgemein“.
+
+**Q-BS-3 – Brandmeldezentrale „kritisch“?**
+- Bild: MD 124226.
+- Frage: Soll „Sichtprüfung ob frei zugänglich, ÜE eingeschaltet:“ bei n.i.O. ein rotes „sofort melden“-Fenster mit Ansprechpartner zeigen (z. B. Brandmelde-Fachfirma, Haustechnik-Leitung)?
+- Vorschlag: In MoreApp ist nichts dergleichen zu sehen, also vorerst **nicht** kritisch. Wenn ja, bitte Rolle und Firma nennen.
+
+**Q-BS-4 – Frage mit eingebauter Ausnahme**
+- Bild: MD 124756.
+- Was steht wo: „Lagergut und Abfall im Abstand von den Außenwänden abgestellt (5 m), Aufgrund der baulichen Gegebenheiten kann die 5 Meter Vorgabe nicht eingehalten werden:“
+- Frage: In Frage + Hinweis trennen?
+- Vorschlag:
+  - Frage: „Lagergut und Abfall im Abstand von den Außenwänden abgestellt (5 m):“
+  - Hinweis: „Aufgrund der baulichen Gegebenheiten kann die 5 Meter Vorgabe nicht eingehalten werden.“
+  - In `04_…` steht vorerst der Originaltext.
+
+**Q-BS-5 – Tippfehler**
+- Was steht wo: „(ggf. nachfüllen)::“ (doppelter Doppelpunkt, Damen-WC-Seifenspender) und „Verpackung“ / „Verpackungen“ (BS / Brandschutz).
+- Frage: Korrigieren bzw. vereinheitlichen?
+- Vorschlag: „::“ → „:“ korrigieren. „Verpackung/Verpackungen“ so lassen wie in MoreApp.
