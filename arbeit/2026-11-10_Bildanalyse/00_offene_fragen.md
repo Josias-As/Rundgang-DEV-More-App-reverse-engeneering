@@ -156,3 +156,20 @@ Bild-Kürzel: MD = Ordner Montag+Dienstag, MI = Mittwoch, REPO = alte Repo-Bilde
 **Q-GS-2 – Inhalt fehlt**
 - Siehe **Q-ALL-6**: Bitte das Unterformular „Gefahrstoffschränke:“ (Wochentag Mittwoch) öffnen und fotografieren.
 - Bis dahin ist alles aus dem PDF übernommen und UNSICHER.
+
+## „Herkunft unklar“
+Keine Bilder mehr ohne Zuordnung. Die alten Repo-Bilder 10–16 gehören zum Unterformular „Produktionshalle:“ und stehen in `04_rundgang_brandschutz.*`. Dass sie zum Brandschutz gehören, ist nur ein Vorschlag, s. Q-BS-1. Eine eigene Datei `…_unklar` ist deshalb nicht nötig.
+
+## Übersicht Stand 13.11.2026
+
+| Rundgang | Fragen | Tage in MoreApp (belegt) | Plan laut Josias | Sicherheit gesamt |
+|---|---|---|---|---|
+| Infrastruktur | 76 (Mo) / 67 (Di, Mi) | Mo, Di, Mi | Mo, Mi, Fr | belegt; 9 Montagsfragen UNSICHER (Q-IS-1) |
+| Brandschutz | 45 | Mo, Di, Mi | Mo–Fr | belegt; BMZ und Produktionshalle UNSICHER (Q-BS-1) |
+| Haustechnik | 75 | Mo | Mo | belegt (= PDF 26.10.) |
+| Legionellen Prävention | 2 | Mi | Mo (Widerspruch Q-ALL-1) | belegt (= PDF 28.10.) |
+| Sichtprüfung Gefahrstoffschränke | 6 | Mi (nur in der Liste) | Mo (Widerspruch Q-ALL-1) | nur PDF, UNSICHER (Q-ALL-6) |
+
+**Annahme für Do/Fr** (nicht belegt, Q-ALL-2):
+- Freitag Infrastruktur = Mittwoch (67 Fragen, ohne Montags-Zählerstände).
+- Donnerstag/Freitag Brandschutz = Dienstag (45 Fragen, an allen Tagen gleich).
